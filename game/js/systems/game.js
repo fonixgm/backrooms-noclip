@@ -176,6 +176,11 @@
     if (window.Sfx) Sfx.play('dado');
     world.ui.showDice(texto, (d) => {
       world.busy = false;
+      // el trébol de la suerte (Object 13) mejora toda tirada
+      if (world.hasItem('trebol') && d < 20) {
+        world.log(`🍀 Trébol de la suerte: ${d} + 2 = ${Math.min(20, d + 2)}`, 'good');
+        d = Math.min(20, d + 2);
+      }
       cb(d);
       world.ui.updateHUD();
     });
@@ -343,10 +348,15 @@
         break;
       }
       if (v === T.AGUA) { world.log('El agua no parece segura.', 'event'); break; }
-      // no puedes atravesar entidades
+      // no puedes atravesar entidades: con arma, moverte hacia ella = golpearla
       const ent = world.entities.find((e) => e.viva && e.x === nx && e.y === ny);
       if (ent) {
-        world.log(`${ent.def.nombre} te corta el paso.`, 'danger');
+        if (world.hasItem('tuberia')) {
+          golpear(ent);
+          worldStep();
+          return;
+        }
+        world.log(`${ent.def.nombre} te corta el paso. (Sin un arma no puedes golpearla.)`, 'danger');
         break;
       }
       world.player.x = nx;
@@ -354,6 +364,42 @@
       if (window.Sfx) Sfx.play('paso', world.level.estilo?.suelo);
     }
     worldStep();
+  }
+
+  // golpe cuerpo a cuerpo con la tubería
+  function golpear(ent) {
+    const dano = 18 + world.rng.int(-6, 6);
+    ent.vida -= dano;
+    ent._hitT = performance.now();
+    ent.estado = 'caza';
+    ent.revelada = true;
+    if (window.Sfx) Sfx.play('golpe');
+    if (window.Effects) {
+      Effects.number(ent.x, ent.y, '−' + dano, '#ffc860');
+      Effects.particles(ent.x, ent.y, ent.def.color, 8);
+    }
+    // el limo tóxico salpica al golpearlo (canon: contacto letal)
+    if (ent.id === 'silverslime') {
+      world.hurt(8, 'las salpicaduras del limo', true);
+      world.log('¡El limo salpica ácido al golpearlo!', 'danger');
+    }
+    if (ent.vida <= 0) {
+      ent.viva = false;
+      world.log(`Has derribado a ${ent.def.nombre}.`, 'good');
+      if (window.Effects) Effects.particles(ent.x, ent.y, ent.def.color, 20);
+      world.sanity(-2); // matar en las Backrooms también pesa
+      return;
+    }
+    world.log(`Golpeas a ${ent.def.nombre} con la tubería.`, 'good');
+    // retroceso de 1 casilla si el hueco está libre
+    const kx = ent.x + Math.sign(ent.x - world.player.x);
+    const ky = ent.y + Math.sign(ent.y - world.player.y);
+    const g = world.map.grid;
+    if (MapGen.walkable(MapGen.at(g, kx, ky)) &&
+        !world.entities.some((o) => o.viva && o !== ent && o.x === kx && o.y === ky) &&
+        !(world.player.x === kx && world.player.y === ky)) {
+      ent.x = kx; ent.y = ky;
+    }
   }
 
   function wait() {
@@ -382,7 +428,7 @@
     if (window.Sfx) Sfx.play('registrar');
     world.rollDice(`Registras ${NOMBRES_CONT[cont.id] ?? 'el contenedor'}…`, (d) => {
       if (d >= 14) {
-        const pool = ['agua_almendras', 'agua_almendras', 'botiquin', 'amuleto', 'linterna', 'chaqueta'];
+        const pool = ['agua_almendras', 'agua_almendras', 'botiquin', 'amuleto', 'linterna', 'chaqueta', 'tuberia', 'fuego_griego', 'guante_paralisis', 'trebol'];
         const id = pool[Math.min(pool.length - 1, Math.floor((d - 14) / 7 * pool.length + world.rng.int(0, 2)))];
         if (world.player.inv.length >= 6) {
           world.log(`Dado: ${d}. Hay algo útil… pero no te cabe nada más.`, 'event');
@@ -427,6 +473,50 @@
     if (!id) return;
     const def = world.data.objects[id];
     if (def.efecto?.toggle === 'luz') { toggleLuz(); return; }
+    if (def.efecto?.activo === 'fuego') {
+      world.player.inv.splice(slot, 1);
+      world.log('¡Lanzas el fuego griego! Las llamas se extienden a tu alrededor.', 'good');
+      if (window.Sfx) Sfx.play('golpe');
+      let alcanzadas = 0;
+      for (const e of world.entities) {
+        if (!e.viva) continue;
+        if (Math.abs(e.x - world.player.x) + Math.abs(e.y - world.player.y) > 3) continue;
+        e.vida -= 30;
+        e._hitT = performance.now();
+        e.huyendo = 8;
+        e.revelada = true;
+        alcanzadas++;
+        if (window.Effects) {
+          Effects.particles(e.x, e.y, '#ff8a30', 14);
+          Effects.number(e.x, e.y, '−30', '#ff8a30');
+        }
+        if (e.vida <= 0) { e.viva = false; world.log(`${e.def.nombre} arde hasta desaparecer.`, 'good'); }
+      }
+      if (window.Effects) Effects.flash(world.player.x, world.player.y, '#ff8a30');
+      if (!alcanzadas) world.log('Las llamas se apagan sin alcanzar a nada.', 'event');
+      world.ui.updateHUD();
+      worldStep();
+      return;
+    }
+    if (def.efecto?.activo === 'paralisis') {
+      world.player.inv.splice(slot, 1);
+      let alcanzadas = 0;
+      for (const e of world.entities) {
+        if (!e.viva) continue;
+        if (Math.abs(e.x - world.player.x) + Math.abs(e.y - world.player.y) > 1) continue;
+        e.paralizada = 6;
+        e._hitT = performance.now();
+        alcanzadas++;
+        if (window.Effects) Effects.number(e.x, e.y, '⚡ paralizada', '#60c8e8');
+      }
+      world.log(alcanzadas
+        ? `El guante descarga: ${alcanzadas} entidad(es) inmovilizada(s) durante 6 turnos.`
+        : 'El guante chisporrotea… pero no hay nada adyacente que tocar. Se ha gastado.', alcanzadas ? 'good' : 'event');
+      if (window.Sfx) Sfx.play('registrar');
+      world.ui.updateHUD();
+      worldStep();
+      return;
+    }
     if (def.efecto?.pasivo) { world.log(`${def.nombre}: su efecto es pasivo, basta con llevarlo.`, 'event'); return; }
     if (def.efecto) {
       if (def.efecto.salud) {

@@ -2,15 +2,20 @@
 // receta sintetizada de la ficha > bioma), efectos, pasos por material, cues de
 // entidades y volumen regulable. WebAudio puro, sin dependencias.
 (function () {
-  let ctx = null, master = null;
-  let muted = false, vol = 0.5;
+  let ctx = null, master = null, sfxBus = null, ambBus = null;
+  let muted = false, vol = 0.5, volFx = 1, volAmb = 1;
   try {
     muted = localStorage.getItem('backrooms-mute') === '1';
     const v = parseFloat(localStorage.getItem('backrooms-vol'));
     if (!isNaN(v)) vol = Math.max(0, Math.min(1, v));
+    const vf = parseFloat(localStorage.getItem('backrooms-volfx'));
+    if (!isNaN(vf)) volFx = Math.max(0, Math.min(1, vf));
+    const va = parseFloat(localStorage.getItem('backrooms-volamb'));
+    if (!isNaN(va)) volAmb = Math.max(0, Math.min(1, va));
   } catch (e) {}
   let ambientStop = null;
   let ambientAudioEl = null;
+  let idleStop = null;
   const overrides = {};
 
   const NOMBRES = ['paso', 'golpe', 'dano', 'recoger', 'dado', 'puerta', 'registrar', 'muerte', 'victoria', 'latido', 'ui'];
@@ -30,6 +35,12 @@
       master = ctx.createGain();
       master.gain.value = muted ? 0 : vol;
       master.connect(ctx.destination);
+      sfxBus = ctx.createGain();
+      sfxBus.gain.value = volFx;
+      sfxBus.connect(master);
+      ambBus = ctx.createGain();
+      ambBus.gain.value = volAmb;
+      ambBus.connect(master);
       return true;
     } catch (e) { return false; }
   }
@@ -58,7 +69,7 @@
     const g = ctx.createGain();
     g.gain.setValueAtTime(gain, ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
-    src.connect(f).connect(g).connect(master);
+    src.connect(f).connect(g).connect(sfxBus);
     src.start();
   }
 
@@ -69,28 +80,41 @@
     const g = ctx.createGain();
     g.gain.setValueAtTime(gain, ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
-    o.connect(g).connect(master);
+    o.connect(g).connect(sfxBus);
     o.start(); o.stop(ctx.currentTime + dur + 0.05);
   }
 
+  // variación aleatoria de tono para que los pasos no suenen a metralleta
+  const vp = () => 0.88 + Math.random() * 0.26;
+
   // ---------- efectos ----------
   const PASOS = {
-    moqueta: () => ruido(0.08, 500, 0.07),
-    hormigon: () => ruido(0.06, 1400, 0.09, 'bandpass'),
-    baldosa: () => ruido(0.05, 2000, 0.09, 'bandpass'),
-    baldosa_oscura: () => ruido(0.05, 2000, 0.09, 'bandpass'),
-    piedra: () => ruido(0.06, 1600, 0.09, 'bandpass'),
-    adoquin: () => ruido(0.06, 1500, 0.09, 'bandpass'),
-    tablones: () => { ruido(0.07, 800, 0.09); if (Math.random() < 0.2) tono(120, 0.16, 0.05, 'triangle', 90); },
-    tablones_claros: () => { ruido(0.07, 800, 0.09); if (Math.random() < 0.2) tono(120, 0.16, 0.05, 'triangle', 90); },
-    moqueta_cenefa: () => ruido(0.08, 500, 0.07),
-    rejilla: () => { ruido(0.05, 2400, 0.07, 'bandpass'); tono(340, 0.09, 0.05, 'triangle', 280); },
-    panel: () => ruido(0.06, 1800, 0.08, 'bandpass'),
-    nieve: () => ruido(0.12, 350, 0.11),
-    tierra: () => ruido(0.08, 600, 0.08),
-    hierba: () => ruido(0.09, 500, 0.08),
-    negro: () => ruido(0.08, 400, 0.06),
-    blanco: () => { ruido(0.05, 2200, 0.08, 'bandpass'); setTimeout(() => ctx && ruido(0.09, 1400, 0.025, 'bandpass'), 120); },
+    moqueta: () => ruido(0.09, 520 * vp(), 0.16),
+    moqueta_humeda: () => { // la moqueta empapada de Level 0: chapoteo suave
+      ruido(0.07, 900 * vp(), 0.15, 'bandpass');
+      setTimeout(() => ctx && ruido(0.09, 420 * vp(), 0.1), 45);
+    },
+    hormigon: () => ruido(0.07, 1400 * vp(), 0.18, 'bandpass'),
+    baldosa: () => ruido(0.06, 2000 * vp(), 0.18, 'bandpass'),
+    baldosa_oscura: () => ruido(0.06, 2000 * vp(), 0.18, 'bandpass'),
+    piedra: () => ruido(0.07, 1600 * vp(), 0.18, 'bandpass'),
+    adoquin: () => ruido(0.07, 1500 * vp(), 0.18, 'bandpass'),
+    tablones: () => {
+      ruido(0.08, 800 * vp(), 0.18);
+      if (Math.random() < 0.25) tono(115 * vp(), 0.2, 0.1, 'triangle', 85); // crujido
+    },
+    tablones_claros: () => {
+      ruido(0.08, 800 * vp(), 0.18);
+      if (Math.random() < 0.25) tono(115 * vp(), 0.2, 0.1, 'triangle', 85);
+    },
+    moqueta_cenefa: () => ruido(0.09, 520 * vp(), 0.16),
+    rejilla: () => { ruido(0.06, 2400 * vp(), 0.14, 'bandpass'); tono(340 * vp(), 0.1, 0.1, 'triangle', 280); },
+    panel: () => ruido(0.07, 1800 * vp(), 0.16, 'bandpass'),
+    nieve: () => ruido(0.14, 340 * vp(), 0.22),
+    tierra: () => ruido(0.09, 600 * vp(), 0.16),
+    hierba: () => ruido(0.1, 500 * vp(), 0.16),
+    negro: () => ruido(0.09, 400 * vp(), 0.12),
+    blanco: () => { ruido(0.06, 2200 * vp(), 0.16, 'bandpass'); setTimeout(() => ctx && ruido(0.1, 1400, 0.05, 'bandpass'), 130); },
   };
 
   let pasoAlt = false;
@@ -106,8 +130,12 @@
       for (let i = 0; i < 6; i++)
         setTimeout(() => ctx && ruido(0.05, 2500 + Math.random() * 1500, 0.12, 'bandpass'), i * 110 + Math.random() * 40);
     },
-    puerta() { ruido(0.35, 300, 0.22, 'lowpass', 90); tono(70, 0.3, 0.22, 'sine', 45); },
-    registrar() { ruido(0.28, 1800, 0.14, 'bandpass', 500); tono(210, 0.12, 0.1, 'square', 190); },
+    puerta() { ruido(0.4, 320, 0.36, 'lowpass', 90); tono(70, 0.35, 0.32, 'sine', 45); setTimeout(() => ctx && ruido(0.1, 1800, 0.1, 'bandpass'), 300); },
+    registrar() { ruido(0.32, 1800, 0.26, 'bandpass', 500); tono(210, 0.14, 0.18, 'square', 190); },
+    bisturi() {
+      ruido(0.32, 3800, 0.16, 'bandpass', 900);                       // silbido de hoja
+      setTimeout(() => ctx && tono(2400, 0.12, 0.14, 'sine', 2100), 300); // tintineo
+    },
     muerte() { tono(220, 1.4, 0.4, 'sawtooth', 40); ruido(1.2, 500, 0.2, 'lowpass', 60); },
     victoria() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => ctx && tono(f, 0.5, 0.2), i * 160)); },
     latido() { tono(55, 0.12, 0.5, 'sine', 40); setTimeout(() => ctx && tono(50, 0.14, 0.4, 'sine', 38), 180); },
@@ -252,7 +280,7 @@
         sg.gain.setValueAtTime(0.0001, ctx.currentTime);
         sg.gain.linearRampToValueAtTime(0.07, ctx.currentTime + 0.2);
         sg.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + 0.7);
-        src.connect(f).connect(sg).connect(master);
+        src.connect(f).connect(sg).connect(ambBus);
         src.start();
       }, 5200);
       nodes.push({ stop: () => clearInterval(iv) });
@@ -341,7 +369,7 @@
     const g = ctx.createGain();
     g.gain.value = 0.0001;
     g.gain.exponentialRampToValueAtTime(0.16, ctx.currentTime + 2);
-    g.connect(master);
+    g.connect(ambBus);
     const receta = RECETAS[levelDef.sonido] ?? RECETAS[RECETA_BIOMA[levelDef.bioma]] ?? RECETAS.hum_suave;
     receta(g, nodes);
     ambientStop = () => {
@@ -367,7 +395,7 @@
         if (i >= candidatos.length) { if (ctx) ambientSynth(levelDef); return; }
         const el = new window.Audio(candidatos[i++]);
         el.loop = true;
-        el.volume = 0.62 * vol;
+        el.volume = Math.min(1, 0.62 * vol * volAmb);
         el.addEventListener('error', intenta, { once: true });
         el.play().then(() => {
           ambientAudioEl = el;
@@ -387,11 +415,56 @@
     } catch (e) {}
   }, 1600);
 
-  function setVolume(v) {
-    vol = Math.max(0, Math.min(1, v));
-    try { localStorage.setItem('backrooms-vol', String(vol)); } catch (e) {}
-    if (master && !muted) master.gain.value = vol;
-    if (ambientAudioEl) ambientAudioEl.volume = 0.62 * vol;
+  function setVolume(v, canal = 'general') {
+    v = Math.max(0, Math.min(1, v));
+    if (canal === 'general') {
+      vol = v;
+      try { localStorage.setItem('backrooms-vol', String(vol)); } catch (e) {}
+      if (master && !muted) master.gain.value = vol;
+    } else if (canal === 'fx') {
+      volFx = v;
+      try { localStorage.setItem('backrooms-volfx', String(volFx)); } catch (e) {}
+      if (sfxBus) sfxBus.gain.value = volFx;
+    } else if (canal === 'amb') {
+      volAmb = v;
+      try { localStorage.setItem('backrooms-volamb', String(volAmb)); } catch (e) {}
+      if (ambBus) ambBus.gain.value = volAmb;
+    }
+    if (ambientAudioEl) ambientAudioEl.volume = Math.min(1, 0.62 * vol * volAmb);
+  }
+
+  // pad suave para la tarjeta entre niveles y pantallas de fin
+  function idle(on, tipo = 'neutro') {
+    try {
+      if (idleStop) { idleStop(); idleStop = null; }
+      if (!on || muted || !ctx) return;
+      stopAmbient();
+      const g = ctx.createGain();
+      g.gain.value = 0.0001;
+      g.gain.exponentialRampToValueAtTime(0.07, ctx.currentTime + 1.5);
+      g.connect(ambBus);
+      const acorde = tipo === 'victoria' ? [262, 330, 392, 523]
+        : tipo === 'muerte' ? [110, 131, 165]
+        : [220, 262, 330];
+      const nodes = [];
+      for (const f of acorde) {
+        for (const det of [-1.2, 1.2]) {
+          const o = ctx.createOscillator();
+          o.type = 'sine'; o.frequency.value = f + det;
+          const og = ctx.createGain(); og.gain.value = 0.5 / acorde.length;
+          o.connect(og).connect(g); o.start();
+          nodes.push(o);
+        }
+      }
+      const lfo = ctx.createOscillator(); lfo.frequency.value = 0.09;
+      const lg = ctx.createGain(); lg.gain.value = 0.025;
+      lfo.connect(lg).connect(g.gain); lfo.start();
+      nodes.push(lfo);
+      idleStop = () => {
+        try { g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.5); } catch (e) {}
+        setTimeout(() => nodes.forEach((x) => { try { x.stop(); } catch (e) {} }), 600);
+      };
+    } catch (e) {}
   }
 
   function toggleMute() {
@@ -404,8 +477,10 @@
   }
 
   window.Sfx = {
-    unlock, play, cue, ambient, stopAmbient, toggleMute, setVolume,
+    unlock, play, cue, ambient, stopAmbient, toggleMute, setVolume, idle,
     get muted() { return muted; },
     get volumen() { return vol; },
+    get volumenFx() { return volFx; },
+    get volumenAmb() { return volAmb; },
   };
 })();

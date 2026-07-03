@@ -31,12 +31,57 @@
     s.value = Math.round(Sfx.volumen * 100);
     s.addEventListener('input', () => {
       Sfx.setVolume(s.value / 100);
-      for (const otro of ['vol-slider', 'vol-slider-title']) {
+      for (const otro of ['vol-slider', 'vol-slider-title', 'snd-general']) {
         const o = document.getElementById(otro);
         if (o && o !== s) o.value = s.value;
       }
     });
   }
+
+  // ---------- menú de ajustes de sonido ----------
+  const sndMenu = document.getElementById('sound-menu');
+  const SND = [
+    ['snd-general', 'general', () => Sfx.volumen],
+    ['snd-fx', 'fx', () => Sfx.volumenFx],
+    ['snd-amb', 'amb', () => Sfx.volumenAmb],
+  ];
+  function abrirSndMenu() {
+    for (const [id, canal, get] of SND) {
+      const s = document.getElementById(id);
+      s.value = Math.round(get() * 100);
+      document.getElementById(id + '-v').textContent = s.value + '%';
+    }
+    document.getElementById('btn-snd-mute').textContent = Sfx.muted ? '🔇 Activar sonido' : '🔊 Silenciar todo';
+    sndMenu.style.display = 'flex';
+    if (world.level && !world.over) world.busy = true;
+  }
+  function cerrarSndMenu() {
+    sndMenu.style.display = 'none';
+    if (world.level && !world.over &&
+        document.getElementById('exit-modal').style.display === 'none' &&
+        document.getElementById('dice-overlay').style.display === 'none') world.busy = false;
+  }
+  for (const [id, canal] of SND) {
+    const s = document.getElementById(id);
+    s.addEventListener('input', () => {
+      Sfx.setVolume(s.value / 100, canal);
+      document.getElementById(id + '-v').textContent = s.value + '%';
+      if (canal === 'general') {
+        for (const otro of ['vol-slider', 'vol-slider-title']) {
+          const o = document.getElementById(otro);
+          if (o) o.value = s.value;
+        }
+      }
+    });
+  }
+  document.getElementById('btn-snd-mute').onclick = () => {
+    Sfx.toggleMute();
+    document.getElementById('btn-snd-mute').textContent = Sfx.muted ? '🔇 Activar sonido' : '🔊 Silenciar todo';
+  };
+  document.getElementById('btn-snd-close').onclick = cerrarSndMenu;
+  document.getElementById('btn-sound-menu').onclick = abrirSndMenu;
+  const btnSndTitle = document.getElementById('btn-sound-menu-title');
+  if (btnSndTitle) btnSndTitle.onclick = abrirSndMenu;
 
   document.addEventListener('keydown', (ev) => {
     if (ev.code === 'KeyM') {
@@ -57,6 +102,8 @@
     else if (ev.code === 'KeyR') Game.volver();
     else if (ev.code === 'KeyJ') world.ui.toggleJournal();
     else if (ev.code === 'KeyC') world.ui.toggleCodex();
+    else if (ev.code === 'KeyN') Minimap.toggleBig();
+    else if (ev.code === 'Escape' && Minimap.visible) Minimap.toggleBig(false);
     else if (/^Digit[1-6]$/.test(ev.code)) Game.useItem(parseInt(ev.code.slice(5), 10) - 1);
   });
 
@@ -86,6 +133,7 @@
 
     try {
       Render.frame(world, t);
+    Minimap.frame(world, t);
     } catch (err) {
       (window.__renderErrors = window.__renderErrors || []).push(String(err && err.stack || err).slice(0, 300));
       if (window.__renderErrors.length > 8) window.__renderErrors.length = 8;
@@ -130,6 +178,7 @@
     window.onerror = (msg, src, line) => { errores.push(`${msg} @${(src || '').split('/').pop()}:${line}`); };
     const N = parseInt(params.get('selftest'), 10) || 100;
     Game.startRun(params.get('seed') || 'selftest');
+    if (params.get('arma')) world.player.inv.push('tuberia', 'fuego_griego', 'detector');
     setTimeout(() => document.getElementById('btn-enter')?.click(), 30);
     let acciones = 0;
     const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
@@ -170,6 +219,16 @@
           return;
         }
         if (world.busy) return; // dado en marcha
+        // con arma: ataca a la entidad adyacente si la hay
+        if (params.get('arma')) {
+          const adj = world.entities.find((e) => e.viva &&
+            Math.abs(e.x - world.player.x) + Math.abs(e.y - world.player.y) === 1);
+          if (adj) {
+            Game.tryMove(Math.sign(adj.x - world.player.x), Math.sign(adj.y - world.player.y));
+            acciones++;
+            return;
+          }
+        }
         // camina hacia la salida más cercana (con algo de ruido)
         let d = dirs[Math.floor(Math.random() * 4)];
         if (Math.random() < 0.85 && world.map.exits.length) {

@@ -92,6 +92,29 @@ html, body { height: 100%; background: #060504; color: var(--hueso);
 .inv-slot .k { position: absolute; top: 1px; left: 3px; color: #6a6455; font-size: 9px; }
 .inv-slot .n { font-size: 16px; }
 .inv-slot.active { border-color: var(--amarillo); box-shadow: 0 0 8px rgba(217,198,110,.3); }
+#btn-sound-menu { background: transparent; border: none; color: var(--gris);
+  cursor: pointer; font-size: 13px; padding: 0 2px; }
+#btn-sound-menu:hover { color: var(--amarillo); }
+#sound-menu { position: absolute; inset: 0; background: rgba(0,0,0,.6);
+  display: flex; align-items: center; justify-content: center; z-index: 18; }
+.sound-row { display: flex; align-items: center; gap: 12px; margin: 12px 0; font-size: 13px; }
+.sound-row label { width: 130px; color: var(--hueso); }
+.sound-row input { flex: 1; -webkit-appearance: none; appearance: none; height: 4px;
+  background: #3a352a; outline: none; cursor: pointer; }
+.sound-row input::-webkit-slider-thumb { -webkit-appearance: none; appearance: none;
+  width: 13px; height: 13px; background: var(--amarillo); border: 1px solid #0a0906; cursor: pointer; }
+.sound-row span { width: 36px; text-align: right; color: var(--gris); font-size: 12px; }
+
+#minimap { position: absolute; top: 40px; right: 12px; background: rgba(6,5,3,.82);
+  border: 1px solid var(--borde); cursor: pointer; image-rendering: pixelated; }
+#minimap:hover { border-color: var(--amarillo-osc); }
+#minimap-big { position: absolute; inset: 0; background: rgba(0,0,0,.75);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 16; cursor: pointer; }
+#minimap-big canvas { background: rgba(6,5,3,.95); border: 1px solid var(--amarillo-osc);
+  image-rendering: pixelated; max-width: 84vmin; max-height: 84vmin; }
+#minimap-big p { color: var(--gris); font-size: 12px; margin-top: 10px; }
+
 #hud-keys { position: absolute; top: 38px; left: 50%; transform: translateX(-50%);
   font-size: 10.5px; color: #7a7462; background: rgba(8,7,4,.5);
   padding: 2px 12px; border: 1px solid rgba(58,53,42,.5); pointer-events: none;

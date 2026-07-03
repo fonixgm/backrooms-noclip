@@ -67,7 +67,7 @@
   "url": "https://backrooms.fandom.com/wiki/Level_0",
   "estilo": {
    "pared": "papel_rayas",
-   "suelo": "moqueta"
+   "suelo": "moqueta_humeda"
   },
   "particulas": "polvo",
   "sonido": "hum_clasico"
@@ -148,6 +148,13 @@
    },
    {
     "id": "botiquin",
+    "n": [
+     0,
+     1
+    ]
+   },
+   {
+    "id": "tuberia",
     "n": [
      0,
      1
@@ -242,6 +249,13 @@
     "n": [
      1,
      2
+    ]
+   },
+   {
+    "id": "tuberia",
+    "n": [
+     1,
+     1
     ]
    }
   ],
@@ -392,6 +406,13 @@
      0,
      1
     ]
+   },
+   {
+    "id": "trebol",
+    "n": [
+     0,
+     1
+    ]
    }
   ],
   "salidas": [
@@ -490,6 +511,13 @@
     "id": "agua_almendras",
     "n": [
      1,
+     1
+    ]
+   },
+   {
+    "id": "guante_paralisis",
+    "n": [
+     0,
      1
     ]
    }
@@ -658,6 +686,13 @@
    },
    {
     "id": "amuleto",
+    "n": [
+     0,
+     1
+    ]
+   },
+   {
+    "id": "guante_paralisis",
     "n": [
      0,
      1
@@ -1031,6 +1066,13 @@
    },
    {
     "id": "chaqueta",
+    "n": [
+     0,
+     1
+    ]
+   },
+   {
+    "id": "detector",
     "n": [
      0,
      1
@@ -1593,6 +1635,13 @@
      0,
      1
     ]
+   },
+   {
+    "id": "trebol",
+    "n": [
+     0,
+     1
+    ]
    }
   ],
   "salidas": [],
@@ -1645,6 +1694,13 @@
     "id": "agua_almendras",
     "n": [
      1,
+     1
+    ]
+   },
+   {
+    "id": "fuego_griego",
+    "n": [
+     0,
      1
     ]
    }
@@ -2082,6 +2138,13 @@
      1,
      2
     ]
+   },
+   {
+    "id": "fuego_griego",
+    "n": [
+     0,
+     1
+    ]
    }
   ],
   "salidas": [],
@@ -2211,6 +2274,20 @@
     "id": "agua_almendras",
     "n": [
      1,
+     1
+    ]
+   },
+   {
+    "id": "tuberia",
+    "n": [
+     0,
+     1
+    ]
+   },
+   {
+    "id": "detector",
+    "n": [
+     0,
      1
     ]
    }

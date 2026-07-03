@@ -8,10 +8,14 @@
   "velocidad": 2,
   "dano": 55,
   "danoCordura": 15,
-  "deteccion": { "tipo": "oscuridad", "radio": 7 },
+  "deteccion": {
+   "tipo": "oscuridad",
+   "radio": 7
+  },
   "comportamiento": "acecho_oscuridad",
   "evitar": "Nunca lo pierdas de vista y permanece en zonas iluminadas: no puede cazarte bajo la luz.",
-  "url": "https://backrooms.fandom.com/wiki/Entity_3"
+  "url": "https://backrooms.fandom.com/wiki/Entity_3",
+  "vida": 60
  },
  "faceling": {
   "id": "faceling",
@@ -22,10 +26,14 @@
   "velocidad": 1,
   "dano": 12,
   "danoCordura": 4,
-  "deteccion": { "tipo": "contacto", "radio": 1 },
+  "deteccion": {
+   "tipo": "contacto",
+   "radio": 1
+  },
   "comportamiento": "errante",
   "evitar": "No los toques ni bloquees su camino; si no los molestas, te ignoran.",
-  "url": "https://backrooms.fandom.com/wiki/Entity_9"
+  "url": "https://backrooms.fandom.com/wiki/Entity_9",
+  "vida": 25
  },
  "hound": {
   "id": "hound",
@@ -36,10 +44,14 @@
   "velocidad": 2,
   "dano": 30,
   "danoCordura": 6,
-  "deteccion": { "tipo": "vista", "radio": 8 },
+  "deteccion": {
+   "tipo": "vista",
+   "radio": 8
+  },
   "comportamiento": "persigue",
   "evitar": "Rompe su línea de visión girando esquinas; pierden el rastro con facilidad.",
-  "url": "https://backrooms.fandom.com/wiki/Entity_8"
+  "url": "https://backrooms.fandom.com/wiki/Entity_8",
+  "vida": 40
  },
  "deathmoth": {
   "id": "deathmoth",
@@ -50,10 +62,14 @@
   "velocidad": 2,
   "dano": 18,
   "danoCordura": 3,
-  "deteccion": { "tipo": "luz", "radio": 10 },
+  "deteccion": {
+   "tipo": "luz",
+   "radio": 10
+  },
   "comportamiento": "atraida_luz",
   "evitar": "Apaga la linterna cuando oigas su aleteo: sin luz pierden todo interés en ti.",
-  "url": "https://backrooms.fandom.com/wiki/Entity_4"
+  "url": "https://backrooms.fandom.com/wiki/Entity_4",
+  "vida": 25
  },
  "clump": {
   "id": "clump",
@@ -64,10 +80,14 @@
   "velocidad": 0,
   "dano": 45,
   "danoCordura": 12,
-  "deteccion": { "tipo": "adyacente", "radio": 1 },
+  "deteccion": {
+   "tipo": "adyacente",
+   "radio": 1
+  },
   "comportamiento": "emboscada",
   "evitar": "Desconfía de rincones, rejillas y bultos junto a las paredes: no te acerques a lo que no puedas identificar.",
-  "url": "https://backrooms.fandom.com/wiki/Entity_5"
+  "url": "https://backrooms.fandom.com/wiki/Entity_5",
+  "vida": 50
  },
  "duller": {
   "id": "duller",
@@ -78,10 +98,14 @@
   "velocidad": 1,
   "dano": 20,
   "danoCordura": 18,
-  "deteccion": { "tipo": "vista", "radio": 6 },
+  "deteccion": {
+   "tipo": "vista",
+   "radio": 6
+  },
   "comportamiento": "persigue",
   "evitar": "Son lentos pero incansables: mantén distancia y no dejes que te arrinconen.",
-  "url": "https://backrooms.fandom.com/wiki/Entity_6"
+  "url": "https://backrooms.fandom.com/wiki/Entity_6",
+  "vida": 45
  },
  "skinstealer": {
   "id": "skinstealer",
@@ -92,10 +116,14 @@
   "velocidad": 1,
   "dano": 40,
   "danoCordura": 20,
-  "deteccion": { "tipo": "vista", "radio": 5 },
+  "deteccion": {
+   "tipo": "vista",
+   "radio": 5
+  },
   "comportamiento": "imita",
   "evitar": "Sospecha de cualquier «persona» que te espere inmóvil. Si parece amistosa y no habla, no te acerques.",
-  "url": "https://backrooms.fandom.com/wiki/Entity_10"
+  "url": "https://backrooms.fandom.com/wiki/Entity_10",
+  "vida": 45
  },
  "window": {
   "id": "window",
@@ -106,10 +134,14 @@
   "velocidad": 0,
   "dano": 35,
   "danoCordura": 8,
-  "deteccion": { "tipo": "adyacente", "radio": 1 },
+  "deteccion": {
+   "tipo": "adyacente",
+   "radio": 1
+  },
   "comportamiento": "estatica_trampa",
   "evitar": "No te acerques a ventanas en niveles donde no debería haberlas.",
-  "url": "https://backrooms.fandom.com/wiki/Entity_2"
+  "url": "https://backrooms.fandom.com/wiki/Entity_2",
+  "vida": 40
  },
  "anethika": {
   "id": "anethika",
@@ -120,10 +152,14 @@
   "velocidad": 3,
   "dano": 60,
   "danoCordura": 15,
-  "deteccion": { "tipo": "vista", "radio": 9 },
+  "deteccion": {
+   "tipo": "vista",
+   "radio": 9
+  },
   "comportamiento": "persigue",
   "evitar": "Casi imposible dejarlo atrás corriendo: escóndete antes de que te vea, o reza.",
-  "url": "https://backrooms.fandom.com/wiki/Entity_22"
+  "url": "https://backrooms.fandom.com/wiki/Entity_22",
+  "vida": 80
  },
  "spine": {
   "id": "spine",
@@ -134,10 +170,14 @@
   "velocidad": 1,
   "dano": 25,
   "danoCordura": 10,
-  "deteccion": { "tipo": "sigilo", "radio": 3 },
+  "deteccion": {
+   "tipo": "sigilo",
+   "radio": 3
+  },
   "comportamiento": "acecho_oscuridad",
   "evitar": "Observa el suelo y las esquinas: parecen escombros hasta que se mueven.",
-  "url": "https://backrooms.fandom.com/wiki/Entity_35"
+  "url": "https://backrooms.fandom.com/wiki/Entity_35",
+  "vida": 35
  },
  "needlelimb": {
   "id": "needlelimb",
@@ -148,10 +188,14 @@
   "velocidad": 1,
   "dano": 15,
   "danoCordura": 30,
-  "deteccion": { "tipo": "vista", "radio": 7 },
+  "deteccion": {
+   "tipo": "vista",
+   "radio": 7
+  },
   "comportamiento": "persigue",
   "evitar": "Huele a cuerpos podridos: si notas ese hedor, cambia de dirección de inmediato.",
-  "url": "https://backrooms.fandom.com/wiki/Entity_38"
+  "url": "https://backrooms.fandom.com/wiki/Entity_38",
+  "vida": 40
  },
  "silverslime": {
   "id": "silverslime",
@@ -162,10 +206,14 @@
   "velocidad": 1,
   "dano": 50,
   "danoCordura": 5,
-  "deteccion": { "tipo": "adyacente", "radio": 2 },
+  "deteccion": {
+   "tipo": "adyacente",
+   "radio": 2
+  },
   "comportamiento": "estatica_trampa",
   "evitar": "Jamás pises un charco brillante. Ni siquiera para comprobar si es agua de almendras.",
-  "url": "https://backrooms.fandom.com/wiki/Entity_44"
+  "url": "https://backrooms.fandom.com/wiki/Entity_44",
+  "vida": 30
  },
  "aranea": {
   "id": "aranea",
@@ -176,10 +224,14 @@
   "velocidad": 3,
   "dano": 55,
   "danoCordura": 12,
-  "deteccion": { "tipo": "vista", "radio": 8 },
+  "deteccion": {
+   "tipo": "vista",
+   "radio": 8
+  },
   "comportamiento": "persigue",
   "evitar": "El sonido metálico te avisa antes de verla: úsalo para huir en dirección contraria.",
-  "url": "https://backrooms.fandom.com/wiki/Entity_62"
+  "url": "https://backrooms.fandom.com/wiki/Entity_62",
+  "vida": 70
  },
  "predatorydoor": {
   "id": "predatorydoor",
@@ -190,10 +242,14 @@
   "velocidad": 0,
   "dano": 40,
   "danoCordura": 15,
-  "deteccion": { "tipo": "adyacente", "radio": 1 },
+  "deteccion": {
+   "tipo": "adyacente",
+   "radio": 1
+  },
   "comportamiento": "estatica_trampa",
   "evitar": "Examina las salidas antes de cruzarlas: una puerta que respira no es una puerta.",
-  "url": "https://backrooms.fandom.com/wiki/Entity_63"
+  "url": "https://backrooms.fandom.com/wiki/Entity_63",
+  "vida": 50
  },
  "cell": {
   "id": "cell",
@@ -204,10 +260,14 @@
   "velocidad": 2,
   "dano": 35,
   "danoCordura": 8,
-  "deteccion": { "tipo": "vista", "radio": 7 },
+  "deteccion": {
+   "tipo": "vista",
+   "radio": 7
+  },
   "comportamiento": "persigue",
   "evitar": "Flotan en línea recta: usa muros y esquinas para cortar su trayectoria.",
-  "url": "https://backrooms.fandom.com/wiki/Entity_64"
+  "url": "https://backrooms.fandom.com/wiki/Entity_64",
+  "vida": 35
  },
  "hunter": {
   "id": "hunter",
@@ -218,9 +278,13 @@
   "velocidad": 2,
   "dano": 70,
   "danoCordura": 20,
-  "deteccion": { "tipo": "global", "radio": 99 },
+  "deteccion": {
+   "tipo": "global",
+   "radio": 99
+  },
   "comportamiento": "cazador",
   "evitar": "No puedes esconderte para siempre: encuentra una salida antes de que sus pasos te alcancen.",
-  "url": "https://backrooms.fandom.com/wiki/Level_14"
+  "url": "https://backrooms.fandom.com/wiki/Level_14",
+  "vida": 150
  }
 }

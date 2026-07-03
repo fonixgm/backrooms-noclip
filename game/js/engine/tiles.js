@@ -35,10 +35,19 @@
     ctx.fillStyle = shade(pal.suelo, 0.92 + variant * 0.06);
     ctx.fillRect(0, 0, TILE, TILE);
     switch (estilo) {
+      case 'moqueta_humeda': // Level 0: moqueta empapada con cercos de humedad
+        ctx.globalAlpha = 0.3;
+        ctx.fillStyle = shade(pal.detalle, 0.75);
+        ctx.beginPath();
+        ctx.ellipse(12 + (variant * 13) % 24, 14 + (variant * 7) % 20, 14, 9, 0.4, 0, 7);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        // sin break: continúa con la textura de moqueta
       case 'moqueta':
         speckle(ctx, rng, shade(pal.suelo, 0.78), 170, 0, 0, TILE, TILE);
         speckle(ctx, rng, shade(pal.suelo, 1.14), 110, 0, 0, TILE, TILE);
-        if (variant === 2) speckle(ctx, rng, shade(pal.detalle, 0.9), 40, 8, 8, 32, 32, 2);
+        if (variant === 2 || estilo === 'moqueta_humeda')
+          speckle(ctx, rng, shade(pal.detalle, 0.9), 40, 8, 8, 32, 32, 2);
         break;
       case 'moqueta_cenefa':
         speckle(ctx, rng, shade(pal.suelo, 0.8), 150, 0, 0, TILE, TILE);

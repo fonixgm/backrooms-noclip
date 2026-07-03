@@ -55,7 +55,10 @@
     const sprite = Sprites.get(def.glyph, frame);
     ctx.save();
     ctx.globalAlpha = Math.max(0.25, Math.min(1, lit + 0.25));
-    if (e._hitT && t - e._hitT < 170) ctx.filter = 'brightness(2.4)';
+    const filtros = [];
+    if (e._hitT && t - e._hitT < 170) filtros.push('brightness(2.4)');
+    if (e.paralizada > 0) filtros.push('hue-rotate(160deg) saturate(1.6) brightness(1.25)');
+    if (filtros.length) ctx.filter = filtros.join(' ');
     if (sprite) {
       ctx.drawImage(sprite, Math.round(cx - 24), Math.round(cy - 28));
       ctx.restore();
@@ -538,21 +541,35 @@
       }
     }
 
-    // PASE 3: oscuridad Darkwood por casilla
-    for (let y = y0; y <= y1; y++)
-      for (let x = x0; x <= x1; x++) {
-        const idx = y * g.w + x;
-        const light = world.light[idx];
-        const seen = world.explored[idx];
-        let a;
-        if (light > 0) a = (1 - light * fl) * (0.2 + dark * 0.72);
-        else if (seen) a = 0.9;
-        else a = 1;
-        if (a > 0.01) {
-          ctx.fillStyle = `rgba(0,0,0,${a.toFixed(3)})`;
-          ctx.fillRect(x * TILE - cam.x, y * TILE - cam.y, TILE, TILE);
-        }
+    // PASE 3: oscuridad Darkwood SUAVE — canvas de luz de baja resolución
+    // (1 píxel por casilla) escalado con interpolación bilineal: gradientes
+    // continuos en vez de cuadros.
+    {
+      const lw = x1 - x0 + 1, lh = y1 - y0 + 1;
+      if (!frame._lc || frame._lc.width < lw || frame._lc.height < lh) {
+        frame._lc = document.createElement('canvas');
+        frame._lc.width = Math.max(lw, 40);
+        frame._lc.height = Math.max(lh, 40);
       }
+      const lc = frame._lc;
+      const lctx = lc.getContext('2d');
+      const img = lctx.createImageData(lw, lh);
+      for (let y = y0; y <= y1; y++)
+        for (let x = x0; x <= x1; x++) {
+          const idx = y * g.w + x;
+          const light = world.light[idx];
+          const seen = world.explored[idx];
+          let a;
+          if (light > 0) a = (1 - light * fl) * (0.2 + dark * 0.72);
+          else if (seen) a = 0.9;
+          else a = 1;
+          const o = ((y - y0) * lw + (x - x0)) * 4;
+          img.data[o + 3] = Math.round(a * 255); // negro con alpha
+        }
+      lctx.putImageData(img, 0, 0);
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(lc, 0, 0, lw, lh, x0 * TILE - cam.x, y0 * TILE - cam.y, lw * TILE, lh * TILE);
+    }
 
     // partículas ambientales del nivel
     if (!window.NOFX) drawParticles(world, t);

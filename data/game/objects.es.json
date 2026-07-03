@@ -3,7 +3,10 @@
   "id": "agua_almendras",
   "nombre": "Agua de almendras",
   "descripcion": "El recurso más preciado de las Backrooms. Sacia la sed y calma la mente.",
-  "efecto": { "sed": 45, "cordura": 15 },
+  "efecto": {
+   "sed": 45,
+   "cordura": 15
+  },
   "color": "#e8d8a0",
   "url": "https://backrooms.fandom.com/wiki/Object_1"
  },
@@ -11,36 +14,96 @@
   "id": "botiquin",
   "nombre": "Botiquín",
   "descripcion": "Vendas, antiséptico y suerte. Restaura la salud.",
-  "efecto": { "salud": 40 },
+  "efecto": {
+   "salud": 40
+  },
   "color": "#d05050"
  },
  "linterna": {
   "id": "linterna",
   "nombre": "Linterna",
   "descripcion": "Amplía tu radio de visión mientras está encendida. Su luz atrae a las Deathmoths.",
-  "efecto": { "toggle": "luz" },
+  "efecto": {
+   "toggle": "luz"
+  },
   "color": "#ffe060"
  },
  "chaqueta": {
   "id": "chaqueta",
   "nombre": "Chaqueta térmica",
   "descripcion": "Anula el daño por frío de los niveles helados mientras la lleves.",
-  "efecto": { "pasivo": "abrigo" },
+  "efecto": {
+   "pasivo": "abrigo"
+  },
   "color": "#6090c0"
  },
  "amuleto": {
   "id": "amuleto",
   "nombre": "Recuerdo del hogar",
   "descripcion": "Una foto, unas llaves, un tique de compra. Un ancla a la realidad que restaura la cordura.",
-  "efecto": { "cordura": 55 },
+  "efecto": {
+   "cordura": 55
+  },
   "color": "#c0a0e0"
  },
  "llave_nivel": {
   "id": "llave_nivel",
   "nombre": "Llave de Nivel (Object 2)",
   "descripcion": "Abre las puertas de acero de The Hub. Un solo uso: elige bien tu destino.",
-  "efecto": { "pasivo": "llave" },
+  "efecto": {
+   "pasivo": "llave"
+  },
   "color": "#e0b040",
   "url": "https://backrooms.fandom.com/wiki/Object_2"
+ },
+ "tuberia": {
+  "id": "tuberia",
+  "nombre": "Tubería oxidada",
+  "descripcion": "Un tramo de tubería arrancado de Level 2. Mientras la lleves, muévete HACIA una entidad adyacente para golpearla.",
+  "efecto": {
+   "pasivo": "arma",
+   "dano": 18
+  },
+  "color": "#8a6a50"
+ },
+ "fuego_griego": {
+  "id": "fuego_griego",
+  "nombre": "Fuego griego (Object 5)",
+  "descripcion": "Sustancia incendiaria legendaria de las Backrooms. Un solo uso: quema y ahuyenta a todas las entidades cercanas.",
+  "efecto": {
+   "activo": "fuego"
+  },
+  "color": "#ff8a30",
+  "url": "https://backrooms.fandom.com/wiki/Object_5"
+ },
+ "guante_paralisis": {
+  "id": "guante_paralisis",
+  "nombre": "Guante de parálisis (Object 69)",
+  "descripcion": "Un guante que paraliza lo que toca. Un solo uso: inmoviliza durante 6 turnos a las entidades adyacentes.",
+  "efecto": {
+   "activo": "paralisis"
+  },
+  "color": "#60c8e8",
+  "url": "https://backrooms.fandom.com/wiki/Object_69"
+ },
+ "detector": {
+  "id": "detector",
+  "nombre": "Detector de entidades (Object 30)",
+  "descripcion": "Detector retráctil del M.E.G. Mientras lo lleves, las entidades cercanas aparecen en tu minimapa.",
+  "efecto": {
+   "pasivo": "detector"
+  },
+  "color": "#50e8a0",
+  "url": "https://backrooms.fandom.com/wiki/Object_30"
+ },
+ "trebol": {
+  "id": "trebol",
+  "nombre": "Trébol de la suerte (Object 13)",
+  "descripcion": "Un Luck Clover auténtico. Mientras lo lleves, +2 a todas tus tiradas de dado.",
+  "efecto": {
+   "pasivo": "suerte"
+  },
+  "color": "#68d868",
+  "url": "https://backrooms.fandom.com/wiki/Object_13"
  }
 }

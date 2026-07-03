@@ -19,6 +19,7 @@ Guía de todo lo que puedes hacer/modificar tú mismo, sin programar.
 | J | Diario de ruta de la partida |
 | C | Códice del Errante (tu expediente permanente) |
 | M | Silenciar / activar el sonido |
+| N | Ampliar el minimapa (también con clic sobre él) |
 | 1-6 | Usar objeto del inventario |
 
 *(La tira de teclas también aparece siempre en la parte superior de la pantalla de juego.)*
@@ -26,6 +27,18 @@ Guía de todo lo que puedes hacer/modificar tú mismo, sin programar.
 - **Objetivo**: encontrar una de las rarísimas rutas de escape (⭐). La muerte es permanente.
 - Los muebles con **brillo dorado** se pueden registrar con `E`.
 - En niveles seguros (peligro 0-1) la cordura se recupera sola poco a poco: úsalos para descansar.
+- **Minimapa** (esquina superior derecha): dibuja solo lo que has explorado. Si el nivel
+  reordena sus pasillos (Level 0, 27…), el minimapa lo refleja. Clic o `N` para ampliarlo.
+
+### Combate y defensa
+
+- **Tubería oxidada** 🔧: mientras la lleves, **muévete HACIA una entidad adyacente para
+  golpearla** (daño + retroceso). Ojo: golpear al Silver Slime te salpica ácido.
+- **Fuego griego** 🔥 (Object 5): úsalo (tecla de su ranura) → quema y ahuyenta todo en radio 3. Un uso.
+- **Guante de parálisis** 🧤 (Object 69): úsalo → inmoviliza 6 turnos a lo adyacente. Un uso.
+- **Detector de entidades** 📡 (Object 30): pasivo → entidades cercanas en el minimapa.
+- **Trébol de la suerte** 🍀 (Object 13): pasivo → +2 a todas tus tiradas de dado.
+- Matar entidades cuesta un poco de cordura: en las Backrooms nada sale gratis.
 
 ## 2. Semillas (partidas compartibles)
 
@@ -68,7 +81,9 @@ de X»*. Claude la recorta, la escala a 48×48, le monta la hoja de frames y la 
 Todo el sonido del juego (pasos, golpes, dados, ambientes…) está **sintetizado por código**:
 no necesitas hacer nada para que suene. Tecla `M` para silenciar.
 
-- **Volumen**: slider 🔊 en el HUD del juego y en el título (se recuerda entre sesiones).
+- **Volumen**: slider 🔊 en el HUD y **menú de ajustes ⚙** (junto al slider, o botón en el título)
+  con tres canales separados: **General**, **Efectos** y **Ambiente/música**. Todo se recuerda.
+- Al pasar de nivel (tarjeta de presentación) el ambiente se detiene y suena un pad suave.
 - **Sustituir un efecto**: pon un `.mp3`/`.ogg`/`.wav` en `game/assets/sounds/` con el nombre
   del efecto (`golpe.mp3`, `paso.mp3`…). Lista completa en el `LEEME.txt` de esa carpeta.
 - **Ambientes por nivel**: guarda un archivo como `game/assets/sounds/niveles/level-X.mp3`

@@ -135,16 +135,30 @@
     },
     equipo_asesino: {
       nombre: 'Equipamiento hostil',
-      icono: '⚙',
-      desc: 'El instrumental del nivel cobra vida y ataca sin aviso. Tirada de dado.',
+      icono: '🔪',
+      desc: 'El instrumental quirúrgico del nivel cobra vida y se lanza contra ti. Tirada de dado para esquivar.',
       turno(world, rng) {
         if (world.turn % 26 === 13) {
-          world.rollDice('El instrumental oxidado tiembla…', (d) => {
+          world.log('El instrumental quirúrgico se eleva en el aire a tu alrededor…', 'danger');
+          world.rollDice('🔪 ¡Un bisturí apunta hacia ti! Tira para esquivar…', (d) => {
+            const p = world.player;
+            const dir = rng.pick([[7, 0], [-7, 0], [0, 6], [5, -5], [-5, -5]]);
+            if (window.Sfx) Sfx.play('bisturi');
             if (d <= 8) {
-              world.hurt(10, 'un bisturí volador', true);
-              world.log(`Dado: ${d}. Un bisturí cruza el aire y te alcanza.`, 'danger');
+              if (window.Effects) Effects.proyectil(p.x + dir[0], p.y + dir[1], p.x, p.y, '#d8e0e8');
+              setTimeout(() => {
+                world.hurt(10, 'un bisturí volador', true);
+                if (window.Effects) {
+                  Effects.particles(p.x, p.y, '#c04030', 10);
+                  Effects.doShake(4, 140);
+                }
+                world.log(`Dado: ${d}. ¡El bisturí te alcanza! (−10 salud)`, 'danger');
+              }, 380);
             } else {
-              world.log(`Dado: ${d}. El instrumental cae inerte. Esta vez.`, 'good');
+              // pasa rozando y cae al suelo a medio camino
+              if (window.Effects)
+                Effects.proyectil(p.x + dir[0], p.y + dir[1], p.x - dir[0] * 0.3, p.y - dir[1] * 0.3 + 0.6, '#d8e0e8');
+              world.log(`Dado: ${d}. Te agachas a tiempo: el bisturí pasa silbando y cae con un tintineo.`, 'good');
             }
           });
         }

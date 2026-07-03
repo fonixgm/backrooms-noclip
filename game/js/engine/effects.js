@@ -27,6 +27,11 @@
     list.push({ type: 'flash', wx, wy, color, t0: now(), dur: 400 });
   }
 
+  // proyectil visible (bisturí volador de Level 14, etc.)
+  function proyectil(x0, y0, x1, y1, color) {
+    list.push({ type: 'proy', x0, y0, x1, y1, color, t0: now(), dur: 380 });
+  }
+
   function doShake(mag = 5, dur = 160) {
     shake = { mag, until: now() + dur };
   }
@@ -67,10 +72,34 @@
         ctx.beginPath();
         ctx.arc(sx, sy, 6 + k * 20, 0, 7);
         ctx.stroke();
+      } else if (e.type === 'proy') {
+        // hoja metálica girando hacia el objetivo, con estela
+        const px = (e.x0 + (e.x1 - e.x0) * k) * TILE - camX + TILE / 2;
+        const py = (e.y0 + (e.y1 - e.y0) * k) * TILE - camY + TILE / 2;
+        const ang = Math.atan2(e.y1 - e.y0, e.x1 - e.x0) + k * 9;
+        ctx.globalAlpha = 0.35;
+        ctx.strokeStyle = e.color;
+        ctx.beginPath();
+        ctx.moveTo(px - Math.cos(ang) * 16, py - Math.sin(ang) * 16);
+        ctx.lineTo(px, py);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        ctx.save();
+        ctx.translate(px, py);
+        ctx.rotate(ang);
+        ctx.fillStyle = e.color;                      // hoja
+        ctx.beginPath();
+        ctx.moveTo(7, 0); ctx.lineTo(-3, -2.5); ctx.lineTo(-3, 2.5);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#5a4a3a';                    // mango
+        ctx.fillRect(-8, -1.5, 5, 3);
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';      // destello
+        ctx.fillRect(2, -0.7, 3, 1.4);
+        ctx.restore();
       }
       ctx.restore();
     }
   }
 
-  window.Effects = { number, particles, flash, doShake, shakeOffset, draw, clear() { list = []; } };
+  window.Effects = { number, particles, flash, proyectil, doShake, shakeOffset, draw, clear() { list = []; } };
 })();

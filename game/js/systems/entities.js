@@ -15,6 +15,9 @@
         dormida: def.comportamiento === 'cazador' ? 22 + rng.int(0, 8) : 0,
         pasoExtra: 0,
         viva: true,
+        vida: def.vida ?? 40,
+        paralizada: 0,           // turnos inmovilizada (guante de parálisis)
+        huyendo: 0,              // turnos huyendo (fuego griego)
       };
     });
   }
@@ -99,8 +102,30 @@
     if (def.comportamiento === 'emboscada') e.revelada = true;
   }
 
+  // un paso ALEJÁNDOSE del jugador (huida por el fuego griego)
+  function stepAway(world, e) {
+    const g = world.map.grid, dm = world.dmap;
+    let best = null, bestV = dm[e.y * g.w + e.x];
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = e.x + dx, ny = e.y + dy;
+      if (!tileWalkable(world, nx, ny) || occupied(world, nx, ny, e)) continue;
+      const v = dm[ny * g.w + nx];
+      if (v > bestV) { bestV = v; best = [nx, ny]; }
+    }
+    if (best) { e.x = best[0]; e.y = best[1]; }
+  }
+
   function stepEntity(world, e, rng) {
     const comp = e.def.comportamiento;
+
+    // estados alterados por objetos de defensa
+    if (e.paralizada > 0) { e.paralizada--; return; }
+    if (e.huyendo > 0) {
+      e.huyendo--;
+      stepAway(world, e);
+      if (e.def.velocidad > 1) stepAway(world, e);
+      return;
+    }
 
     // el Cazador duerme al principio: pasos lejanos que se acercan
     if (comp === 'cazador') {

@@ -45,7 +45,11 @@
       const id = world.player.inv[i];
       if (id) {
         const def = world.data.objects[id];
-        const ic = { agua_almendras: '🥤', botiquin: '🩹', linterna: '🔦', chaqueta: '🧥', amuleto: '🖼', llave_nivel: '🗝' }[id] || '❓';
+        const ic = {
+          agua_almendras: '🥤', botiquin: '🩹', linterna: '🔦', chaqueta: '🧥',
+          amuleto: '🖼', llave_nivel: '🗝', tuberia: '🔧', fuego_griego: '🔥',
+          guante_paralisis: '🧤', detector: '📡', trebol: '🍀',
+        }[id] || '❓';
         slot.innerHTML = `<span class="k">${i + 1}</span><span class="n">${ic}</span>`;
         slot.title = `${def.nombre} — ${def.descripcion}`;
         if (id === 'linterna' && world.player.luz) slot.classList.add('active');
@@ -63,6 +67,7 @@
   // ---------- tarjeta de nivel ----------
   function showLevelCard(def, cb) {
     show('card');
+    if (window.Sfx) { Sfx.play('ui'); Sfx.idle(true); } // pad suave entre niveles
     const colores = ['#3fae6a', '#8bb944', '#d9a531', '#e0742c', '#d94a35', '#a12744'];
     $('card-danger').style.background = colores[def.peligro] || '#888';
     $('card-name').textContent = def.nombre;
@@ -87,7 +92,11 @@
       rulesEl.appendChild(span);
     }
     $('card-wiki').href = def.url;
-    $('btn-enter').onclick = () => { show('game'); cb(); };
+    $('btn-enter').onclick = () => {
+      if (window.Sfx) Sfx.idle(false);
+      show('game');
+      cb();
+    };
   }
 
   // ---------- dado ----------
@@ -232,6 +241,7 @@
   // ---------- fin ----------
   function showEnd(victoria, causa) {
     show('end');
+    if (window.Sfx) setTimeout(() => Sfx.idle(true, victoria ? 'victoria' : 'muerte'), 1600);
     const t = $('end-title');
     t.textContent = victoria ? 'HAS ESCAPADO' : 'FIN DEL TRAYECTO';
     t.className = victoria ? 'victoria' : 'muerte';
