@@ -7,14 +7,16 @@ fiel al lore: niveles, entidades, salidas y mecánicas salen de las páginas rea
 
 **Doble clic en `game/index.html`.** No hace falta servidor, ni internet, ni instalar nada.
 
-- **Vista isométrica** (tipo Zomboid): ↑ noreste · ← noroeste · ↓ suroeste · → sureste
 - **WASD / flechas**: moverte (cada paso = 1 turno; el mundo solo avanza cuando tú lo haces)
-- **E**: interactuar · **Espacio**: esperar · **F**: linterna · **R**: volver al nivel anterior
+- **E**: interactuar — cruzar salidas y **registrar muebles** (taquillas, archivadores… con tirada de dado)
+- **Espacio**: esperar · **F**: linterna · **R**: volver al nivel anterior
 - **J**: diario de ruta · **C**: Códice del Errante · **1-6**: usar objeto del inventario
 - **Perfiles**: crea tu usuario en el título; el Códice registra para siempre los niveles
   que transitas (con su descripción), veces visitados, mejores marcas y escapes.
   Exportable/importable como JSON.
 - Escribe una **semilla** en el título para partidas reproducibles (compártela con el chat).
+- **Sprites personalizados**: cualquier PNG en `game/assets/sprites/` sustituye al pixel-art
+  integrado (ver `LEEME.txt` en esa carpeta).
 
 Objetivo: encontrar una de las rarísimas rutas de escape de vuelta a la realidad.
 La muerte es permanente: despiertas otra vez en Level 0.

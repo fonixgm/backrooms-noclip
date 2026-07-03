@@ -1,0 +1,18 @@
+SPRITES PERSONALIZADOS
+======================
+
+Coloca aquí archivos PNG para sustituir cualquier sprite del juego sin tocar código.
+
+Formato:
+ - Nombre del archivo: <id>.png  (ej.: hound.png, player_down.png, faceling.png)
+ - Hoja horizontal de frames de 48×48 px (ej.: 96×48 = 2 frames de animación).
+ - Fondo transparente.
+
+IDs disponibles:
+ Jugador:   player_down, player_up, player_side  (side mira a la derecha; se voltea solo)
+ Entidades: faceling, hound, deathmoth, clump, duller, skinstealer, window,
+            anethika, spine, needlelimb, silverslime, aranea, predatorydoor,
+            cell, hunter
+ (El smiler no usa sprite: son sus ojos y sonrisa brillando en la oscuridad.)
+
+Si el PNG existe, el juego lo usa automáticamente; si no, usa el pixel-art integrado.

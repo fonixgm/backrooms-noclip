@@ -143,6 +143,8 @@
   world.hurt = function (n, causa, ambiental) {
     if (world.over) return;
     world.player.salud = Math.max(0, world.player.salud - n);
+    world.player._hitT = performance.now();
+    if (window.Effects) Effects.number(world.player.x, world.player.y, '−' + n, '#e86a5a');
     world.ui.updateHUD();
     world.ui.flashDamage();
     if (world.player.salud <= 0) die(`Has muerto: ${causa} acabó contigo.`);
@@ -150,6 +152,9 @@
   world.sanity = function (n) {
     if (world.over) return;
     world.player.cordura = Math.max(0, Math.min(100, world.player.cordura + n));
+    if (window.Effects && n !== 0)
+      Effects.number(world.player.x, world.player.y - 0.4,
+        (n > 0 ? '+' : '−') + Math.abs(n) + ' ☯', n > 0 ? '#9ee8a0' : '#b08ae8');
     world.ui.updateHUD();
     if (world.player.cordura <= 0)
       die('Tu mente se ha quebrado. Te has convertido en una cosa más de las Backrooms.');
@@ -178,7 +183,7 @@
   function startRun(seed) {
     world.runSeed = seed || RNG.randomSeed();
     world.player = {
-      x: 0, y: 0, rx: 0, ry: 0,
+      x: 0, y: 0, rx: 0, ry: 0, dir: 'down', flip: false,
       salud: 100, cordura: 100, sed: 100, hambre: 100,
       inv: [], luz: false, viva: true,
     };
@@ -267,6 +272,10 @@
           it.taken = true;
           world.player.inv.push(it.id);
           world.log(`Recoges: ${world.data.objects[it.id].nombre}.`, 'good');
+          if (window.Effects) {
+            Effects.flash(it.x, it.y, world.data.objects[it.id].color);
+            Effects.number(it.x, it.y, world.data.objects[it.id].nombre, '#a8d8a0');
+          }
         }
       }
     }
@@ -304,6 +313,10 @@
     if (world.busy || world.over) return;
     const reglas = world.level.reglas || [];
     if (reglas.includes('controles_invertidos')) { dx = -dx; dy = -dy; }
+    // orientación del sprite
+    if (dy > 0) world.player.dir = 'down';
+    else if (dy < 0) world.player.dir = 'up';
+    else if (dx !== 0) { world.player.dir = 'side'; world.player.flip = dx < 0; }
     const pasos = reglas.includes('gravedad_baja') ? 2 : 1;
 
     for (let i = 0; i < pasos; i++) {
@@ -337,8 +350,50 @@
   function interact() {
     if (world.busy || world.over) return;
     const ex = world.map.exits.find((e) => e.x === world.player.x && e.y === world.player.y);
-    if (ex) world.ui.showExitModal(ex.def);
-    else world.log('No hay nada con lo que interactuar aquí.', 'event');
+    if (ex) { world.ui.showExitModal(ex.def); return; }
+    // contenedores registrables
+    const cont = (world.map.props || []).find(
+      (p) => p.contenedor && !p.registrado && p.x === world.player.x && p.y === world.player.y
+    );
+    if (cont) { registrar(cont); return; }
+    world.log('No hay nada con lo que interactuar aquí.', 'event');
+  }
+
+  const NOMBRES_CONT = {
+    taquilla: 'la taquilla', archivador: 'el archivador',
+    nevera: 'la nevera de suministros', cofre: 'la caja',
+  };
+  function registrar(cont) {
+    cont.registrado = true;
+    world.rollDice(`Registras ${NOMBRES_CONT[cont.id] ?? 'el contenedor'}…`, (d) => {
+      if (d >= 14) {
+        const pool = ['agua_almendras', 'agua_almendras', 'botiquin', 'amuleto', 'linterna', 'chaqueta'];
+        const id = pool[Math.min(pool.length - 1, Math.floor((d - 14) / 7 * pool.length + world.rng.int(0, 2)))];
+        if (world.player.inv.length >= 6) {
+          world.log(`Dado: ${d}. Hay algo útil… pero no te cabe nada más.`, 'event');
+        } else {
+          world.player.inv.push(id);
+          world.log(`Dado: ${d}. Encuentras: ${world.data.objects[id].nombre}.`, 'good');
+          if (window.Effects) Effects.flash(world.player.x, world.player.y, '#ffe9a0');
+        }
+      } else if (d >= 7) {
+        world.log(`Dado: ${d}. Vacío. Solo polvo y papel amarillento.`, 'event');
+      } else if (d >= 2) {
+        world.log(`Dado: ${d}. Algo se escurre entre tus dedos. Retrocedes de golpe.`, 'danger');
+        world.sanity(-5);
+      } else {
+        world.log(`Dado: ${d}. El ruido ha despertado algo en la oscuridad…`, 'danger');
+        let best = null, bestD = Infinity;
+        for (const e of world.entities) {
+          if (!e.viva) continue;
+          const dd = Math.abs(e.x - world.player.x) + Math.abs(e.y - world.player.y);
+          if (dd < bestD) { bestD = dd; best = e; }
+        }
+        if (best) { best.estado = 'caza'; best.revelada = true; }
+        world.sanity(-3);
+      }
+      worldStep();
+    });
   }
 
   function toggleLuz() {
@@ -359,7 +414,10 @@
     if (def.efecto?.toggle === 'luz') { toggleLuz(); return; }
     if (def.efecto?.pasivo) { world.log(`${def.nombre}: su efecto es pasivo, basta con llevarlo.`, 'event'); return; }
     if (def.efecto) {
-      if (def.efecto.salud) world.player.salud = Math.min(100, world.player.salud + def.efecto.salud);
+      if (def.efecto.salud) {
+        world.player.salud = Math.min(100, world.player.salud + def.efecto.salud);
+        if (window.Effects) Effects.number(world.player.x, world.player.y, '+' + def.efecto.salud + ' ♥', '#9ee8a0');
+      }
       if (def.efecto.cordura) world.sanity(def.efecto.cordura);
       if (def.efecto.sed) world.thirst(def.efecto.sed);
       world.player.inv.splice(slot, 1);

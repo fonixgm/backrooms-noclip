@@ -6,6 +6,12 @@
   const canvas = document.getElementById('game-canvas');
   Render.init(canvas);
 
+  // sprites PNG personalizados (game/assets/sprites/) si existen
+  Sprites.tryOverrides([
+    ...Sprites.list(),
+    ...Object.values(world.data.entities).map((e) => e.glyph),
+  ]);
+
   // ---------- input ----------
   const KEYS = {
     ArrowUp: [0, -1], KeyW: [0, -1],
@@ -47,11 +53,20 @@
       e.rx = lerp(e.rx, e.x, 0.2);
       e.ry = lerp(e.ry, e.y, 0.2);
     }
-    // cámara isométrica centrada en el jugador (el mapa en iso es un rombo: sin clamps)
-    world.camera.x = Render.isoX(p.rx, p.ry) - canvas.width / 2;
-    world.camera.y = Render.isoY(p.rx, p.ry) + Tiles.TH / 2 - canvas.height / 2;
+    // cámara cenital centrada con límites del mapa
+    const TILE = Tiles.TILE;
+    const g = world.map.grid;
+    world.camera.x = Math.max(0, Math.min(g.w * TILE - canvas.width, p.rx * TILE - canvas.width / 2 + TILE / 2));
+    world.camera.y = Math.max(0, Math.min(g.h * TILE - canvas.height, p.ry * TILE - canvas.height / 2 + TILE / 2));
+    if (g.w * TILE < canvas.width) world.camera.x = (g.w * TILE - canvas.width) / 2;
+    if (g.h * TILE < canvas.height) world.camera.y = (g.h * TILE - canvas.height) / 2;
 
-    Render.frame(world, t);
+    try {
+      Render.frame(world, t);
+    } catch (err) {
+      (window.__renderErrors = window.__renderErrors || []).push(String(err && err.stack || err).slice(0, 300));
+      if (window.__renderErrors.length > 8) window.__renderErrors.length = 8;
+    }
 
     // destello rojo al recibir daño
     const dt = t - world.ui.flashT;
@@ -113,6 +128,7 @@
             over: world.over,
             diario: world.journal.map((j) => j.nombre),
             errores,
+            erroresRender: window.__renderErrors || [],
           });
           document.body.appendChild(div);
           document.title = errores.length ? 'SELFTEST-ERRORES' : 'SELFTEST-OK';

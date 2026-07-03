@@ -84,8 +84,14 @@
   }
 
   function atacar(world, e) {
-    const p = world.player;
     const def = e.def;
+    // feedback visual: embestida + flash + sacudida + salpicadura
+    e._atkT = performance.now();
+    e._hitT = performance.now();
+    if (window.Effects) {
+      Effects.doShake(6, 180);
+      Effects.particles(world.player.x, world.player.y, '#b03030', 12);
+    }
     world.hurt(def.dano, def.nombre);
     if (def.danoCordura) world.sanity(-def.danoCordura);
     world.log(`¡${def.nombre} te ataca!`, 'danger');

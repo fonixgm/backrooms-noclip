@@ -38,11 +38,14 @@ wiki fandom → data/raw/ (crudo, 1100+ archivos, NO editar) → data/parsed/ (g
 Sin módulos ES: cada archivo de `game/js/` es un IIFE que expone un global en `window` (`RNG`, `MapGen`, `GAME_DATA`...). **El orden de los `<script>` en `game/index.html` es la gestión de dependencias** — si añades un archivo, insértalo en el orden correcto:
 
 ```
-data.js → engine/rng.js → mapgen/mapgen.js → engine/tiles.js → engine/fov.js
-  → systems/entities.js → systems/rules.js → engine/render.js → systems/game.js → ui/ui.js → main.js
+data.js → engine/rng.js → mapgen/mapgen.js → engine/tiles.js → engine/sprites.js
+  → engine/effects.js → engine/fov.js → systems/entities.js → systems/rules.js
+  → engine/render.js → systems/game.js → ui/ui.js → main.js
 ```
 
-(Varios de esos archivos aún no existen; `index.html` ya los referencia como esqueleto de lo planificado.)
+(Todos existen y están committeados. v3: render cenital con paredes finas autotile en `tiles.js`/`render.js`,
+pixel-art data-driven en `sprites.js` con override PNG desde `game/assets/sprites/`, efectos de combate
+en `effects.js`, props/contenedores registrables en `mapgen.js`/`game.js`.)
 
 Decisiones de diseño clave:
 

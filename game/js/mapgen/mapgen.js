@@ -328,6 +328,42 @@
       }
     }
 
+    // props decorativos y contenedores registrables por bioma
+    const PROPS_BIOMA = {
+      pasillos: ['cable'], garaje: ['cono', 'bidon'], tuneles: ['bidon', 'cable'],
+      hospital: ['camilla', 'silla'], oficinas: ['silla', 'caja'],
+      bosque: ['seta', 'roca_p'], exterior: ['roca_p'], ciudad: ['farola'], torres: ['caja'],
+    };
+    const CONT_BIOMA = {
+      pasillos: 'taquilla', garaje: 'taquilla', tuneles: 'cofre', hospital: 'nevera',
+      oficinas: 'archivador', bosque: 'cofre', exterior: 'cofre', ciudad: 'cofre', torres: 'cofre',
+    };
+    const props = [];
+    const exitKeys = new Set(exits.map((e) => e.y * g.w + e.x));
+    const libre = (p) => !exitKeys.has(p[1] * g.w + p[0]);
+    const decorativos = PROPS_BIOMA[levelDef.bioma] ?? [];
+    if (decorativos.length) {
+      const n = rng.int(7, 13);
+      for (let i = 0; i < n; i++) {
+        const p = rng.pick(reach);
+        if (!libre(p)) continue;
+        props.push({ x: p[0], y: p[1], id: rng.pick(decorativos), contenedor: false });
+      }
+    }
+    const nCont = rng.int(3, 5);
+    for (let i = 0; i < nCont; i++) {
+      const p = rng.pick(reach);
+      if (!libre(p)) continue;
+      props.push({ x: p[0], y: p[1], id: CONT_BIOMA[levelDef.bioma] ?? 'cofre', contenedor: true, registrado: false });
+    }
+    // el reloj es exclusivo de Level 80
+    if (levelDef.id === 'level-80') {
+      for (let i = 0; i < 6; i++) {
+        const p = rng.pick(reach);
+        props.push({ x: p[0], y: p[1], id: 'reloj', contenedor: false });
+      }
+    }
+
     // spawns de entidades (fieles a la ficha del nivel), lejos del jugador
     const entitySpawns = [];
     const midPool = reach.filter(([x, y]) => dist[y * g.w + x] >= 8);
@@ -340,7 +376,7 @@
       }
     }
 
-    return { w, h, grid: g, spawn, exits, items, entitySpawns, dist };
+    return { w, h, grid: g, spawn, exits, items, entitySpawns, props, dist };
   }
 
   window.MapGen = { T, generate, walkable, at, bfsDist };
