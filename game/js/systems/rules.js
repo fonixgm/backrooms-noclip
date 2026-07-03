@@ -7,7 +7,7 @@
       icono: '〰',
       desc: 'El zumbido constante de las luces erosiona tu cordura.',
       turno(world, rng) {
-        if (world.turn % 10 === 0) world.sanity(-1);
+        if (world.turn % 20 === 0) world.sanity(-1);
       },
     },
     no_euclidiano: {
@@ -15,10 +15,10 @@
       icono: '♾',
       desc: 'La topología cambia a tu espalda: lo explorado puede dejar de existir.',
       turno(world, rng) {
-        if (world.turn > 0 && world.turn % 45 === 0) {
+        if (world.turn > 0 && world.turn % 60 === 0) {
           world.forgetExplored(0.55);
           world.log('Los pasillos ya no están donde los dejaste.', 'event');
-          world.sanity(-3);
+          world.sanity(-2);
         }
       },
     },
@@ -71,8 +71,8 @@
       icono: '👁',
       desc: 'Oyes y ves cosas que no existen. Tu cordura se resiente.',
       turno(world, rng) {
-        if (world.turn % 12 === 0) world.sanity(-1);
-        if (rng.chance(0.02)) {
+        if (world.turn % 25 === 0) world.sanity(-1);
+        if (rng.chance(0.01)) {
           world.log(rng.pick([
             'Crujidos a tu espalda. No hay nada.',
             'Alguien susurra tu nombre.',
@@ -88,7 +88,7 @@
       icono: '⌀',
       desc: 'Este nivel te separa de todo ser vivo. La soledad pesa.',
       turno(world) {
-        if (world.turn % 14 === 0) world.sanity(-1);
+        if (world.turn % 25 === 0) world.sanity(-1);
       },
     },
     tiempo_raro: {
@@ -171,7 +171,7 @@
       icono: '👀',
       desc: 'Todo en este nivel te observa. La cordura se desangra.',
       turno(world) {
-        if (world.turn % 6 === 0) world.sanity(-1);
+        if (world.turn % 12 === 0) world.sanity(-1);
       },
     },
   };

@@ -180,6 +180,55 @@
     if (!visible) renderJournal($('journal-list'));
   }
 
+  // ---------- códice del errante ----------
+  function renderCodex() {
+    const P = Game.Profiles;
+    const perfil = P.get();
+    $('codex-name').textContent = P.activeName() || 'sin perfil';
+    const recEl = $('codex-records'), lvEl = $('codex-levels'), hiEl = $('codex-history');
+    lvEl.innerHTML = ''; hiEl.innerHTML = '';
+    if (!perfil) { recEl.textContent = 'Crea un perfil para empezar tu expediente.'; return; }
+    const r = perfil.records;
+    recEl.textContent = `Expediciones: ${r.runs} · Récord de niveles en una expedición: ${r.maxNiveles} · Récord de turnos sobrevividos: ${r.maxTurnos} · Escapes logrados: ${r.escapes}`;
+    const colores = ['#3fae6a', '#8bb944', '#d9a531', '#e0742c', '#d94a35', '#a12744'];
+    const entries = Object.entries(perfil.codice).sort((a, b) => b[1].veces - a[1].veces);
+    if (!entries.length) lvEl.innerHTML = '<p class="codex-records">Aún no has transitado ningún nivel.</p>';
+    for (const [id, c] of entries) {
+      const lv = world.data.levels[id];
+      if (!lv) continue;
+      const div = document.createElement('div');
+      div.className = 'codex-level';
+      div.style.borderLeftColor = colores[lv.peligro] || '#888';
+      const mejor = c.mejorTurnos !== null
+        ? ` · mejor travesía: ${c.mejorTurnos} turnos` : ' · nunca lograste salir de él';
+      div.innerHTML = `<h4>${lv.nombre}${c.escapado ? ' ⭐' : ''}</h4>
+        <div class="meta">${lv.clase} · Peligro ${lv.peligro}/5 · bioma: ${lv.bioma}</div>
+        <div class="desc">${lv.descripcion}</div>
+        <div class="stats">Transitado ${c.veces} ${c.veces === 1 ? 'vez' : 'veces'}${mejor}${c.escapado ? ' · ⭐ escapaste por aquí' : ''}</div>
+        <a href="${lv.url}" target="_blank" rel="noopener">ficha original en la wiki ↗</a>`;
+      lvEl.appendChild(div);
+    }
+    for (const h of perfil.historial || []) {
+      const li = document.createElement('li');
+      li.textContent = `${h.fecha} · semilla «${h.semilla}» · ${h.niveles} niveles, ${h.turnos} turnos · ${h.resultado}`;
+      hiEl.appendChild(li);
+    }
+  }
+
+  let codexVisible = false;
+  function toggleCodex(force) {
+    codexVisible = force !== undefined ? force : !codexVisible;
+    $('codex-panel').style.display = codexVisible ? 'flex' : 'none';
+    if (codexVisible) renderCodex();
+    // pausa el juego mientras el códice está abierto (sin pisar modales/dado)
+    if (world.level && !world.over) {
+      if (codexVisible) world.busy = true;
+      else if ($('exit-modal').style.display === 'none' && $('dice-overlay').style.display === 'none')
+        world.busy = false;
+    }
+  }
+  $('btn-codex-close').onclick = () => toggleCodex(false);
+
   // ---------- fin ----------
   function showEnd(victoria, causa) {
     show('end');
@@ -196,7 +245,7 @@
 
   world.ui = {
     log, updateHUD, flashDamage, showLevelCard, showDice,
-    showExitModal, showLevelPicker, toggleJournal, showEnd, show,
+    showExitModal, showLevelPicker, toggleJournal, showEnd, show, toggleCodex,
     get flashT() { return flashT; },
   };
 })();

@@ -31,12 +31,112 @@
     ui: null, // inyectado por ui.js
   };
 
+  // ---------- perfiles de usuario (locales, sin servidor) ----------
+  const Profiles = {
+    _load() {
+      try { return JSON.parse(localStorage.getItem('backrooms-profiles')) || { activo: null, perfiles: {} }; }
+      catch (e) { return { activo: null, perfiles: {} }; }
+    },
+    _save(d) { try { localStorage.setItem('backrooms-profiles', JSON.stringify(d)); } catch (e) {} },
+    list() { return Object.keys(this._load().perfiles); },
+    activeName() { return this._load().activo; },
+    get() {
+      const d = this._load();
+      return d.activo ? d.perfiles[d.activo] : null;
+    },
+    create(nombre) {
+      nombre = (nombre || '').trim().slice(0, 24);
+      if (!nombre) return false;
+      const d = this._load();
+      if (!d.perfiles[nombre]) {
+        d.perfiles[nombre] = {
+          creado: new Date().toISOString(),
+          codice: {},
+          records: { runs: 0, maxNiveles: 0, maxTurnos: 0, escapes: 0 },
+          historial: [],
+        };
+      }
+      d.activo = nombre;
+      this._save(d);
+      return true;
+    },
+    select(nombre) {
+      const d = this._load();
+      if (!d.perfiles[nombre]) return false;
+      d.activo = nombre;
+      this._save(d);
+      return true;
+    },
+    remove(nombre) {
+      const d = this._load();
+      delete d.perfiles[nombre];
+      if (d.activo === nombre) d.activo = Object.keys(d.perfiles)[0] || null;
+      this._save(d);
+      localStorage.removeItem('backrooms-save::' + nombre);
+    },
+    _update(fn) {
+      const d = this._load();
+      if (!d.activo || !d.perfiles[d.activo]) return;
+      fn(d.perfiles[d.activo]);
+      this._save(d);
+    },
+    registrarEntrada(levelId) {
+      this._update((p) => {
+        p.codice[levelId] = p.codice[levelId] || { veces: 0, mejorTurnos: null, escapado: false };
+        p.codice[levelId].veces++;
+      });
+    },
+    registrarSalida(levelId, turnos) {
+      this._update((p) => {
+        const c = p.codice[levelId];
+        if (c && (c.mejorTurnos === null || turnos < c.mejorTurnos)) c.mejorTurnos = turnos;
+      });
+    },
+    registrarFin(victoria, journal, turnTotal, seed, levelFinal) {
+      this._update((p) => {
+        p.records.runs++;
+        p.records.maxNiveles = Math.max(p.records.maxNiveles, journal.length);
+        p.records.maxTurnos = Math.max(p.records.maxTurnos, turnTotal);
+        if (victoria) {
+          p.records.escapes++;
+          if (p.codice[levelFinal]) p.codice[levelFinal].escapado = true;
+        }
+        p.historial.unshift({
+          fecha: new Date().toISOString().slice(0, 16).replace('T', ' '),
+          semilla: seed,
+          niveles: journal.length,
+          turnos: turnTotal,
+          resultado: victoria ? '⭐ Escape' : '☠ ' + (journal[journal.length - 1]?.nombre || '—'),
+        });
+        p.historial = p.historial.slice(0, 20);
+      });
+    },
+    exportar() {
+      const d = this._load();
+      if (!d.activo) return null;
+      return JSON.stringify({ nombre: d.activo, datos: d.perfiles[d.activo] }, null, 1);
+    },
+    importar(json) {
+      try {
+        const o = JSON.parse(json);
+        if (!o.nombre || !o.datos || !o.datos.codice) return false;
+        const d = this._load();
+        d.perfiles[o.nombre] = o.datos;
+        d.activo = o.nombre;
+        this._save(d);
+        return true;
+      } catch (e) { return false; }
+    },
+  };
+
+  const saveKey = () => 'backrooms-save::' + (Profiles.activeName() || 'anon');
+
   // ---------- utilidades de estado ----------
   world.log = (msg, cls) => world.ui.log(msg, cls);
 
   world.visionActual = function () {
-    let v = world.level.vision + world.visionMod;
-    if (world.player.luz) v += 3;
+    let v = world.level.vision + 2 + world.visionMod;
+    if (world.player.luz) v += 4;
     return Math.max(2, v);
   };
 
@@ -104,6 +204,7 @@
         turnos: world.turn,
         salida: via,
       });
+      Profiles.registrarSalida(world.level.id, world.turn);
     }
 
     world.entryCount[id] = (world.entryCount[id] || 0) + 1;
@@ -114,6 +215,7 @@
     world.visionMod = 0;
     world.luzBloqueada = false;
     if (!world.visited.includes(id)) world.visited.push(id);
+    Profiles.registrarEntrada(id);
 
     world.map = MapGen.generate(def, world.rng);
     world.tiles = Tiles.build(def, world.rng);
@@ -175,6 +277,9 @@
 
     // reglas del nivel + necesidades
     Rules.aplicarTurno(world, world.rng);
+    // descansar en niveles seguros repone la mente (hasta 70)
+    if (world.level.peligro <= 1 && world.player.cordura < 70 && world.turn % 25 === 0)
+      world.sanity(1);
     if (world.turn % 9 === 0) world.thirst(-1);
     if (world.turn % 15 === 0) world.hunger(-1);
     if (world.player.sed <= 0 && world.turn % 3 === 0) world.hurt(2, 'la deshidratación', true);
@@ -340,7 +445,8 @@
       turnos: world.turn,
       salida: '☠ ' + causa,
     });
-    localStorage.removeItem('backrooms-save');
+    Profiles.registrarFin(false, world.journal, world.turnTotal, world.runSeed, world.level.id);
+    localStorage.removeItem(saveKey());
     world.ui.showEnd(false, causa);
   }
 
@@ -352,14 +458,16 @@
       turnos: world.turn,
       salida: '⭐ Escapaste de las Backrooms.',
     });
-    localStorage.removeItem('backrooms-save');
+    Profiles.registrarSalida(world.level.id, world.turn);
+    Profiles.registrarFin(true, world.journal, world.turnTotal, world.runSeed, world.level.id);
+    localStorage.removeItem(saveKey());
     world.ui.showEnd(true, 'Atravesaste el edificio imposible y despertaste en una acera cualquiera, bajo un sol de verdad.');
   }
 
   // ---------- guardado ----------
   function save() {
     try {
-      localStorage.setItem('backrooms-save', JSON.stringify({
+      localStorage.setItem(saveKey(), JSON.stringify({
         runSeed: world.runSeed,
         levelId: world.level.id,
         player: {
@@ -377,7 +485,7 @@
   }
 
   function loadSave() {
-    try { return JSON.parse(localStorage.getItem('backrooms-save')); }
+    try { return JSON.parse(localStorage.getItem(saveKey())); }
     catch (e) { return null; }
   }
 
@@ -403,7 +511,7 @@
   }
 
   window.Game = {
-    world, startRun, continueRun, loadSave,
+    world, startRun, continueRun, loadSave, Profiles,
     tryMove, wait, interact, toggleLuz, useItem, volver, crossExit,
   };
 })();

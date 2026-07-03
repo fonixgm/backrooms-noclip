@@ -3,7 +3,7 @@
   "id": "agua_almendras",
   "nombre": "Agua de almendras",
   "descripcion": "El recurso más preciado de las Backrooms. Sacia la sed y calma la mente.",
-  "efecto": { "sed": 45, "cordura": 10 },
+  "efecto": { "sed": 45, "cordura": 15 },
   "color": "#e8d8a0",
   "url": "https://backrooms.fandom.com/wiki/Object_1"
  },
@@ -32,7 +32,7 @@
   "id": "amuleto",
   "nombre": "Recuerdo del hogar",
   "descripcion": "Una foto, unas llaves, un tique de compra. Un ancla a la realidad que restaura la cordura.",
-  "efecto": { "cordura": 35 },
+  "efecto": { "cordura": 55 },
   "color": "#c0a0e0"
  },
  "llave_nivel": {

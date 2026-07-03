@@ -123,6 +123,36 @@ html, body { height: 100%; background: #060504; color: var(--hueso);
 #journal-panel h3 { color: var(--amarillo); font-size: 14px; margin-bottom: 10px; }
 #journal-panel ol { padding-left: 20px; font-size: 12px; line-height: 1.7; color: #cfc8b0; }
 
+/* ---------- perfiles ---------- */
+#profile-box { background: rgba(20,18,13,.65); border: 1px solid var(--borde);
+  padding: 14px 18px; margin-bottom: 20px; }
+.profile-title { color: var(--gris); font-size: 11px; letter-spacing: 3px; margin-bottom: 10px; }
+.profile-row { display: flex; gap: 8px; justify-content: center; align-items: center;
+  flex-wrap: wrap; margin-bottom: 8px; }
+.profile-row .btn-small { margin-top: 0; }
+#profile-select, #profile-name { background: #0a0906; border: 1px solid var(--borde);
+  color: var(--amarillo); font-family: inherit; padding: 6px 10px; font-size: 13px; }
+#profile-select { min-width: 140px; }
+#profile-name { width: 140px; }
+#profile-records { color: #8a8470; font-size: 12px; margin: 4px 0 8px; }
+
+/* ---------- códice ---------- */
+#codex-panel { position: fixed; inset: 0; background: rgba(3,3,2,.88);
+  display: flex; align-items: center; justify-content: center; z-index: 30; }
+.codex-box { width: min(720px, 94vw); max-height: 88vh; overflow: auto;
+  background: var(--panel); border: 1px solid var(--amarillo-osc); padding: 26px 32px; }
+.codex-box h2 { color: var(--amarillo); font-size: 20px; margin-bottom: 6px; }
+.codex-records { color: var(--gris); font-size: 13px; margin-bottom: 18px; }
+.codex-box h3 { color: var(--gris); font-size: 13px; letter-spacing: 1px; margin: 18px 0 8px; }
+.codex-level { border: 1px solid var(--borde); border-left-width: 5px;
+  padding: 12px 16px; margin-bottom: 10px; background: #0f0e0a; }
+.codex-level h4 { color: var(--hueso); font-size: 15px; margin-bottom: 3px; }
+.codex-level .meta { color: #8a8470; font-size: 11px; margin-bottom: 7px; }
+.codex-level .desc { color: #cfc8b0; font-size: 12.5px; line-height: 1.6; }
+.codex-level .stats { color: var(--amarillo); font-size: 12px; margin-top: 7px; }
+.codex-level a { color: #7a90a8; font-size: 11px; }
+#codex-history { padding-left: 22px; font-size: 12px; line-height: 1.8; color: #cfc8b0; }
+
 /* ---------- fin ---------- */
 .end-box { max-width: 620px; width: 92%; background: var(--panel);
   border: 1px solid var(--borde); padding: 36px 40px; max-height: 90vh; overflow: auto; }

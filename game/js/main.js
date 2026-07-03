@@ -27,6 +27,7 @@
     else if (ev.code === 'KeyF') Game.toggleLuz();
     else if (ev.code === 'KeyR') Game.volver();
     else if (ev.code === 'KeyJ') world.ui.toggleJournal();
+    else if (ev.code === 'KeyC') world.ui.toggleCodex();
     else if (/^Digit[1-6]$/.test(ev.code)) Game.useItem(parseInt(ev.code.slice(5), 10) - 1);
   });
 
@@ -46,13 +47,9 @@
       e.rx = lerp(e.rx, e.x, 0.2);
       e.ry = lerp(e.ry, e.y, 0.2);
     }
-    // cámara centrada con límites del mapa
-    const TILE = Render.TILE;
-    const g = world.map.grid;
-    world.camera.x = Math.max(0, Math.min(g.w * TILE - canvas.width, p.rx * TILE - canvas.width / 2 + TILE / 2));
-    world.camera.y = Math.max(0, Math.min(g.h * TILE - canvas.height, p.ry * TILE - canvas.height / 2 + TILE / 2));
-    if (g.w * TILE < canvas.width) world.camera.x = (g.w * TILE - canvas.width) / 2;
-    if (g.h * TILE < canvas.height) world.camera.y = (g.h * TILE - canvas.height) / 2;
+    // cámara isométrica centrada en el jugador (el mapa en iso es un rombo: sin clamps)
+    world.camera.x = Render.isoX(p.rx, p.ry) - canvas.width / 2;
+    world.camera.y = Render.isoY(p.rx, p.ry) + Tiles.TH / 2 - canvas.height / 2;
 
     Render.frame(world, t);
 
@@ -69,6 +66,8 @@
   // ---------- arranque rápido por URL: ?seed=foo&autostart=1&nivel=level-14 ----------
   const params = new URLSearchParams(location.search);
   if (params.get('nofx')) window.NOFX = true;
+  if ((params.get('autostart') || params.get('selftest')) && !Game.Profiles.activeName())
+    Game.Profiles.create('Errante');
   if (params.get('autostart')) {
     Game.startRun(params.get('seed') || undefined);
     if (params.get('nivel') && world.data.levels[params.get('nivel')]) {
@@ -117,6 +116,7 @@
           });
           document.body.appendChild(div);
           document.title = errores.length ? 'SELFTEST-ERRORES' : 'SELFTEST-OK';
+          if (params.get('codex')) world.ui.toggleCodex(true);
           return;
         }
         // si hay tarjeta de nivel a la vista, entra
@@ -159,21 +159,84 @@
     }, 5);
   }
 
-  // ---------- título ----------
-  const saveData = Game.loadSave();
-  if (saveData) {
-    const btn = document.getElementById('btn-continue');
-    btn.style.display = 'inline-block';
-    btn.textContent = `Continuar partida (${saveData.levelId}, semilla ${saveData.runSeed})`;
-    btn.onclick = () => Game.continueRun(saveData);
+  // ---------- título y perfiles ----------
+  const $id = (x) => document.getElementById(x);
+  const P = Game.Profiles;
+
+  function refreshTitle() {
+    const sel = $id('profile-select');
+    sel.innerHTML = '';
+    const names = P.list();
+    for (const n of names) {
+      const o = document.createElement('option');
+      o.value = n; o.textContent = '🧍 ' + n;
+      if (n === P.activeName()) o.selected = true;
+      sel.appendChild(o);
+    }
+    if (!names.length) {
+      const o = document.createElement('option');
+      o.textContent = '— sin perfiles —';
+      sel.appendChild(o);
+    }
+    const p = P.get();
+    $id('profile-records').textContent = p
+      ? `Expediciones: ${p.records.runs} · Niveles descubiertos: ${Object.keys(p.codice).length} · Turnos récord: ${p.records.maxTurnos} · Escapes: ${p.records.escapes}`
+      : 'Crea tu perfil para que el Códice registre tu expediente.';
+    const saveData = Game.loadSave();
+    const btn = $id('btn-continue');
+    if (saveData && p) {
+      btn.style.display = 'inline-block';
+      btn.textContent = `Continuar partida (${saveData.levelId}, semilla ${saveData.runSeed})`;
+      btn.onclick = () => Game.continueRun(saveData);
+    } else btn.style.display = 'none';
   }
 
-  document.getElementById('btn-start').onclick = () => {
-    const seed = document.getElementById('seed-input').value.trim();
+  $id('profile-select').onchange = (ev) => { P.select(ev.target.value); refreshTitle(); };
+  $id('btn-profile-create').onclick = () => {
+    const nombre = $id('profile-name').value.trim();
+    if (!nombre) { $id('profile-name').focus(); return; }
+    P.create(nombre);
+    $id('profile-name').value = '';
+    refreshTitle();
+  };
+  $id('btn-profile-del').onclick = () => {
+    const n = P.activeName();
+    if (n && confirm(`¿Borrar el perfil «${n}» y todo su códice?`)) { P.remove(n); refreshTitle(); }
+  };
+  $id('btn-profile-export').onclick = () => {
+    const json = P.exportar();
+    if (!json) return;
+    const a = document.createElement('a');
+    a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(json);
+    a.download = `backrooms-perfil-${P.activeName()}.json`;
+    a.click();
+  };
+  $id('btn-profile-import').onclick = () => $id('profile-import-file').click();
+  $id('profile-import-file').onchange = (ev) => {
+    const f = ev.target.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      if (P.importar(r.result)) refreshTitle();
+      else alert('Ese archivo no parece un perfil válido.');
+    };
+    r.readAsText(f);
+    ev.target.value = '';
+  };
+  $id('btn-codex').onclick = () => world.ui.toggleCodex(true);
+
+  $id('btn-start').onclick = () => {
+    if (!P.activeName()) P.create($id('profile-name').value.trim() || 'Errante');
+    refreshTitle();
+    const seed = $id('seed-input').value.trim();
     Game.startRun(seed || undefined);
   };
-  document.getElementById('btn-again').onclick = () => {
+  $id('btn-again').onclick = () => {
+    refreshTitle();
     Game.startRun();
   };
-  document.getElementById('btn-journal-close').onclick = () => world.ui.toggleJournal();
+  $id('btn-journal-close').onclick = () => world.ui.toggleJournal();
+  $id('btn-end-codex').onclick = () => world.ui.toggleCodex(true);
+  $id('btn-end-title').onclick = () => { world.ui.show('title'); refreshTitle(); };
+  refreshTitle();
 })();
