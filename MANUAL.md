@@ -68,12 +68,15 @@ de X»*. Claude la recorta, la escala a 48×48, le monta la hoja de frames y la 
 Todo el sonido del juego (pasos, golpes, dados, ambientes…) está **sintetizado por código**:
 no necesitas hacer nada para que suene. Tecla `M` para silenciar.
 
+- **Volumen**: slider 🔊 en el HUD del juego y en el título (se recuerda entre sesiones).
 - **Sustituir un efecto**: pon un `.mp3`/`.ogg`/`.wav` en `game/assets/sounds/` con el nombre
   del efecto (`golpe.mp3`, `paso.mp3`…). Lista completa en el `LEEME.txt` de esa carpeta.
-- **Ambientes por nivel**: `game/assets/sounds/niveles/level-X.mp3`. Los de **Level 306, 385
-  y 777 son los audios reales adjuntos a sus páginas de la wiki** (ya descargados). Puedes
-  añadir el de cualquier otro nivel con ese patrón de nombre y ejecutar
-  `node pipeline/download-audio.js` para que el juego lo registre.
+- **Ambientes por nivel**: guarda un archivo como `game/assets/sounds/niveles/level-X.mp3`
+  y el juego lo usa automáticamente, **sin ejecutar nada**. Ejemplo: para tener el zumbido
+  original de las Backrooms en Level 0, guarda tu audio favorito como `niveles/level-0.mp3`.
+  Los de **Level 306, 385 y 777 son los audios reales de sus páginas de la wiki** (ya incluidos).
+  Cada nivel sin archivo usa su ambiente sintetizado propio (relojes en Level 80, caja de
+  música en la feria del 995, susurros en el asilo del 16, goteo en las tuberías del 2…).
 - Si el navegador arranca en silencio: toca cualquier tecla o clic (política de autoplay).
 
 ## 6. Editar el contenido del juego (niveles, entidades, objetos)

@@ -351,7 +351,7 @@
       }
       world.player.x = nx;
       world.player.y = ny;
-      if (window.Sfx) Sfx.play('paso');
+      if (window.Sfx) Sfx.play('paso', world.level.estilo?.suelo);
     }
     worldStep();
   }

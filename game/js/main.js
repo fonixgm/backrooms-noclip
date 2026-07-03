@@ -24,6 +24,20 @@
   document.addEventListener('keydown', () => Sfx.unlock(), { once: true });
   document.addEventListener('click', () => Sfx.unlock(), { once: true });
 
+  // sliders de volumen (HUD y título), sincronizados y persistentes
+  for (const sid of ['vol-slider', 'vol-slider-title']) {
+    const s = document.getElementById(sid);
+    if (!s) continue;
+    s.value = Math.round(Sfx.volumen * 100);
+    s.addEventListener('input', () => {
+      Sfx.setVolume(s.value / 100);
+      for (const otro of ['vol-slider', 'vol-slider-title']) {
+        const o = document.getElementById(otro);
+        if (o && o !== s) o.value = s.value;
+      }
+    });
+  }
+
   document.addEventListener('keydown', (ev) => {
     if (ev.code === 'KeyM') {
       const m = Sfx.toggleMute();

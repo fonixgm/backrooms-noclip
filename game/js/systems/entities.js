@@ -108,7 +108,10 @@
         e.dormida--;
         if (e.dormida === 12) world.log('Oyes pasos lejanos entre los pasillos…', 'event');
         if (e.dormida === 4) world.log('Los pasos se aceleran. Vienen hacia ti.', 'event');
-        if (e.dormida === 0) world.log('EL CAZADOR TE HA ENCONTRADO.', 'danger');
+        if (e.dormida === 0) {
+          world.log('EL CAZADOR TE HA ENCONTRADO.', 'danger');
+          if (window.Sfx) Sfx.cue('hunter');
+        }
         return;
       }
       if (adjacentToPlayer(world, e)) return atacar(world, e);
@@ -132,13 +135,17 @@
           e.revelada = true;
           e.estado = 'caza';
           world.log(`Esa figura no era humana. ¡${e.def.nombre}!`, 'danger');
+          if (window.Sfx) Sfx.cue('generico');
         }
         return;
       }
     }
 
     const detectado = detecta(world, e, rng);
-    if (detectado) e.estado = 'caza';
+    if (detectado) {
+      if (e.estado !== 'caza' && window.Sfx) Sfx.cue(e.def.glyph); // te ha visto
+      e.estado = 'caza';
+    }
     else if (e.estado === 'caza' && !detectado) {
       // pierde el rastro poco a poco
       if (rng.chance(0.25)) e.estado = 'alerta';

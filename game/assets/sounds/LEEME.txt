@@ -20,10 +20,10 @@ Nombres de efectos disponibles:
 
 AMBIENTES POR NIVEL (carpeta niveles/):
   niveles/<id-de-nivel>.mp3|wav|ogg  (ej.: niveles/level-0.mp3)
-  Los de level-306, level-385 y level-777 son los audios REALES adjuntos a sus
-  páginas de la wiki (descargados con: node pipeline/download-audio.js).
-  Puedes añadir el de cualquier otro nivel a mano con ese mismo patrón de nombre
-  y volver a ejecutar el script NO los borra. Tras añadir uno a mano, ejecuta:
-  node pipeline/download-audio.js   (regenera el manifiesto que el juego lee)
+  - Los de level-306, level-385 y level-777 son los audios REALES adjuntos a sus
+    páginas de la wiki (descargados con: node pipeline/download-audio.js).
+  - Para poner el tuyo (p. ej. el zumbido original de las Backrooms en Level 0):
+    guarda el archivo como  niveles/level-0.mp3  y YA ESTÁ — el juego lo detecta
+    solo, sin ejecutar nada. Si no hay archivo, suena la síntesis de la ficha.
 
-Tecla M en el juego: silenciar/activar todo el sonido.
+Tecla M: silenciar todo · Slider 🔊 del HUD y del título: volumen general.

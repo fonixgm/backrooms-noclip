@@ -298,6 +298,96 @@
     ctx.restore();
   }
 
+  // ---------- partículas ambientales (screen-space, por ficha de nivel) ----------
+  let pState = { levelId: null, list: [] };
+
+  function initParticles(mode, n) {
+    const list = [];
+    for (let i = 0; i < n; i++)
+      list.push({
+        x: Math.random() * W, y: Math.random() * H,
+        v: 0.3 + Math.random() * 0.8, fase: Math.random() * 7,
+        vida: Math.random(), par: Math.random() < 0.5,
+      });
+    return list;
+  }
+
+  function drawParticles(world, t) {
+    const mode = world.level.particulas;
+    if (!mode) { pState.levelId = world.level.id; return; }
+    if (pState.levelId !== world.level.id) {
+      const counts = { polvo: 45, nieve: 70, lluvia: 90, glitch: 8, ojos: 5, esporas: 40, vapor: 25, estrellas: 60 };
+      pState = { levelId: world.level.id, list: initParticles(mode, counts[mode] ?? 40) };
+    }
+    ctx.save();
+    const pal = world.level.paleta;
+    for (const p of pState.list) {
+      switch (mode) {
+        case 'polvo': // motas doradas a la deriva
+          p.x += Math.sin(t / 2100 + p.fase) * 0.18;
+          p.y += p.v * 0.12;
+          ctx.globalAlpha = 0.16 + Math.sin(t / 900 + p.fase) * 0.1;
+          ctx.fillStyle = pal.luz;
+          ctx.fillRect(p.x, p.y, 1.6, 1.6);
+          break;
+        case 'nieve':
+          p.x += Math.sin(t / 1300 + p.fase) * 0.5;
+          p.y += p.v * 0.9;
+          ctx.globalAlpha = 0.55;
+          ctx.fillStyle = '#f0f6ff';
+          ctx.fillRect(p.x, p.y, 2.2, 2.2);
+          break;
+        case 'lluvia':
+          p.y += p.v * 7;
+          p.x -= p.v * 1.6;
+          ctx.globalAlpha = 0.3;
+          ctx.strokeStyle = '#9ab0d8';
+          ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + 2, p.y + 9); ctx.stroke();
+          break;
+        case 'glitch': // rectángulos corruptos intermitentes
+          if (Math.random() < 0.985) continue;
+          ctx.globalAlpha = 0.35;
+          ctx.fillStyle = Math.random() < 0.5 ? pal.detalle : '#ffffff';
+          ctx.fillRect(Math.random() * W, Math.random() * H, 8 + Math.random() * 42, 1.5 + Math.random() * 4);
+          continue;
+        case 'ojos': { // pares de ojos que se abren y cierran en la penumbra
+          p.vida += 0.004;
+          if (p.vida > 1) { p.vida = 0; p.x = Math.random() * W; p.y = Math.random() * H; }
+          const a = Math.sin(p.vida * Math.PI);
+          ctx.globalAlpha = Math.max(0, a - 0.35) * 0.9;
+          ctx.fillStyle = '#e03040';
+          ctx.beginPath(); ctx.arc(p.x, p.y, 1.8, 0, 7); ctx.fill();
+          ctx.beginPath(); ctx.arc(p.x + 7, p.y, 1.8, 0, 7); ctx.fill();
+          break;
+        }
+        case 'esporas':
+          p.x += Math.sin(t / 1600 + p.fase) * 0.3;
+          p.y -= p.v * 0.22;
+          ctx.globalAlpha = 0.3 + Math.sin(t / 700 + p.fase) * 0.15;
+          ctx.fillStyle = pal.detalle;
+          ctx.fillRect(p.x, p.y, 2, 2);
+          break;
+        case 'vapor':
+          p.y -= p.v * 0.55;
+          p.x += Math.sin(t / 1000 + p.fase) * 0.4;
+          ctx.globalAlpha = 0.05;
+          ctx.fillStyle = '#e8d8c8';
+          ctx.beginPath(); ctx.arc(p.x, p.y, 9 + Math.sin(p.fase + t / 800) * 3, 0, 7); ctx.fill();
+          break;
+        case 'estrellas': // fijas, titilan (solo se aprecian sobre el vacío)
+          ctx.globalAlpha = 0.25 + Math.sin(t / 600 + p.fase * 9) * 0.2;
+          ctx.fillStyle = '#cfe0ff';
+          ctx.fillRect(p.x, p.y, p.par ? 1 : 1.6, p.par ? 1 : 1.6);
+          break;
+      }
+      if (p.y > H + 10) { p.y = -8; p.x = Math.random() * W; }
+      if (p.y < -12) { p.y = H + 8; p.x = Math.random() * W; }
+      if (p.x > W + 10) p.x = -8;
+      if (p.x < -10) p.x = W + 8;
+    }
+    ctx.restore();
+  }
+
   // ---------- frame ----------
   function frame(world, t) {
     const g = world.map.grid;
@@ -463,6 +553,9 @@
           ctx.fillRect(x * TILE - cam.x, y * TILE - cam.y, TILE, TILE);
         }
       }
+
+    // partículas ambientales del nivel
+    if (!window.NOFX) drawParticles(world, t);
 
     // halo cálido
     if (!window.NOFX) {
