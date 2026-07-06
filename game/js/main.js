@@ -585,12 +585,22 @@
   $id('btn-start').onclick = () => {
     if (!P.activeName()) P.create($id('profile-name').value.trim() || 'Errante');
     refreshTitle();
-    const seed = $id('seed-input').value.trim();
-    Game.startRun(seed || undefined);
+    // BACKROOMS MMO: el botón del título conecta al mundo compartido
+    const btn = $id('btn-start');
+    btn.disabled = true;
+    btn.textContent = 'CRUZANDO LA REALIDAD…';
+    Net.iniciar(P.activeName());
+    const espera = setInterval(() => {
+      if (Net.activo) {
+        clearInterval(espera);
+        btn.disabled = false;
+        btn.textContent = 'DESPERTAR EN LEVEL 0';
+      }
+    }, 200);
   };
   $id('btn-again').onclick = () => {
     refreshTitle();
-    Game.startRun();
+    world.ui.show('title');
   };
   $id('btn-journal-close').onclick = () => world.ui.toggleJournal();
   $id('btn-end-codex').onclick = () => world.ui.toggleCodex(true);

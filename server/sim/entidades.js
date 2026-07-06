@@ -120,7 +120,7 @@ function adyacente(e, j) {
 
 function jugadorAdyacente(sala, e) {
   for (const j of sala.jugadores.values())
-    if (!j.escondido && adyacente(e, j)) return j;
+    if (!j.escondido && !j.muerto && adyacente(e, j)) return j;
   return null;
 }
 
@@ -137,6 +137,10 @@ function detecta(sala, e) {
   let objetivo = null, mejorDist = Infinity;
   for (const j of sala.jugadores.values()) {
     if (j.escondido || j.muerto) continue;
+    // Sintonía alta (v18, online): lo que no es cazador te huele como cosa
+    // del lugar y cada vez le importas menos
+    if ((j.sintonia || 0) >= 30 && e.def.comportamiento !== 'cazador' &&
+        sala.rng.chance((j.sintonia - 20) / 180)) continue;
     const dd = Math.hypot(e.x - j.x, e.y - j.y);
     if (dd >= mejorDist) continue;
     const ver = () => FOV.los(sala.map.grid, e.x, e.y, j.x, j.y);
@@ -173,6 +177,7 @@ function atacar(sala, e, jug, ahora) {
 function golpe(sala, e, jug) {
   e.preparando = false;
   e.prepObjetivo = null;
+  if (jug.muerto) return; // los cadáveres no se rematan (muertes dobles en BD)
   const dano = e.def.dano ?? 10;
   jug.salud = Math.max(0, jug.salud - dano);
   sala.difundir({ t: 'entAtaca', uid: e.uid, id: jug.id, dano });

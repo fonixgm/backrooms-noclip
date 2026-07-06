@@ -12,6 +12,12 @@ const P = require('./protocolo');
 const filtro = require('./filtro');
 const { asignar, tickTodas, estado } = require('./sala');
 const { DATA } = require('./sim/mundo');
+const db = require('./db');
+
+// clave de administración: variable de entorno MMO_ADMIN o una aleatoria
+// impresa al arrancar (el streamer la escribe en el chat: /admin <clave>)
+const ADMIN_CLAVE = process.env.MMO_ADMIN ||
+  Math.random().toString(36).slice(2, 10);
 
 const PUERTO = parseInt(process.argv[2], 10) || 8080;
 const RAIZ = path.join(__dirname, '..', 'game');
@@ -73,12 +79,16 @@ wss.on('connection', (ws, req) => {
     if (m.t === 'hola') {
       if (jug) return; // ya presentado
       clearTimeout(timbre);
+      const nombre = filtro.nombreLimpio(m.nombre);
+      const expediente = db.conectar(m.token, nombre);
+      if (expediente.baneado) { ws.close(1008, 'baneado'); return; }
       // ?nivel= de desarrollo: entrar directo a otro nivel (se cierra en M4)
       const nivel = m.nivel && DATA.levels[m.nivel] ? m.nivel : NIVEL_INICIAL;
       sala = asignar(nivel);
-      sala.alCruzar = cambiarDeSala;
-      jug = sala.entrar(ws, filtro.nombreLimpio(m.nombre), m.token);
+      prepararSala(sala);
+      jug = sala.entrar(ws, nombre, m.token, expediente);
       jug._reSala = (s) => { sala = s; };  // el cruce actualiza la sala del socket
+      db.registrarVisita(m.token, nivel);
       console.log(`[+] ${jug.nombre}#${jug.id} → ${sala.clave} (${sala.jugadores.size})`);
       return;
     }
@@ -90,6 +100,7 @@ wss.on('connection', (ws, req) => {
     else if (m.t === 'usar') sala.usar(jug, m.mano);
     else if (m.t === 'luz') sala.luz(jug, m.si);
     else if (m.t === 'chat') {
+      if (m.txt.startsWith('/')) { comando(jug, sala, m.txt); return; }
       const txt = filtro.chatLimpio(m.txt);
       if (txt) sala.chat(jug, txt);
     } else if (m.t === 'ping') sala.enviar(ws, { t: 'pong' });
@@ -106,26 +117,82 @@ wss.on('connection', (ws, req) => {
   ws.on('error', () => {});
 });
 
+function prepararSala(sala) {
+  sala.alCruzar = cambiarDeSala;
+  sala.alMorir = (jug, salaVieja, causa) => cambiarDeSala(jug, salaVieja, {
+    destino: 'level-0',
+    texto: `Moriste (${causa}). Despiertas otra vez sobre la moqueta húmeda, con las manos vacías.`,
+  });
+}
+
 // cruce de salas: sacar de la sala vieja, meter en la del nivel destino y
 // mandar el estado nuevo (el cliente reconstruye el mapa desde la semilla)
-function cambiarDeSala(jug, salaVieja, defSalida) {
+function cambiarDeSala(jug, salaVieja, defSalida, opts) {
   salaVieja.salir(jug);
   const nueva = asignar(defSalida.destino);
-  nueva.alCruzar = cambiarDeSala;
+  prepararSala(nueva);
   const [x, y] = nueva.buscarSpawn();
   jug.x = x; jug.y = y;
   jug.ofertaEn = null; jug.canal = null; jug.escondido = null;
+  nueva.prepararCaminata(jug);
   const id = jug.id;
   nueva.jugadores.set(id, jug);
   nueva.enviar(jug.ws, {
     t: 'nivel', nivel: nueva.nivelId, inst: nueva.inst, semilla: nueva.semilla,
     x, y, rot: jug.rot, via: defSalida.texto,
+    sinTarjeta: !!(opts && opts.sinTarjeta),
     salud: jug.salud, inv: jug.inv, manos: jug.manos,
+    sintonia: jug.sintonia,
+    caminata: jug.caminataObjetivo ? { pasos: 0, objetivo: jug.caminataObjetivo } : null,
     jugadores: nueva.censo(), ...nueva.estadoDinamico(),
   });
   nueva.difundir({ t: 'entra', id, nombre: jug.nombre, x, y, rot: jug.rot }, id);
   if (jug._reSala) jug._reSala(nueva);
+  db.registrarVisita(jug.token, nueva.nivelId);
+  if (nueva.def.esEscape) db.sumarEscape(jug.token);
   console.log(`[→] ${jug.nombre}#${id} cruza a ${nueva.clave}`);
+}
+
+// ---------- comandos de chat (moderación del streamer) ----------
+const { todas: salasVivas } = require('./sala');
+
+function buscarJugador(nombre) {
+  const objetivo = nombre.toLowerCase();
+  for (const sala2 of salasVivas())
+    for (const j of sala2.jugadores.values())
+      if (j.nombre.toLowerCase() === objetivo) return { jug: j, sala: sala2 };
+  return null;
+}
+
+function comando(jug, sala, linea) {
+  const [cmd, ...resto] = linea.trim().split(/\s+/);
+  const arg = resto.join(' ');
+  if (cmd === '/admin') {
+    if (arg === ADMIN_CLAVE) {
+      jug.esAdmin = true;
+      sala.enviar(jug.ws, { t: 'aviso', txt: 'Las Backrooms te reconocen como su guardián.' });
+    } else sala.enviar(jug.ws, { t: 'aviso', txt: 'La clave no abre nada.' });
+    return;
+  }
+  if (!jug.esAdmin) { sala.enviar(jug.ws, { t: 'aviso', txt: 'Comando desconocido.' }); return; }
+  if (cmd === '/anuncio' && arg) {
+    for (const s of salasVivas()) s.difundir({ t: 'anuncio', txt: arg });
+  } else if (cmd === '/kick' && arg) {
+    const r = buscarJugador(arg);
+    if (r) { r.jug.ws.close(1008, 'expulsado'); sala.enviar(jug.ws, { t: 'aviso', txt: `${r.jug.nombre} expulsado.` }); }
+    else sala.enviar(jug.ws, { t: 'aviso', txt: 'No hay nadie con ese nombre.' });
+  } else if (cmd === '/mute' && resto.length) {
+    const r = buscarJugador(resto[0]);
+    const min = parseInt(resto[1], 10) || 10;
+    if (r) { r.jug.muteadoHasta = Date.now() + min * 60000; sala.enviar(jug.ws, { t: 'aviso', txt: `${r.jug.nombre} silenciado ${min} min.` }); }
+    else sala.enviar(jug.ws, { t: 'aviso', txt: 'No hay nadie con ese nombre.' });
+  } else if (cmd === '/ban' && arg) {
+    const r = buscarJugador(arg);
+    if (r) { db.ban(r.jug.token); r.jug.ws.close(1008, 'baneado'); sala.enviar(jug.ws, { t: 'aviso', txt: `${r.jug.nombre} baneado.` }); }
+    else sala.enviar(jug.ws, { t: 'aviso', txt: 'No hay nadie con ese nombre.' });
+  } else {
+    sala.enviar(jug.ws, { t: 'aviso', txt: 'Comandos: /anuncio <txt> · /kick <nombre> · /mute <nombre> [min] · /ban <nombre>' });
+  }
 }
 
 // simulación: 10 Hz para todas las salas con gente dentro
@@ -142,4 +209,5 @@ setInterval(() => {
 
 servidor.listen(PUERTO, () => {
   console.log(`BACKROOMS MMO en http://localhost:${PUERTO}  (ws en /ws)`);
+  console.log(`clave de admin: /admin ${ADMIN_CLAVE}   (fija otra con la variable MMO_ADMIN)`);
 });

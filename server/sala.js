@@ -4,9 +4,10 @@
 // NO se bloquean entre sí; las entidades sí ocupan casilla.
 'use strict';
 
-const { DATA, RNG, generarMapa, esTransitable } = require('./sim/mundo');
+const { DATA, RNG, MapGen, generarMapa, esTransitable } = require('./sim/mundo');
 const Entidades = require('./sim/entidades');
 const P = require('./protocolo');
+const db = require('./db');
 
 let siguienteId = 1;
 const ESCONDITES = new Set(['taquilla', 'nevera', 'archivador']);
@@ -26,6 +27,7 @@ class Sala {
     this.entidades = Entidades.crear(map, DATA.entities, RNG.create(this.semilla + '::ents'));
     this.ruido = null;
     this.alCruzar = null; // lo inyecta server.js (cambio de sala)
+    this.alMorir = null;  // ídem (respawn en Level 0)
   }
 
   get llena() { return this.jugadores.size >= P.CAP_SALA; }
@@ -65,24 +67,47 @@ class Sala {
     };
   }
 
-  entrar(ws, nombre, token) {
+  entrar(ws, nombre, token, expediente) {
     const id = siguienteId++;
     const [x, y] = this.buscarSpawn();
     const jug = {
       id, ws, nombre, token, x, y, rot: 2,
       salud: 100, luz: false, escondido: null, muerto: false,
       inv: [], manos: [null, null],
+      sintonia: expediente ? expediente.sintonia : 0,
+      esAdmin: false, muteadoHasta: 0,
       ultMov: 0, ultChat: 0, canal: null, ofertaEn: null,
     };
+    this.prepararCaminata(jug);
     this.enviar(ws, {
       t: 'bienvenida', id, nivel: this.nivelId, inst: this.inst,
       semilla: this.semilla, x, y, rot: jug.rot,
       salud: jug.salud, inv: jug.inv, manos: jug.manos,
+      sintonia: jug.sintonia,
+      caminata: jug.caminataObjetivo ? { pasos: 0, objetivo: jug.caminataObjetivo } : null,
       jugadores: this.censo(), ...this.estadoDinamico(),
     });
     this.difundir({ t: 'entra', id, nombre, x, y, rot: jug.rot });
     this.jugadores.set(id, jug);
     return jug;
+  }
+
+  // La caminata online es PERSONAL: tus pasos reales en el nivel te van
+  // desintonizando hasta que TÚ haces no-clip al destino (el nivel no puede
+  // «ceder» para 60 personas a la vez). El objetivo sale de tu token: cada
+  // errante recorre su propia distancia.
+  prepararCaminata(jug) {
+    jug.pasosSala = 0;
+    jug.caminataObjetivo = (this.map.caminatas || []).length
+      ? MapGen.walkingGoal(this.def, `${jug.token}::${this.clave}`, 1, 0)
+      : 0;
+  }
+
+  // sube la Sintonía (0-100): presenciar horrores te acompasa con el lugar
+  tune(jug, n) {
+    jug.sintonia = Math.max(0, Math.min(100, (jug.sintonia || 0) + n));
+    db.guardarSintonia(jug.token, jug.sintonia);
+    this.enviar(jug.ws, { t: 'sintonia', v: jug.sintonia });
   }
 
   salir(jug) {
@@ -102,8 +127,24 @@ class Sala {
       jug.x = nx; jug.y = ny; jug.ultMov = ahora;
       this.difundir({ t: 'mueve', id: jug.id, x: nx, y: ny });
       this.pisar(jug);
+      this.pasoCaminata(jug);
     } else {
       this.enviar(jug.ws, { t: 'mueve', id: jug.id, x: jug.x, y: jug.y });
+    }
+  }
+
+  // progreso de la caminata personal: aviso periódico al cliente (que pinta el
+  // fundido gris y los bocadillos) y cruce AUTOMÁTICO al llegar al objetivo
+  pasoCaminata(jug) {
+    if (!jug.caminataObjetivo || jug.muerto) return;
+    jug.pasosSala++;
+    if (jug.pasosSala % 20 === 0 || jug.pasosSala === jug.caminataObjetivo)
+      this.enviar(jug.ws, { t: 'caminata', pasos: jug.pasosSala, objetivo: jug.caminataObjetivo });
+    if (jug.pasosSala >= jug.caminataObjetivo) {
+      const defC = this.map.caminatas[0];
+      if (!defC) return;
+      this.tune(jug, 3);
+      if (this.alCruzar) this.alCruzar(jug, this, defC, { sinTarjeta: true });
     }
   }
 
@@ -225,6 +266,8 @@ class Sala {
       this.enviar(jug.ws, { t: 'aviso', txt: 'Ese camino no lleva a ninguna parte (nivel fuera del piloto).' });
       return;
     }
+    // cruzar por donde nadie debería te sintoniza con el lugar
+    if (def.tipo === 'arriesgada' || def.tipo === 'void') this.tune(jug, 5);
     if (this.alCruzar) this.alCruzar(jug, this, def);
   }
 
@@ -249,6 +292,7 @@ class Sala {
     if (e.vida <= 0) {
       e.viva = false;
       this.difundir({ t: 'entMuere', uid: e.uid });
+      this.tune(jug, 8); // matar es el mayor de los horrores presenciables
     } else {
       this.difundir({ t: 'entHit', uid: e.uid });
     }
@@ -263,22 +307,19 @@ class Sala {
     this.ruido = { x, y, radio, hasta: Date.now() + 3200 };
   }
 
-  // ---------- muerte y reaparición (M2: en la misma sala; M3: Level 0 nuevo) ----------
+  // ---------- muerte: como el roguelike, despiertas otra vez en Level 0 ----------
   morir(jug, causa) {
     jug.muerto = true;
     jug.escondido = null;
+    jug.canal = null;
+    db.sumarMuerte(jug.token);
     this.difundir({ t: 'muere', id: jug.id, causa });
     setTimeout(() => {
       if (!this.jugadores.has(jug.id)) return;
-      const [x, y] = this.buscarSpawn();
-      jug.x = x; jug.y = y;
       jug.salud = 100;
       jug.muerto = false;
       jug.inv = []; jug.manos = [null, null];
-      this.difundir({ t: 'mueve', id: jug.id, x, y });
-      this.enviar(jug.ws, { t: 'salud', valor: 100 });
-      this.enviar(jug.ws, { t: 'inv', inv: [], manos: jug.manos });
-      this.enviar(jug.ws, { t: 'aviso', txt: `Moriste (${causa}). Despiertas de nuevo bajo los fluorescentes, con las manos vacías.` });
+      if (this.alMorir) this.alMorir(jug, this, causa);
     }, 2500);
   }
 
@@ -292,6 +333,10 @@ class Sala {
 
   chat(jug, txt) {
     const ahora = Date.now();
+    if (ahora < (jug.muteadoHasta || 0)) {
+      this.enviar(jug.ws, { t: 'aviso', txt: 'Estás silenciado. Las paredes no te escuchan.' });
+      return;
+    }
     if (ahora - jug.ultChat < P.COOLDOWN_CHAT) {
       this.enviar(jug.ws, { t: 'aviso', txt: 'Más despacio: un mensaje cada segundo y medio.' });
       return;
@@ -349,4 +394,6 @@ function estado() {
   };
 }
 
-module.exports = { Sala, asignar, tickTodas, estado };
+function todas() { return [...salas.values()]; }
+
+module.exports = { Sala, asignar, tickTodas, estado, todas };

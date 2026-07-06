@@ -85,15 +85,17 @@
         w.log(`Estás en ${w.level.nombre} · instancia ${m.inst}. Pulsa T para hablar.`, 'good');
         crearChatUI();
         break;
-      case 'nivel': { // cruce de salida: nivel nuevo con su tarjeta
+      case 'nivel': { // cruce de salida: nivel nuevo (la caminata funde sin tarjeta)
         construirNivel(m, w);
         const def = w.level;
-        w.ui.showLevelCard(def, () => {
+        const listo2 = () => {
           w.ui.updateHUD();
           w.log(`— ${def.nombre} —`, 'event');
           if (m.via) w.log(m.via, 'event');
           if (window.Sfx) { Sfx.stopAmbient(); Sfx.ambient(def); }
-        });
+        };
+        if (m.sinTarjeta) listo2();
+        else w.ui.showLevelCard(def, listo2);
         break;
       }
       case 'entra': if (listo) Otros.entra(m); break;
@@ -227,6 +229,36 @@
         break;
       case 'luzDe': Otros.luz(m.id, m.si); break;
 
+      // ---------- sintonía y caminata personal ----------
+      case 'sintonia': {
+        const antes = w.player.sintonia || 0;
+        w.player.sintonia = m.v;
+        if (m.v > antes) w.log(`El zumbido suena un poco más… tuyo. (Sintonía ${m.v})`, 'event');
+        w.ui.updateHUD();
+        break;
+      }
+      case 'caminata': {
+        w.pasosNivel = m.pasos;
+        w._caminataObjetivo = m.objetivo; // alimenta el fundido gris del render y el zumbido
+        const f = m.pasos / Math.max(1, m.objetivo);
+        const A = w._caminataAvisos || (w._caminataAvisos = {});
+        const avisa = (key, limite, texto) => {
+          if (f >= limite && !A[key]) {
+            A[key] = true;
+            if (window.Effects) Effects.bubble(w.player.x, w.player.y, texto, w.player);
+          }
+        };
+        avisa('lejos1', 0.3, 'He perdido por completo el punto de partida.');
+        avisa('lejos2', 0.65, 'El zumbido ya no suena igual… llevo demasiado caminando.');
+        avisa('lejos3', 0.82, 'El amarillo se apaga. Bajo la moqueta asoma hormigón.');
+        avisa('lejos4', 0.94, 'Hay columnas al final del pasillo. Ya no distingo dónde cambia el nivel.');
+        break;
+      }
+      case 'anuncio':
+        w.log(`📢 ${m.txt}`, 'danger');
+        if (window.Effects) Effects.bubble(w.player.x, w.player.y, `📢 ${m.txt}`, w.player);
+        break;
+
       case 'aviso': w.log(m.txt, 'event'); break;
       case 'error': w.log(m.txt, 'danger'); break;
     }
@@ -266,8 +298,14 @@
     w.player.salud = m.salud ?? 100;
     w.player.inv = m.inv || [];
     w.player.manos = m.manos || [null, null];
+    w.player.sintonia = m.sintonia || 0;
+    w.pasosNivel = m.caminata ? m.caminata.pasos : 0;
+    w._caminataObjetivo = m.caminata ? m.caminata.objetivo : 0;
+    w._caminataAvisos = {};
     w.escondido = null;
     w._ignoraExit = null;
+    // el códice local del navegador sigue coleccionando niveles transitados
+    try { Game.Profiles.registrarEntrada(m.nivel); } catch (e) {}
     w.itemsVersion = (w.itemsVersion || 0) + 1;
     w.mapaVersion = (w.mapaVersion || 0) + 1;
     const g = w.map.grid;
