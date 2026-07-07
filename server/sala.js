@@ -84,19 +84,14 @@ class Sala {
       input: { dx: 0, dy: 0 }, distSala: 0,
       salud: 100, luz: false, escondido: null, muerto: false,
       inv: [], manos: [null, null], equipo: { cara: null, cuerpo: null, pies: null },
-      sintonia: expediente ? expediente.sintonia : 0,
-      instintos: expediente ? (expediente.instintos || []) : [],
-      ofertaInst: null, umbralesVistos: {},
       esAdmin: false, muteadoHasta: 0,
       ultMov: 0, ultChat: 0, canal: null, ofertaEn: null,
     };
-    for (const u of [20, 40, 60, 80]) if (jug.sintonia >= u) jug.umbralesVistos[u] = true;
     this.prepararCaminata(jug);
     this.enviar(ws, {
       t: 'bienvenida', id, nivel: this.nivelId, inst: this.inst,
       semilla: this.semilla, x, y, rot: jug.rot,
       salud: jug.salud, inv: jug.inv, manos: jug.manos,
-      sintonia: jug.sintonia,
       caminata: jug.caminataObjetivo ? { pasos: 0, objetivo: jug.caminataObjetivo } : null,
       jugadores: this.censo(), ...this.estadoDinamico(),
     });
@@ -117,42 +112,9 @@ class Sala {
       : 0;
   }
 
-  // sube la Sintonía (0-100): presenciar horrores te acompasa con el lugar.
-  // Al cruzar un umbral (20/40/60/80) las Backrooms ofrecen un INSTINTO.
-  tune(jug, n) {
-    jug.sintonia = Math.max(0, Math.min(100, (jug.sintonia || 0) + n));
-    db.guardarSintonia(jug.token, jug.sintonia);
-    this.enviar(jug.ws, { t: 'sintonia', v: jug.sintonia });
-    for (const u of [20, 40, 60, 80]) {
-      if (jug.sintonia < u || jug.umbralesVistos[u]) continue;
-      jug.umbralesVistos[u] = true;
-      this.ofrecerInstinto(jug, u);
-    }
-  }
-
-  ofrecerInstinto(jug, umbral) {
-    let pool = Sala.INSTINTOS_MMO.filter((k) => !jug.instintos.includes(k));
-    if (umbral < 80) pool = pool.filter((k) => k !== 'noclip'); // el noclip se gana
-    if (!pool.length) return;
-    const rng = RNG.create(`${jug.token}::instinto::${umbral}`);
-    const ofertas = rng.shuffle(pool.slice()).slice(0, 3);
-    jug.ofertaInst = ofertas;
-    this.enviar(jug.ws, { t: 'instintos', umbral, ofertas });
-  }
-
-  elegirInstinto(jug, id) {
-    if (!jug.ofertaInst || !jug.ofertaInst.includes(id)) return;
-    jug.ofertaInst = null;
-    jug.instintos.push(id);
-    db.guardarInstintos(jug.token, jug.instintos);
-    this.enviarInv(jug);
-    this.enviar(jug.ws, { t: 'aviso', txt: 'El instinto se asienta en tu carne. Ya es tuyo.' });
-  }
-
   enviarInv(jug) {
     this.enviar(jug.ws, {
-      t: 'inv', inv: jug.inv, manos: jug.manos,
-      equipo: jug.equipo, instintos: jug.instintos,
+      t: 'inv', inv: jug.inv, manos: jug.manos, equipo: jug.equipo,
     });
   }
 
@@ -196,7 +158,6 @@ class Sala {
       if (pasos >= jug.caminataObjetivo) {
         const defC = this.map.caminatas[0];
         if (!defC) return;
-        this.tune(jug, 3);
         if (this.alCruzar) this.alCruzar(jug, this, defC, { sinTarjeta: true });
       }
     }
@@ -334,8 +295,6 @@ class Sala {
       this.enviar(jug.ws, { t: 'aviso', txt: 'Ese camino no lleva a ninguna parte (nivel fuera del piloto).' });
       return;
     }
-    // cruzar por donde nadie debería te sintoniza con el lugar
-    if (def.tipo === 'arriesgada' || def.tipo === 'void') this.tune(jug, 5);
     if (this.alCruzar) this.alCruzar(jug, this, def);
   }
 
@@ -365,7 +324,6 @@ class Sala {
     if (e.vida <= 0) {
       e.viva = false;
       this.difundir({ t: 'entMuere', uid: e.uid });
-      this.tune(jug, 8); // matar es el mayor de los horrores presenciables
     } else {
       this.difundir({ t: 'entHit', uid: e.uid });
     }
@@ -425,11 +383,10 @@ class Sala {
             if (!e.viva || Math.abs(e.x - jug.x) + Math.abs(e.y - jug.y) > 3) continue;
             e.vida -= 30;
             e.huyendoHasta = Date.now() + 4000;
-            if (e.vida <= 0) { e.viva = false; this.difundir({ t: 'entMuere', uid: e.uid }); this.tune(jug, 8); }
+            if (e.vida <= 0) { e.viva = false; this.difundir({ t: 'entMuere', uid: e.uid }); }
             else this.difundir({ t: 'entHit', uid: e.uid });
           }
           this.difundir({ t: 'golpe', id: jug.id, x: jug.x, y: jug.y });
-          this.tune(jug, 5); // el fuego griego deja marca
         } else if (ef.activo === 'paralisis') {
           jug.inv.splice(m.slot, 1);
           for (const e of this.entidades) {
@@ -487,25 +444,7 @@ class Sala {
     this.enviarInv(jug);
   }
 
-  // ---------- noclip (instinto de sintonía 80): atravesar la pared con G ----------
-  noclip(jug) {
-    if (jug.muerto || !jug.instintos.includes('noclip')) return;
-    const [fx, fy] = cardinalDe(jug.rot ?? Math.PI);
-    const tx = Fisica.tileDe(jug.x), ty = Fisica.tileDe(jug.y);
-    const mx = tx + fx, my = ty + fy;         // el muro que atraviesas
-    const dx = tx + fx * 2, dy = ty + fy * 2; // donde reapareces
-    if (esTransitable(this.map, mx, my) || !esTransitable(this.map, dx, dy)) {
-      this.enviar(jug.ws, { t: 'aviso', txt: 'Necesitas una pared delante y un hueco al otro lado.' });
-      return;
-    }
-    const d = this.rng.int(1, 20);
-    this.difundir({ t: 'dado', id: jug.id, valor: d, exito: d > 3 });
-    if (d <= 3) { this.morir(jug, 'el Vacío entre las paredes'); return; }
-    jug.x = dx; jug.y = dy;
-    this.tune(jug, 2);
-    this.difundir({ t: 'mueve', id: jug.id, x: dx, y: dy });
-    this.proximidad(jug);
-  }
+
 
   hacerRuido(x, y, radio) {
     this.ruido = { x, y, radio, hasta: Date.now() + 3200 };
@@ -582,7 +521,6 @@ class Sala {
       for (let y = 0; y < CH; y++)
         for (let x = 0; x < CH; x++) tiles.push(g.t[(cy + y) * g.w + (cx + x)]);
       this.difundir({ t: 'remodel', x: cx, y: cy, ch: CH, tiles });
-      for (const j of this.jugadores.values()) this.tune(j, 2); // deja huella en todos
       return true;
     }
     return false;
@@ -597,13 +535,6 @@ class Sala {
     for (const jug of this.jugadores.values()) {
       this.integrar(jug, dt, movidos);
       if (jug.canal && ahora >= jug.canal.hasta) this.resolverCanal(jug);
-      // sangre amarilla: el lugar te repara — 1 de salud cada 6 s
-      if (jug.instintos.includes('sangre_amarilla') && !jug.muerto && jug.salud < 100 &&
-          ahora - (jug._regenT || 0) > 6000) {
-        jug._regenT = ahora;
-        jug.salud++;
-        this.enviar(jug.ws, { t: 'salud', valor: jug.salud });
-      }
     }
     Entidades.tick(this, ahora, dt);
     // difusión BATCHED de posiciones: un solo mensaje por tick con lo que se movió
@@ -722,11 +653,6 @@ setInterval(() => {
   metricas.bytes = 0;
   metricas.bytesT = Date.now();
 }, 5000);
-
-// pool de instintos que tienen efecto en el mundo compartido (los de sed/
-// hambre/registro llegarán cuando esas mecánicas existan online)
-Sala.INSTINTOS_MMO = ['oido_moqueta', 'pies_moqueta', 'reflejos_errante',
-  'piel_fluorescente', 'sangre_amarilla', 'noclip'];
 
 function todas() { return [...salas.values()]; }
 

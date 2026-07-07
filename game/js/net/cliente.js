@@ -101,7 +101,7 @@
       }
       case 'entra': if (listo) Otros.entra(m); break;
       case 'sale': if (listo) Otros.sale(m.id); break;
-      case 'mueve': // teleports: spawn, respawn, noclip, corrección dura
+      case 'mueve': // teleports: spawn, respawn, corrección dura
         if (!listo) return;
         if (m.id === miId) {
           w.player.x = m.x; w.player.y = m.y;
@@ -174,15 +174,9 @@
         w.player.inv = m.inv;
         w.player.manos = m.manos;
         if (m.equipo) w.player.equipo = m.equipo;
-        if (m.instintos) w.player.instintos = m.instintos;
         w.ui.updateHUD();
         if (document.getElementById('backpack-panel').style.display !== 'none')
           w.ui.toggleBackpack(true); // repintar el panel abierto
-        break;
-      case 'instintos':
-        w.ui.showInstintos(m.umbral,
-          m.ofertas.map((k) => ({ id: k, ...Game.INSTINTOS[k] })),
-          (id) => enviar({ t: 'instinto', id }));
         break;
       case 'itemSuelto': {
         w.map.items[m.idx] = { x: m.x, y: m.y, id: m.id, taken: false };
@@ -254,14 +248,6 @@
         break;
       case 'luzDe': Otros.luz(m.id, m.si); break;
 
-      // ---------- sintonía y caminata personal ----------
-      case 'sintonia': {
-        const antes = w.player.sintonia || 0;
-        w.player.sintonia = m.v;
-        if (m.v > antes) w.log(`El zumbido suena un poco más… tuyo. (Sintonía ${m.v})`, 'event');
-        w.ui.updateHUD();
-        break;
-      }
       case 'caminata': {
         w.pasosNivel = m.pasos;
         w._caminataObjetivo = m.objetivo; // alimenta el fundido gris del render y el zumbido
@@ -340,7 +326,6 @@
     w.player.salud = m.salud ?? 100;
     w.player.inv = m.inv || [];
     w.player.manos = m.manos || [null, null];
-    w.player.sintonia = m.sintonia || 0;
     w.pasosNivel = m.caminata ? m.caminata.pasos : 0;
     w._caminataObjetivo = m.caminata ? m.caminata.objetivo : 0;
     w._caminataAvisos = {};
@@ -416,7 +401,6 @@
   function accion() { enviar({ t: 'accion' }); }           // ESPACIO
   function usar(mano) { enviar({ t: 'usar', mano }); }     // Q/E
   function mochila(que, datos) { enviar({ t: 'mochila', que, ...datos }); }
-  function noclip() { enviar({ t: 'noclip' }); }           // G (instinto 80)
 
   function luzToggle() {
     const w = Game.world;
@@ -466,7 +450,7 @@
 
   window.Net = {
     iniciar, setInput, setRot, frame,
-    accion, usar, luzToggle, mochila, noclip,
+    accion, usar, luzToggle, mochila,
     abrirChat, chatAbierto,
     get activo() { return listo; },
     get id() { return miId; },

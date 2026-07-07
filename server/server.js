@@ -112,8 +112,6 @@ wss.on('connection', (ws, req) => {
     else if (m.t === 'usar') sala.usar(jug, m.mano);
     else if (m.t === 'luz') sala.luz(jug, m.si);
     else if (m.t === 'mochila') sala.mochila(jug, m);
-    else if (m.t === 'instinto') sala.elegirInstinto(jug, m.id);
-    else if (m.t === 'noclip') sala.noclip(jug);
     else if (m.t === 'chat') {
       if (m.txt.startsWith('/')) { comando(jug, sala, m.txt); return; }
       const txt = filtro.chatLimpio(m.txt);
@@ -157,7 +155,6 @@ function cambiarDeSala(jug, salaVieja, defSalida, opts) {
     x, y, rot: jug.rot, via: defSalida.texto,
     sinTarjeta: !!(opts && opts.sinTarjeta),
     salud: jug.salud, inv: jug.inv, manos: jug.manos,
-    sintonia: jug.sintonia,
     caminata: jug.caminataObjetivo ? { pasos: 0, objetivo: jug.caminataObjetivo } : null,
     jugadores: nueva.censo(), ...nueva.estadoDinamico(),
   });

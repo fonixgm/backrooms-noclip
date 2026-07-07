@@ -1282,7 +1282,7 @@
 
   // No-clip (Instinto de umbral 80): atraviesas la pared que encaras
   function noclip() {
-    if (world.online) { Net.noclip(); return; }
+    if (world.online) return; // sin Sintonía en el MMO (retirada a petición)
     if (world.busy || world.over || world.escondido) return;
     if (!world.instinto('noclip')) {
       if ((world.player.instintos || []).length)

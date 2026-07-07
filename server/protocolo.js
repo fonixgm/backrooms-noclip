@@ -74,11 +74,6 @@ function leer(raw) {
       if (m.tipo !== undefined) { if (!['cara', 'cuerpo', 'pies'].includes(m.tipo)) return null; out.tipo = m.tipo; }
       return out;
     }
-    case 'instinto':
-      if (typeof m.id !== 'string' || m.id.length > 32) return null;
-      return { t: 'instinto', id: m.id };             // elección de carta de instinto
-    case 'noclip':
-      return { t: 'noclip' };                         // G: atravesar la pared (instinto 80)
     case 'ping':
       return { t: 'ping' };
     default:

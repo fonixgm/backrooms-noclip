@@ -153,13 +153,8 @@ function detecta(sala, e) {
   let objetivo = null, mejorDist = Infinity;
   for (const j of sala.jugadores.values()) {
     if (j.escondido || j.muerto) continue;
-    // Sintonía alta (v18, online): lo que no es cazador te huele como cosa
-    // del lugar y cada vez le importas menos
-    if ((j.sintonia || 0) >= 30 && e.def.comportamiento !== 'cazador' &&
-        sala.rng.chance((j.sintonia - 20) / 180)) continue;
-    // pies de moqueta (−2) y botas reforzadas (−1): te detectan más tarde
-    const rMod = ((j.instintos || []).includes('pies_moqueta') ? -2 : 0) +
-      (j.equipo && j.equipo.pies === 'botas_reforzadas' ? -1 : 0);
+    // botas reforzadas (−1): te detectan más tarde
+    const rMod = (j.equipo && j.equipo.pies === 'botas_reforzadas' ? -1 : 0);
     const radio = Math.max(1, (d.radio ?? 6) + rMod);
     const dd = Math.hypot(e.x - j.x, e.y - j.y);
     if (dd >= mejorDist) continue;
@@ -171,9 +166,7 @@ function detecta(sala, e) {
     switch (d.tipo) {
       case 'vista': ve = dd <= radio && ver(); break;
       case 'oscuridad': ve = dd <= radio && ver() && enPenumbra(sala, j); break;
-      case 'luz': // piel de fluorescente: te creen una luz más del techo
-        ve = j.luz && dd <= radio && !(j.instintos || []).includes('piel_fluorescente');
-        break;
+      case 'luz': ve = j.luz && dd <= radio; break;
       case 'adyacente':
       case 'contacto': ve = dd <= Math.max(1, (d.radio || 1) + rMod); break;
       case 'sigilo': ve = dd <= radio && ver(); break;
@@ -203,11 +196,6 @@ function golpe(sala, e, jug) {
   e.preparando = false;
   e.prepObjetivo = null;
   if (jug.muerto) return; // los cadáveres no se rematan (muertes dobles en BD)
-  // reflejos de errante: 25% de esquivar el golpe que viste venir
-  if ((jug.instintos || []).includes('reflejos_errante') && sala.rng.chance(0.25)) {
-    sala.difundir({ t: 'entFalla', uid: e.uid });
-    return;
-  }
   const dano = e.def.dano ?? 10;
   jug.salud = Math.max(0, jug.salud - dano);
   sala.difundir({ t: 'entAtaca', uid: e.uid, id: jug.id, dano });
