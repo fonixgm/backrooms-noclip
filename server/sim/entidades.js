@@ -163,7 +163,10 @@ function detecta(sala, e) {
     const radio = Math.max(1, (d.radio ?? 6) + rMod);
     const dd = Math.hypot(e.x - j.x, e.y - j.y);
     if (dd >= mejorDist) continue;
-    const ver = () => FOV.los(sala.map.grid, e.x, e.y, j.x, j.y);
+    // el LOS de Bresenham exige TILES enteros (con floats nunca converge y
+    // recorre hasta el borde del mapa devolviendo siempre falso)
+    const ver = () => FOV.los(sala.map.grid,
+      Fisica.tileDe(e.x), Fisica.tileDe(e.y), Fisica.tileDe(j.x), Fisica.tileDe(j.y));
     let ve = false;
     switch (d.tipo) {
       case 'vista': ve = dd <= radio && ver(); break;

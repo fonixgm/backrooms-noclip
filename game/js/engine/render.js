@@ -649,7 +649,7 @@
               ay += (world.player.y - e.y) * amp * TILE;
             }
           }
-          const lit = world.light[e.y * g.w + e.x];
+          const lit = world.light[Math.round(e.y) * g.w + Math.round(e.x)];
           ctx.save();
           ctx.fillStyle = 'rgba(0,0,0,0.3)';
           ctx.beginPath(); ctx.ellipse(ax + 24, ay + 40, 11, 4, 0, 0, 7); ctx.fill();

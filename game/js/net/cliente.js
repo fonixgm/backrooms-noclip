@@ -361,7 +361,9 @@
 
   function fov(w) {
     const g = w.map.grid;
-    w.light = FOV.compute(g, w.player.x, w.player.y, w.visionActual());
+    // FOV.compute indexa arrays por tile: SIEMPRE coordenadas enteras (v22:
+    // la posición es flotante — un índice fraccionario se escribe en el vacío)
+    w.light = FOV.compute(g, Fisica.tileDe(w.player.x), Fisica.tileDe(w.player.y), w.visionActual());
     for (let i = 0; i < w.light.length; i++) if (w.light[i] > 0) w.explored[i] = 1;
   }
 

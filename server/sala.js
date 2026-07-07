@@ -569,7 +569,8 @@ class Sala {
       // validar: salidas Y jugadores siguen conectados entre sí (BFS del spawn)
       const dist = MapGen.bfsDist(g, this.map.spawn[0], this.map.spawn[1]);
       const ok = this.map.exits.every((e) => dist[e.y * g.w + e.x] >= 0) &&
-        [...this.jugadores.values()].every((j) => dist[j.y * g.w + j.x] >= 0);
+        [...this.jugadores.values()].every(
+          (j) => dist[Fisica.tileDe(j.y) * g.w + Fisica.tileDe(j.x)] >= 0);
       if (!ok) {
         for (let y = 0; y < CH; y++)
           for (let x = 0; x < CH; x++)

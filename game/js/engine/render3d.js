@@ -1125,7 +1125,8 @@
 
   function entVisible(world, e) {
     const g = world.map.grid;
-    const idx = e.y * g.w + e.x;
+    // v22: posiciones flotantes — el índice de luz va por tile redondeado
+    const idx = Math.round(e.y) * g.w + Math.round(e.x);
     const lit = world.light[idx];
     const esSmiler = e.def.glyph === 'smiler';
     return lit > 0.05 ||
