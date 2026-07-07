@@ -1,7 +1,12 @@
+<<<<<<< Updated upstream
 // BACKROOMS MMO — servidor: estáticos del juego + WebSocket de salas.
 // Uso: node server/server.js [puerto]   (por defecto 8080)
 // En producción va detrás de Caddy (TLS); en desarrollo se abre
 // http://localhost:8080 directamente (mismo origen para el ws).
+=======
+// BACKROOMS MMO — estáticos del juego + WebSocket de salas.
+// Uso: node server/server.js [puerto]  (por defecto 8080)
+>>>>>>> Stashed changes
 'use strict';
 
 const http = require('http');
@@ -10,6 +15,7 @@ const path = require('path');
 const { WebSocketServer } = require('ws');
 const P = require('./protocolo');
 const filtro = require('./filtro');
+<<<<<<< Updated upstream
 const { asignar, tickTodas, estado } = require('./sala');
 const { DATA } = require('./sim/mundo');
 const db = require('./db');
@@ -31,16 +37,50 @@ const MIME = {
   '.svg': 'image/svg+xml', '.ico': 'image/x-icon',
   '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.ogg': 'audio/ogg',
   '.ttf': 'font/ttf', '.otf': 'font/otf', '.woff': 'font/woff', '.woff2': 'font/woff2',
+=======
+const { asignar, estado, limpiarVacias } = require('./sala');
+
+const PUERTO = parseInt(process.argv[2] || process.env.PORT, 10) || 8080;
+const HOST = process.env.HOST || '127.0.0.1';
+const RAIZ = path.join(__dirname, '..', 'game');
+
+const MIME = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.mp3': 'audio/mpeg',
+  '.wav': 'audio/wav',
+  '.ogg': 'audio/ogg',
+  '.ttf': 'font/ttf',
+  '.otf': 'font/otf',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+>>>>>>> Stashed changes
 };
 
 const servidor = http.createServer((req, res) => {
   if (req.url === '/estado') {
+<<<<<<< Updated upstream
     res.writeHead(200, { 'content-type': 'application/json' });
+=======
+    res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+>>>>>>> Stashed changes
     res.end(JSON.stringify(estado()));
     return;
   }
   const url = decodeURIComponent((req.url || '/').split('?')[0]);
+<<<<<<< Updated upstream
   // normaliza y encierra dentro de game/ (nada de ../)
+=======
+>>>>>>> Stashed changes
   const ruta = path.normalize(path.join(RAIZ, url === '/' ? 'index.html' : url));
   if (!ruta.startsWith(RAIZ)) { res.writeHead(403); res.end(); return; }
   fs.readFile(ruta, (err, datos) => {
@@ -50,6 +90,7 @@ const servidor = http.createServer((req, res) => {
   });
 });
 
+<<<<<<< Updated upstream
 // ---------- WebSocket ----------
 const wss = new WebSocketServer({ server: servidor, path: '/ws' });
 const porIp = new Map(); // ip -> nº de conexiones
@@ -68,19 +109,52 @@ wss.on('connection', (ws, req) => {
   const ip = reenviada || directa;
   const n = (porIp.get(ip) || 0) + 1;
   if (n > P.CAP_POR_IP && !(esLocal && !reenviada)) { ws.close(1008, 'demasiadas conexiones'); return; }
+=======
+const wss = new WebSocketServer({ server: servidor, path: '/ws' });
+const porIp = new Map();
+
+function etiquetaSala(sala) {
+  return sala.tipo === 'privada'
+    ? `privada:***:${sala.nivelId}:${sala.inst}`
+    : sala.clave;
+}
+
+function ipReal(req) {
+  const directa = req.socket.remoteAddress || '?';
+  const reenviada = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+  return {
+    directa,
+    ip: reenviada || directa,
+    esLocal: directa === '127.0.0.1' || directa === '::1' || directa === '::ffff:127.0.0.1',
+    reenviada,
+  };
+}
+
+wss.on('connection', (ws, req) => {
+  const { ip, esLocal, reenviada } = ipReal(req);
+  const n = (porIp.get(ip) || 0) + 1;
+  if (n > P.CAP_POR_IP && !(esLocal && !reenviada)) {
+    ws.close(1008, 'demasiadas conexiones desde la misma IP');
+    return;
+  }
+>>>>>>> Stashed changes
   porIp.set(ip, n);
 
   let jug = null, sala = null;
   ws.vivo = true;
   ws.on('pong', () => { ws.vivo = true; });
 
+<<<<<<< Updated upstream
   // sin presentarse en 5 s → fuera
+=======
+>>>>>>> Stashed changes
   const timbre = setTimeout(() => { if (!jug) ws.close(1008, 'sin hola'); }, 5000);
 
   ws.on('message', (raw) => {
     const m = P.leer(raw);
     if (!m) return;
     if (m.t === 'hola') {
+<<<<<<< Updated upstream
       if (jug) return; // ya presentado
       clearTimeout(timbre);
       if ((m.v | 0) !== P.VERSION) {
@@ -114,6 +188,27 @@ wss.on('connection', (ws, req) => {
     else if (m.t === 'mochila') sala.mochila(jug, m);
     else if (m.t === 'chat') {
       if (m.txt.startsWith('/')) { comando(jug, sala, m.txt); return; }
+=======
+      if (jug) return;
+      clearTimeout(timbre);
+      const r = asignar({ tipo: m.tipo, codigo: m.codigo, nivelId: m.nivel });
+      if (r.error) {
+        ws.send(JSON.stringify({ t: 'error', txt: r.error }));
+        ws.close(1013, r.error);
+        return;
+      }
+      sala = r.sala;
+      jug = sala.entrar(ws, filtro.nombreLimpio(m.nombre), m.token);
+      console.log(`[+] ${jug.nombre}#${jug.id} → ${etiquetaSala(sala)} (${sala.jugadores.size}/${sala.max})`);
+      return;
+    }
+    if (!jug || !sala) return;
+    if (m.t === 'mover') sala.mover(jug, m.dx, m.dy);
+    else if (m.t === 'rot') sala.girar(jug, m.rot);
+    else if (m.t === 'listo') sala.listo(jug, m.listo);
+    else if (m.t === 'voz') sala.voz(jug, m);
+    else if (m.t === 'chat') {
+>>>>>>> Stashed changes
       const txt = filtro.chatLimpio(m.txt);
       if (txt) sala.chat(jug, txt);
     } else if (m.t === 'ping') sala.enviar(ws, { t: 'pong' });
@@ -122,14 +217,22 @@ wss.on('connection', (ws, req) => {
   ws.on('close', () => {
     porIp.set(ip, (porIp.get(ip) || 1) - 1);
     if (porIp.get(ip) <= 0) porIp.delete(ip);
+<<<<<<< Updated upstream
     if (jug && sala) {
       sala.salir(jug);
       console.log(`[-] ${jug.nombre}#${jug.id} ← ${sala.clave} (${sala.jugadores.size})`);
+=======
+    clearTimeout(timbre);
+    if (jug && sala) {
+      sala.salir(jug);
+      console.log(`[-] ${jug.nombre}#${jug.id} ← ${etiquetaSala(sala)} (${sala.jugadores.size}/${sala.max})`);
+>>>>>>> Stashed changes
     }
   });
   ws.on('error', () => {});
 });
 
+<<<<<<< Updated upstream
 function prepararSala(sala) {
   sala.alCruzar = cambiarDeSala;
   sala.alMorir = (jug, salaVieja, causa) => cambiarDeSala(jug, salaVieja, {
@@ -221,15 +324,27 @@ function comando(jug, sala, linea) {
 setInterval(() => tickTodas(Date.now()), 100);
 
 // latido: conexiones muertas fuera cada 30 s
+=======
+>>>>>>> Stashed changes
 setInterval(() => {
   for (const ws of wss.clients) {
     if (!ws.vivo) { ws.terminate(); continue; }
     ws.vivo = false;
     try { ws.ping(); } catch (e) {}
   }
+<<<<<<< Updated upstream
 }, 30000);
 
 servidor.listen(PUERTO, () => {
   console.log(`BACKROOMS MMO en http://localhost:${PUERTO}  (ws en /ws)`);
   console.log(`clave de admin: /admin ${ADMIN_CLAVE}   (fija otra con la variable MMO_ADMIN)`);
+=======
+  limpiarVacias();
+}, 30000);
+
+servidor.listen(PUERTO, HOST, () => {
+  console.log(`BACKROOMS MMO en http://${HOST}:${PUERTO}  (ws en /ws)`);
+  console.log('Pública:  /');
+  console.log('Privada:  /?sala=privada&codigo=TU-CODIGO');
+>>>>>>> Stashed changes
 });

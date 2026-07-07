@@ -23,7 +23,49 @@ fiel al lore: niveles, entidades, salidas y mecánicas salen de las páginas rea
 Objetivo: encontrar una de las rarísimas rutas de escape de vuelta a la realidad.
 La muerte es permanente: despiertas otra vez en Level 0.
 
-Parámetros de URL útiles: `?seed=misemilla&autostart=1`, `?render=2d` y `?nofx=1`.
+Parámetros de URL útiles: `?seed=misemilla&autostart=1`, `?render=2d`, `?nofx=1`,
+`?offline=1` y `?turnos=1` para recuperar el modo clásico durante pruebas.
+
+## Modo online experimental
+
+El modo offline sigue funcionando con doble clic. Cuando el juego se sirve desde web (`http`/`https`), el modo normal es online y el botón principal entra en sala pública.
+
+Para jugar con otras personas hace falta arrancar el servidor:
+
+```powershell
+cd server
+npm ci
+npm start
+```
+
+Luego abre:
+
+```text
+http://localhost:8080/
+```
+
+Salas:
+
+- Pública: `http://localhost:8080/`
+- Privada por código: `http://localhost:8080/?sala=privada&codigo=MI-SALA`
+- Estado del servidor: `http://localhost:8080/estado`
+
+Privacidad para streamers:
+
+- El campo del código privado está oculto.
+- Al conectar a una sala privada, el cliente borra `codigo`/`room` de la barra de direcciones.
+- El registro del juego, `/estado` y la consola del servidor no imprimen códigos privados.
+
+Diseño actual del online:
+
+- El servidor valida movimiento y colisiones.
+- El mapa no viaja por red; cliente y servidor lo generan con la misma semilla.
+- Las salas públicas se dividen en instancias de hasta 36 jugadores.
+- Las salas privadas tienen hasta 12 jugadores para conservar tensión y legibilidad.
+- Cada sala empieza en lobby: los jugadores esperan y pulsan **LISTO**; la expedición arranca cuando todos están listos.
+- La semilla compartida cambia por día UTC.
+- M1 online incluye lobby, presencia, movimiento y chat.
+- El progreso de caminata/salidas debe ser personal por jugador, no global de sala. Las interacciones avanzadas del roguelike quedan para fases posteriores autoritativas.
 
 ## Estructura
 
@@ -33,6 +75,7 @@ data/raw/       Snapshot local de Levels, Entities, Objects, Phenomena y Groups 
 data/parsed/    Grafo estructurado: 734 niveles, 197 entidades, 89 objetos y 137 fenómenos/grupos
 data/game/      Fichas jugables en español: 30 niveles, 16 entidades y 13 objetos + mapa-piloto.html
 game/           El juego (HTML/JS/Canvas puro, cero dependencias)
+server/         Servidor Node/WebSocket para el modo online experimental
 ```
 
 ## Comandos del pipeline (Node)

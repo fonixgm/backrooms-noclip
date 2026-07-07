@@ -8,6 +8,8 @@
 
   // ---------- selección de renderizador: 3D (Three.js) por defecto, ?render=2d de respaldo ----------
   const paramsPre = new URLSearchParams(location.search);
+  // ?turnos=1 conserva el modo clásico para depuración y comparativas.
+  world.realTime = paramsPre.get('turnos') !== '1';
   let use3D = paramsPre.get('render') !== '2d' && window.Render3D;
   const glCanvas = document.getElementById('gl-canvas');
   if (use3D) {
@@ -21,6 +23,44 @@
       glCanvas.style.display = 'none';
     }
   }
+
+  // ---------- viewport móvil ----------
+  const gameWrap = document.getElementById('game-wrap');
+  function esMovil() {
+    return window.matchMedia?.('(pointer: coarse)').matches || innerWidth < 820 || innerHeight < 520;
+  }
+  function resizeViewport() {
+    if (!gameWrap) return;
+    const movil = esMovil();
+    const w = movil ? Math.max(480, Math.round(window.innerWidth || 960)) : 960;
+    const h = movil ? Math.max(270, Math.round(window.innerHeight || 600)) : 600;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w; canvas.height = h;
+      glCanvas.width = w; glCanvas.height = h;
+      Render.resize?.();
+      if (use3D) Render3D.resize?.();
+    }
+    if (movil) {
+      gameWrap.style.width = '100vw';
+      gameWrap.style.height = '100dvh';
+    } else {
+      gameWrap.style.width = '960px';
+      gameWrap.style.height = '600px';
+    }
+  }
+  async function entrarPantallaCompleta() {
+    if (!esMovil()) return;
+    try {
+      if (!document.fullscreenElement) await document.documentElement.requestFullscreen?.();
+    } catch (e) {}
+    try { await screen.orientation?.lock?.('landscape'); } catch (e) {}
+    resizeViewport();
+  }
+  window.GameViewport = { resize: resizeViewport, fullscreen: entrarPantallaCompleta };
+  window.addEventListener('resize', resizeViewport);
+  window.addEventListener('orientationchange', () => setTimeout(resizeViewport, 120));
+  screen.orientation?.addEventListener?.('change', resizeViewport);
+  resizeViewport();
 
   // sprites PNG personalizados (game/assets/sprites/) si existen
   Sprites.tryOverrides([
@@ -39,6 +79,7 @@
   // el audio se desbloquea con el primer gesto (política de los navegadores)
   document.addEventListener('keydown', () => Sfx.unlock(), { once: true });
   document.addEventListener('click', () => Sfx.unlock(), { once: true });
+  document.addEventListener('pointerdown', () => Sfx.unlock(), { once: true });
 
   // slider de volumen del título (en partida el volumen vive en Ajustes: ESC)
   for (const sid of ['vol-slider-title']) {
@@ -89,6 +130,7 @@
     sndMenu.style.display = 'none';
     if (world.level && !world.over &&
         document.getElementById('exit-modal').style.display === 'none' &&
+        document.getElementById('game-menu').style.display === 'none' &&
         document.getElementById('dice-overlay').style.display === 'none') world.busy = false;
   }
   for (const [id, canal] of SND) {
@@ -113,6 +155,40 @@
     pintarBtnMute();
   };
   document.getElementById('btn-snd-close').onclick = cerrarSndMenu;
+
+  // ---------- menú de partida ----------
+  const gameMenu = document.getElementById('game-menu');
+  function abrirGameMenu() {
+    if (!gameMenu || !world.level || world.over) return;
+    gameMenu.style.display = 'flex';
+    world.busy = true;
+  }
+  function cerrarGameMenu() {
+    if (!gameMenu) return;
+    gameMenu.style.display = 'none';
+    if (world.level && !world.over &&
+        document.getElementById('exit-modal').style.display === 'none' &&
+        document.getElementById('dice-overlay').style.display === 'none' &&
+        sndMenu.style.display === 'none') world.busy = false;
+  }
+  function salirAlInicio() {
+    cerrarGameMenu();
+    cerrarSndMenu();
+    try { if (window.Net) Net.cerrar(); } catch (e) {}
+    try { if (window.Voz) Voz.desactivar(); } catch (e) {}
+    try { if (window.Sfx) Sfx.stopAmbient(); } catch (e) {}
+    world.online = false;
+    world.busy = false;
+    world.ui.show('title');
+    refreshTitle();
+  }
+  document.getElementById('btn-game-menu').onclick = abrirGameMenu;
+  document.getElementById('btn-menu-continue').onclick = cerrarGameMenu;
+  document.getElementById('btn-menu-sound').onclick = () => {
+    cerrarGameMenu();
+    abrirSndMenu();
+  };
+  document.getElementById('btn-menu-title').onclick = salirAlInicio;
 
   // ---------- debug (v20.2): teleport a cualquier nivel desde Ajustes ----------
   {
@@ -147,50 +223,48 @@
   const btnSndTitle = document.getElementById('btn-sound-menu-title');
   if (btnSndTitle) btnSndTitle.onclick = abrirSndMenu;
 
-  // v22: conjunto de teclas de movimiento PULSADAS (keydown/keyup); el vector
-  // de input se calcula en cada frame del bucle — movimiento libre y suave
-  const teclas = new Set();
-  document.addEventListener('keyup', (ev) => teclas.delete(ev.code));
-  window.addEventListener('blur', () => {
-    teclas.clear();
-    if (world.online && window.Net) Net.setInput(0, 0);
-  });
-
   let lastStepT = 0; // mantener pulsado = velocidad CONSTANTE (v16)
   document.addEventListener('keydown', (ev) => {
     if (!world.level || world.over) return;
     if (document.getElementById('screen-card').style.display !== 'none') return;
-    // escribiendo en el chat del MMO: el juego no oye nada
+    // escribiendo en el chat online: el juego no consume teclas.
     if (window.Net && Net.chatAbierto && Net.chatAbierto()) return;
+    if (gameMenu && gameMenu.style.display !== 'none') {
+      if (ev.code === 'Escape') cerrarGameMenu();
+      ev.preventDefault();
+      return;
+    }
     const tercera = use3D && Render3D.modo === 'tercera';
-    // ---------- modo online (BACKROOMS MMO v22): movimiento LIBRE ----------
-    // las teclas de movimiento solo se apuntan; el vector se calcula por frame
+    // ---------- modo online: movimiento/rotación los valida el servidor ----------
     if (world.online) {
       if (KEYS[ev.code]) {
         ev.preventDefault();
-        teclas.add(ev.code);
+        const [sdx, sdy] = KEYS[ev.code];
+        if (tercera) {
+          if (sdy === -1) Net.avanzar(1);
+          else if (sdy === 1) Net.avanzar(-1);
+          else Net.girar(sdx);
+        } else {
+          let dx = sdx, dy = sdy;
+          if (use3D && Render3D.rot) {
+            const th = -Render3D.rot * Math.PI / 2;
+            dx = Math.round(Math.cos(th) * sdx - Math.sin(th) * sdy);
+            dy = Math.round(Math.sin(th) * sdx + Math.cos(th) * sdy);
+          }
+          Net.moverPantalla(dx, dy);
+        }
       } else if (ev.code === 'KeyT' || ev.code === 'Enter') {
         ev.preventDefault();
         Net.abrirChat();
-      } else if (ev.code === 'Space') {
-        ev.preventDefault();
-        Net.accion(); // contextual: esconderse, romper, reabrir la oferta de salida
-      } else if (ev.code === 'KeyQ' || ev.code === 'KeyE') {
-        if (tercera || !use3D) Net.usar(ev.code === 'KeyQ' ? 0 : 1);
-        else Render3D.rotar(ev.code === 'KeyQ' ? 1 : -1);
-      } else if (ev.code === 'KeyF') Net.luzToggle();
-      else if (/^Digit[1-6]$/.test(ev.code)) Game.useItem(parseInt(ev.code.slice(5), 10) - 1);
-      else if (ev.code === 'KeyB') world.ui.toggleBackpack();
+      } else if (ev.code === 'KeyF') Game.toggleLuz();
       else if (ev.code === 'KeyL') world.ui.toggleLog();
       else if (ev.code === 'KeyC') world.ui.toggleCodex();
       else if (ev.code === 'KeyM' || ev.code === 'KeyN') Minimap.toggleBig();
       else if (ev.code === 'Escape') {
         if (Minimap.visible) Minimap.toggleBig(false);
-        else if (document.getElementById('backpack-panel').style.display !== 'none') world.ui.toggleBackpack(false);
         else if (sndMenu.style.display !== 'none') cerrarSndMenu();
         else abrirSndMenu();
       }
-      // (X=esperar no aplica online: el mundo ya no espera por nadie)
       return;
     }
     const autoRepeatTime2DMove = 150; // tiempo en ms mínimo entre pasos al mantener pulsada una tecla de movimiento en modo 2D
@@ -256,60 +330,17 @@
     } else if (/^Digit[1-6]$/.test(ev.code)) Game.useItem(parseInt(ev.code.slice(5), 10) - 1);
   });
 
-  // ---------- bucle de animación (y, online, también el input continuo) ----------
+  // ---------- bucle de animación + reloj de simulación ----------
   function lerp(a, b, f) { return a + (b - a) * f; }
-
-  const GIRO_RAD_S = 3.1; // velocidad de giro manteniendo A/D en tercera persona
-  let lastFrameT = 0;
 
   function loop(t) {
     requestAnimationFrame(loop);
-    const dtF = Math.min(0.1, (t - lastFrameT) / 1000 || 0);
-    lastFrameT = t;
     if (!world.level || !world.player) return;
+    Game.tickRealTime(t);
     const p = world.player;
-
-    // ---------- v22: vector de movimiento por frame (movimiento libre) ----------
-    if (world.online && window.Net && Net.activo &&
-        !(Net.chatAbierto && Net.chatAbierto()) &&
-        document.getElementById('screen-card').style.display === 'none') {
-      // suma de las teclas pulsadas en coordenadas de PANTALLA
-      let sx = 0, sy = 0;
-      for (const code of teclas) {
-        const v = KEYS[code];
-        if (v) { sx += v[0]; sy += v[1]; }
-      }
-      sx = Math.sign(sx); sy = Math.sign(sy);
-      const tercera = use3D && Render3D.modo === 'tercera';
-      if (tercera) {
-        // A/D giran suave; W/S avanzan según el ángulo θ
-        if (sx) Net.setRot((p.rot || 0) + sx * GIRO_RAD_S * dtF);
-        const s = -sy; // W (pantalla arriba) = avanzar
-        if (s) Net.setInput(Math.sin(p.rot || 0) * s, -Math.cos(p.rot || 0) * s);
-        else Net.setInput(0, 0);
-      } else {
-        // 2D / cámara alta: 8 direcciones relativas a la pantalla
-        let dx = sx, dy = sy;
-        if (use3D && Render3D.rot) {
-          const th = -Render3D.rot * Math.PI / 2;
-          const rx2 = Math.cos(th) * sx - Math.sin(th) * sy;
-          const ry2 = Math.sin(th) * sx + Math.cos(th) * sy;
-          dx = rx2; dy = ry2;
-        }
-        Net.setInput(dx, dy);
-        if (dx || dy) {
-          // el facing sigue al movimiento (sprite 2D + acciones por ángulo)
-          if (Math.abs(dy) >= Math.abs(dx)) p.dir = dy > 0 ? 'down' : 'up';
-          else { p.dir = 'side'; p.flip = dx < 0; }
-          Net.setRot(Math.atan2(dx, -dy));
-        }
-      }
-      Net.frame(dtF); // predicción local con la misma física del servidor
-    }
-
     // desliza la posición visual hacia la lógica
-    p.rx = lerp(p.rx, p.x, world.online ? 0.5 : 0.28);
-    p.ry = lerp(p.ry, p.y, world.online ? 0.5 : 0.28);
+    p.rx = lerp(p.rx, p.x, 0.28);
+    p.ry = lerp(p.ry, p.y, 0.28);
     world.moving = Math.abs(p.rx - p.x) + Math.abs(p.ry - p.y) > 0.02;
     for (const e of world.entities) {
       if (e.rx === undefined) { e.rx = e.x; e.ry = e.y; }
@@ -351,21 +382,49 @@
   const params = new URLSearchParams(location.search);
   if (params.get('nofx')) window.NOFX = true;
   if (params.get('debug3d')) window.DEBUG3D_ON = true;
+  const servidoWeb = location.protocol === 'http:' || location.protocol === 'https:';
+  const onlinePorDefecto = servidoWeb && !params.get('offline') && !params.get('selftest');
+  const arranqueOnline = params.get('online') || (onlinePorDefecto && params.get('autostart'));
+  function diaUtc(d = new Date()) {
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+  }
+  function semillaDiariaNumero(dia = diaUtc()) {
+    let h = 2166136261;
+    const s = `backrooms-noclip:${dia}`;
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return String((h >>> 0) || 1);
+  }
+  function semillaDiaria() { return semillaDiariaNumero(); }
+  Game.dailySeedUTC = semillaDiaria;
+  function opcionesOnlineDesdeParams() {
+    const sala = String(params.get('sala') || '').toLowerCase();
+    return {
+      sala: sala === 'privada' || sala === 'private' || params.get('privada') === '1' ? 'privada' : 'publica',
+      codigo: params.get('codigo') || params.get('room') || '',
+      nivel: params.get('nivel') || 'level-0',
+    };
+  }
+  function etiquetaSemilla(seed) {
+    seed = seed || semillaDiaria();
+    const online = /^mmo::(\d{4}-\d{2}-\d{2})::(publica|privada)::/.exec(seed);
+    if (online) return `online ${online[2] === 'privada' ? 'privada' : 'pública'} · semilla ${semillaDiariaNumero(online[1])}`;
+    if (online) return `online ${online[2] === 'privada' ? 'privada' : 'pública'} · mapa UTC ${online[1]}`;
+    const diaria = /^utc-(\d{4}-\d{2}-\d{2})$/.exec(seed);
+    if (diaria) return `mapa diario · semilla ${semillaDiariaNumero(diaria[1])}`;
+    if (/^\d+$/.test(String(seed))) return `mapa diario · semilla ${seed}`;
+    if (diaria) return `mapa diario UTC ${diaria[1]}`;
+    return `semilla personalizada ${seed}`;
+  }
   if ((params.get('autostart') || params.get('selftest') || params.get('online')) && !Game.Profiles.activeName())
     Game.Profiles.create(params.get('nombre') || 'Errante');
-  // ---------- BACKROOMS MMO: ?online=1 conecta al mundo compartido ----------
-  if (params.get('online')) {
-    Net.iniciar(params.get('nombre') || Game.Profiles.activeName() || 'Errante');
-    // la tarjeta del nivel aparece al recibir la bienvenida; se entra sola
-    const esperaCard = setInterval(() => {
-      const btn = document.getElementById('btn-enter');
-      if (Net.activo && btn && document.getElementById('screen-card').style.display !== 'none') {
-        clearInterval(esperaCard);
-        btn.click();
-      }
-    }, 100);
+  if (arranqueOnline) {
+    Net.iniciar(params.get('nombre') || Game.Profiles.activeName() || 'Errante', opcionesOnlineDesdeParams());
+    autoEntrarOnline();
   } else if (params.get('autostart')) {
-    Game.startRun(params.get('seed') || undefined);
+    Game.startRun(params.get('seed') || semillaDiaria());
     if (params.get('nivel') && world.data.levels[params.get('nivel')]) {
       // salto directo para pruebas
       Game.world.prevStack.push('level-0');
@@ -471,9 +530,8 @@
           return;
         }
         if (world.busy) return; // dado en marcha
-        // Prueba dirigida de una expansión: coloca al jugador en la banda este
-        // y avanza un turno. Solo se activa explícitamente con ?shift=1.
-        if (params.get('shift') && !window.__shiftForzado) {
+        // Prueba heredada de ventana móvil (los mapas diarios no se desplazan).
+        if (params.get('shift') && !world.level.mapaDiarioUtc && !window.__shiftForzado) {
           const g = world.map.grid;
           let pos = null;
           for (let x = g.w - 2; x >= g.w - 20 && !pos; x--)
@@ -488,31 +546,33 @@
             return;
           }
         }
-        // Marcha dirigida hacia el extremo este: fuerza cambios de ventana en
-        // niveles infinitos sin desperdiciar cientos de intentos contra muros.
+        // Marcha dirigida entre puntos lejanos: acumula pasos reales sin quedar
+        // bloqueada al alcanzar el borde de un mapa diario estático.
         if (params.get('marcha')) {
           const g = world.map.grid;
           const version = `${world.ventanaN || 0}:${world.mapaVersion || 0}`;
           if (!marchaCache || marchaCache.version !== version) {
-            marchaCache = null;
-            buscar: for (let tx = g.w - 2; tx >= 1; tx--)
-              for (let ty = 1; ty < g.h - 1; ty++) {
-                if (!MapGen.walkable(MapGen.at(g, tx, ty))) continue;
-                const dist = MapGen.bfsDist(g, tx, ty);
-                if (dist[world.player.y * g.w + world.player.x] >= 0) {
-                  marchaCache = { version, dist };
-                  break buscar;
-                }
-              }
+            const desde = MapGen.bfsDist(g, world.player.x, world.player.y);
+            let objetivo = -1, mayor = -1;
+            for (let i = 0; i < desde.length; i++) {
+              if (desde[i] > mayor) { mayor = desde[i]; objetivo = i; }
+            }
+            if (objetivo >= 0) {
+              const tx = objetivo % g.w, ty = Math.floor(objetivo / g.w);
+              marchaCache = { version, dist: MapGen.bfsDist(g, tx, ty) };
+            } else marchaCache = null;
           }
           let paso = null;
           if (marchaCache) {
             const actual = marchaCache.dist[world.player.y * g.w + world.player.x];
-            for (const [dx, dy] of dirs) {
-              const nx = world.player.x + dx, ny = world.player.y + dy;
-              if (nx < 0 || ny < 0 || nx >= g.w || ny >= g.h) continue;
-              const v = marchaCache.dist[ny * g.w + nx];
-              if (v >= 0 && v < actual) { paso = [dx, dy]; break; }
+            if (actual === 0) marchaCache = null;
+            else {
+              for (const [dx, dy] of dirs) {
+                const nx = world.player.x + dx, ny = world.player.y + dy;
+                if (nx < 0 || ny < 0 || nx >= g.w || ny >= g.h) continue;
+                const v = marchaCache.dist[ny * g.w + nx];
+                if (v >= 0 && v < actual) { paso = [dx, dy]; break; }
+              }
             }
           }
           if (paso) Game.tryMove(paso[0], paso[1]);
@@ -578,6 +638,8 @@
       sel.appendChild(o);
     }
     const p = P.get();
+    const seedCurrent = $id('seed-current');
+    if (seedCurrent) seedCurrent.textContent = semillaDiaria();
     $id('profile-records').textContent = p
       ? `Expediciones: ${p.records.runs} · Niveles descubiertos: ${Object.keys(p.codice).length} · Turnos récord: ${p.records.maxTurnos} · Escapes: ${p.records.escapes}`
       : 'Crea tu perfil para que el Códice registre tu expediente.';
@@ -585,7 +647,8 @@
     const btn = $id('btn-continue');
     if (saveData && p) {
       btn.style.display = 'inline-block';
-      btn.textContent = `Continuar partida (${saveData.levelId}, semilla ${saveData.runSeed})`;
+      const nombreNivel = world.data?.levels?.[saveData.levelId]?.nombre || saveData.levelId;
+      btn.textContent = `Continuar: ${nombreNivel} · ${etiquetaSemilla(saveData.runSeed)}`;
       btn.onclick = () => Game.continueRun(saveData);
     } else btn.style.display = 'none';
   }
@@ -623,29 +686,91 @@
     ev.target.value = '';
   };
   $id('btn-codex').onclick = () => world.ui.toggleCodex(true);
+  const seedBtn = $id('btn-seed-custom');
+  const seedWrap = $id('seed-custom-wrap');
+  if (seedBtn && seedWrap) seedBtn.onclick = () => {
+    const abierto = seedWrap.style.display !== 'none';
+    seedWrap.style.display = abierto ? 'none' : 'inline-block';
+    seedBtn.textContent = abierto ? 'Personalizar semilla' : 'Usar semilla diaria';
+    if (!abierto) $id('seed-input').focus();
+    else $id('seed-input').value = '';
+  };
 
-  $id('btn-start').onclick = () => {
+  function empezarPrincipal() {
     if (!P.activeName()) P.create($id('profile-name').value.trim() || 'Errante');
     refreshTitle();
-    // BACKROOMS MMO: el botón del título conecta al mundo compartido
-    const btn = $id('btn-start');
-    btn.disabled = true;
-    btn.textContent = 'CRUZANDO LA REALIDAD…';
-    Net.iniciar(P.activeName());
-    const espera = setInterval(() => {
-      if (Net.activo) {
-        clearInterval(espera);
-        btn.disabled = false;
-        btn.textContent = 'DESPERTAR EN LEVEL 0';
+    if (onlinePorDefecto) {
+      window.Voz?.activar?.({ auto: true });
+      GameViewport.fullscreen?.();
+      Net.iniciar(P.activeName() || 'Errante', opcionesOnlineDesdeParams());
+      autoEntrarOnline();
+      return;
+    }
+    GameViewport.fullscreen?.();
+    const seed = $id('seed-input').value.trim();
+    Game.startRun(seed || semillaDiaria());
+  }
+  $id('btn-start').onclick = empezarPrincipal;
+  function nombreOnline() {
+    if (!P.activeName()) P.create($id('profile-name').value.trim() || 'Errante');
+    refreshTitle();
+    return P.activeName() || 'Errante';
+  }
+  function autoEntrarOnline() {
+    const esperaCard = setInterval(() => {
+      const btn = document.getElementById('btn-enter');
+      if (Net.activo && btn && document.getElementById('screen-card').style.display !== 'none') {
+        clearInterval(esperaCard);
+        btn.click();
       }
-    }, 200);
+    }, 100);
+  }
+  $id('btn-online-public').onclick = () => {
+    window.Voz?.activar?.({ auto: true });
+    GameViewport.fullscreen?.();
+    Net.iniciar(nombreOnline(), { sala: 'publica', nivel: 'level-0' });
+    autoEntrarOnline();
+  };
+  $id('btn-online-private').onclick = () => {
+    const code = Net.normalizarCodigo($id('online-code').value);
+    if (!code) {
+      $id('online-code').focus();
+      return;
+    }
+    window.Voz?.activar?.({ auto: true });
+    GameViewport.fullscreen?.();
+    Net.iniciar(nombreOnline(), { sala: 'privada', codigo: code, nivel: 'level-0' });
+    autoEntrarOnline();
   };
   $id('btn-again').onclick = () => {
     refreshTitle();
-    world.ui.show('title');
+    if (onlinePorDefecto) {
+      Net.iniciar(P.activeName() || 'Errante', opcionesOnlineDesdeParams());
+      autoEntrarOnline();
+    } else Game.startRun(semillaDiaria());
   };
   $id('btn-journal-close').onclick = () => world.ui.toggleJournal();
   $id('btn-end-codex').onclick = () => world.ui.toggleCodex(true);
   $id('btn-end-title').onclick = () => { world.ui.show('title'); refreshTitle(); };
+
+  // ---------- controles táctiles ----------
+  const touchMap = {
+    up: () => world.online ? Net.avanzar(1) : Game.avanzar(1),
+    down: () => world.online ? Net.avanzar(-1) : Game.avanzar(-1),
+    left: () => world.online ? Net.girar(-1) : Game.girar(-1),
+    right: () => world.online ? Net.girar(1) : Game.girar(1),
+    interact: () => Game.interact(),
+    q: () => Game.usarMano(0),
+    e: () => Game.usarMano(1),
+    bag: () => world.ui.toggleBackpack(),
+    map: () => Minimap.toggleBig(),
+  };
+  for (const b of document.querySelectorAll('[data-touch]')) {
+    b.addEventListener('pointerdown', (ev) => {
+      ev.preventDefault();
+      if (!world.level || world.over) return;
+      touchMap[b.dataset.touch]?.();
+    });
+  }
   refreshTitle();
 })();

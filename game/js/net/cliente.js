@@ -1,11 +1,16 @@
+<<<<<<< Updated upstream
 // BACKROOMS MMO — cliente de red.
 // Se conecta al servidor de salas, construye el MISMO mapa que él a partir de
 // la semilla (idéntico código MapGen/RNG a ambos lados) y a partir de ahí solo
 // intercambia intenciones y eventos: por la red nunca viaja un mapa.
+=======
+// BACKROOMS MMO — cliente WebSocket.
+>>>>>>> Stashed changes
 (function () {
   let ws = null;
   let miId = null;
   let listo = false;
+<<<<<<< Updated upstream
   let reintento = null;
   let inputChat = null;
   // v22 — movimiento libre: estado de input y reconciliación
@@ -13,13 +18,55 @@
   let inputEnviado = { dx: 0, dy: 0 };
   let rotEnviada = 0, rotUltEnvio = 0;
   let tileFov = null; // último tile con FOV calculado
+=======
+  let ultPaso = 0;
+  let reintento = null;
+  let inputChat = null;
+  let lobbyEl = null;
+  let miListo = false;
+  let opciones = null;
+
+  const COOLDOWN = 170;
+  const ROT_VEC = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+>>>>>>> Stashed changes
 
   function urlServidor() {
     const params = new URLSearchParams(location.search);
     if (params.get('ws')) return params.get('ws');
     if (location.protocol === 'http:' || location.protocol === 'https:')
       return (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
+<<<<<<< Updated upstream
     return 'ws://localhost:8080/ws'; // desarrollo desde file://
+=======
+    return 'ws://localhost:8080/ws';
+  }
+
+  function normalizarCodigo(v) {
+    return String(v || '')
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9-]/g, '')
+      .slice(0, 24);
+  }
+
+  function codigoAleatorio() {
+    const a = new Uint8Array(4);
+    try { crypto.getRandomValues(a); } catch (e) {
+      for (let i = 0; i < a.length; i++) a[i] = Math.floor(Math.random() * 255);
+    }
+    return Array.from(a, (b) => (b % 36).toString(36).toUpperCase()).join('');
+  }
+
+  function opcionesDesdeUrl() {
+    const params = new URLSearchParams(location.search);
+    const sala = String(params.get('sala') || '').toLowerCase();
+    const privada = sala === 'privada' || sala === 'private' || params.get('privada') === '1';
+    return {
+      sala: privada ? 'privada' : 'publica',
+      codigo: normalizarCodigo(params.get('codigo') || params.get('room')),
+      nivel: params.get('nivel') || 'level-0',
+    };
+>>>>>>> Stashed changes
   }
 
   function token() {
@@ -38,6 +85,7 @@
     if (ws && ws.readyState === 1) ws.send(JSON.stringify(msg));
   }
 
+<<<<<<< Updated upstream
   function iniciar(nombre) {
     const w = Game.world;
     const params = new URLSearchParams(location.search);
@@ -45,10 +93,37 @@
     ws.onopen = () => enviar({
       t: 'hola', nombre, token: token(), v: 2,
       nivel: params.get('nivel') || undefined, // puerta de desarrollo (solo MMO_DEV=1)
+=======
+  function iniciar(nombre, opts = {}) {
+    cerrar();
+    opciones = { ...opcionesDesdeUrl(), ...opts };
+    opciones.sala = opciones.sala === 'privada' ? 'privada' : 'publica';
+    if (opciones.sala === 'privada' && !opciones.codigo) opciones.codigo = codigoAleatorio();
+    mostrarLobby({
+      id: null,
+      sala: {
+        tipo: opciones.sala,
+        nombre: opciones.sala === 'privada' ? 'Sala privada' : 'Sala pública',
+        max: '?',
+      },
+      jugadores: [{ id: null, nombre, listo: false }],
+      conectando: true,
+    });
+    ws = new WebSocket(urlServidor());
+    ws.onopen = () => enviar({
+      t: 'hola',
+      nombre,
+      token: token(),
+      v: 2,
+      sala: opciones.sala,
+      codigo: opciones.codigo || '',
+      nivel: opciones.nivel || 'level-0',
+>>>>>>> Stashed changes
     });
     ws.onmessage = (ev) => {
       let m;
       try { m = JSON.parse(ev.data); } catch (e) { return; }
+<<<<<<< Updated upstream
       recibir(m, w);
     };
     ws.onclose = () => {
@@ -75,10 +150,37 @@
     if (id === miId) return [w.player.x, w.player.y, w.player];
     const o = Otros.lista.find((x) => x.id === id);
     return o ? [o.x, o.y, o] : null;
+=======
+      recibir(m, Game.world);
+    };
+    ws.onclose = () => {
+      listo = false;
+      if (Game.world.level) {
+        ocultarLobby();
+        Game.world.log('Conexión perdida con las Backrooms… reintentando.', 'danger');
+      } else mostrarLobbyError('No se pudo conectar con la sala. Reintentando…');
+      clearTimeout(reintento);
+      reintento = setTimeout(() => iniciar(nombre, opciones), 3000);
+    };
+    ws.onerror = () => {
+      if (!Game.world.level) mostrarLobbyError('La conexión con las Backrooms ha fallado.');
+    };
+  }
+
+  function cerrar() {
+    clearTimeout(reintento);
+    reintento = null;
+    listo = false;
+    if (ws) {
+      try { ws.onclose = null; ws.close(); } catch (e) {}
+      ws = null;
+    }
+>>>>>>> Stashed changes
   }
 
   function recibir(m, w) {
     switch (m.t) {
+<<<<<<< Updated upstream
       case 'bienvenida':
         miId = m.id;
         Game.startRun(m.semilla); // jugador, HUD y tarjeta de presentación
@@ -120,10 +222,27 @@
           if (e) { e.x = x; e.y = y; }
         }
         break;
+=======
+      case 'lobby': mostrarLobby(m); break;
+      case 'bienvenida': construirMundo(m, w); break;
+      case 'entra': if (listo) Otros.entra(m); break;
+      case 'sale': if (listo) Otros.sale(m.id); break;
+      case 'mueve':
+        if (!listo) return;
+        if (m.id === miId) {
+          if (m.x !== w.player.x || m.y !== w.player.y) {
+            w.player.x = m.x; w.player.y = m.y;
+            fov(w);
+            if (window.Voz) Voz.actualizar();
+          }
+        } else Otros.mueve(m.id, m.x, m.y);
+        break;
+>>>>>>> Stashed changes
       case 'gira': if (listo) Otros.gira(m.id, m.rot); break;
       case 'chat':
         if (!listo) return;
         Otros.chat(m.id, m.txt, performance.now());
+<<<<<<< Updated upstream
         w.log(`${nombreDe(m.id)}: ${m.txt}`, 'event');
         break;
 
@@ -338,14 +457,139 @@
     const g = w.map.grid;
     w.explored = new Uint8Array(g.w * g.h);
     w.light = new Float32Array(g.w * g.h);
+=======
+        w.log(`${m.id === miId ? 'Tú' : nombreDe(m.id)}: ${m.txt}`, 'event');
+        break;
+      case 'voz':
+        if (window.Voz) Voz.recibir(m);
+        break;
+      case 'aviso': if (w.log) w.log(m.txt, 'event'); break;
+      case 'error': if (w.log) w.log(m.txt, 'danger'); else alert(m.txt); break;
+    }
+  }
+
+  function nombreDe(id) {
+    const o = Otros.lista.find((x) => x.id === id);
+    return o ? o.nombre : '???';
+  }
+
+  function ocultarCodigoPrivado(sala) {
+    if (!sala || sala.tipo !== 'privada' || !history.replaceState) return;
+    try {
+      const url = new URL(location.href);
+      if (!url.searchParams.has('codigo') && !url.searchParams.has('room')) return;
+      url.searchParams.delete('codigo');
+      url.searchParams.delete('room');
+      url.searchParams.set('sala', 'privada');
+      history.replaceState(null, document.title, url.pathname + url.search + url.hash);
+    } catch (e) {}
+  }
+
+  function construirMundo(m, w) {
+    miId = m.id;
+    ocultarLobby();
+    ocultarCodigoPrivado(m.sala);
+    Game.startRun(m.semilla);
+    const def = w.data.levels[m.nivel];
+    w.online = true;
+    w.onlineRoom = m.sala || null;
+    w.realTime = true;
+    w.level = def;
+    w.map = MapGen.generate(def, RNG.create(m.semilla));
+    w.tiles = Tiles.build(def, RNG.create(m.semilla + '::tiles'));
+    w.entities = [];
+    w.map.items = [];
+    w.map.exits = [];
+    w.map.caminatas = [];
+    w.player.x = m.x; w.player.y = m.y;
+    w.player.rx = m.x; w.player.ry = m.y;
+    w.player.rot = m.rot ?? 2;
+    w._ignoraExit = null;
+>>>>>>> Stashed changes
     fov(w);
     Otros.reset(miId);
     for (const j of m.jugadores) Otros.entra(j);
     listo = true;
+<<<<<<< Updated upstream
+=======
+    const sala = m.sala
+      ? (m.sala.tipo === 'privada' ? 'Sala privada' : `${m.sala.nombre} (${m.sala.tipo})`)
+      : `instancia ${m.inst}`;
+    w.log(`Conectado a ${sala}. Pulsa T o Enter para hablar.`, 'good');
+    crearChatUI();
+  }
+
+  function crearLobbyUI() {
+    if (lobbyEl) return lobbyEl;
+    lobbyEl = document.createElement('div');
+    lobbyEl.id = 'mmo-lobby';
+    lobbyEl.style.cssText =
+      'position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;' +
+      'background:radial-gradient(ellipse at center,rgba(18,15,8,.96),rgba(0,0,0,.96));padding:18px;';
+    lobbyEl.innerHTML =
+      '<div style="width:min(620px,94vw);max-height:92vh;overflow:auto;border:1px solid #8a7a3d;' +
+      'background:rgba(10,9,6,.96);box-shadow:0 0 45px rgba(0,0,0,.8);padding:24px;text-align:center">' +
+      '<h2 style="font:16px Press Start 2P,monospace;color:#d9c66e;line-height:1.5;margin-bottom:12px">ANTES DEL DESTIERRO</h2>' +
+      '<p id="mmo-lobby-room" style="color:#9a9482;font-size:18px;margin-bottom:14px"></p>' +
+      '<div id="mmo-lobby-list" style="display:grid;gap:7px;margin:14px auto 18px;max-width:420px;text-align:left"></div>' +
+      '<button id="mmo-ready" class="btn-big">LISTO</button>' +
+      '<button id="mmo-cancel" class="btn-small" style="margin-left:8px">VOLVER</button>' +
+      '<p style="color:#6a6455;font-size:15px;line-height:1.45;margin-top:16px">La expedición empieza cuando todos estén listos. En sala privada el código no se muestra en pantalla.</p>' +
+      '</div>';
+    document.body.appendChild(lobbyEl);
+    lobbyEl.querySelector('#mmo-ready').onclick = () => {
+      miListo = !miListo;
+      enviar({ t: 'listo', listo: miListo });
+    };
+    lobbyEl.querySelector('#mmo-cancel').onclick = () => {
+      cerrar();
+      ocultarLobby();
+    };
+    return lobbyEl;
+  }
+
+  function mostrarLobby(m) {
+    miId = m.id;
+    const el = crearLobbyUI();
+    const sala = m.sala || {};
+    const room = el.querySelector('#mmo-lobby-room');
+    room.textContent = m.conectando
+      ? `Conectando a ${sala.tipo === 'privada' ? 'sala privada' : 'sala pública'}…`
+      : `${sala.tipo === 'privada' ? 'Sala privada' : 'Sala pública'} · ${m.jugadores.length}/${sala.max || '?'} errantes`;
+    const list = el.querySelector('#mmo-lobby-list');
+    list.innerHTML = '';
+    for (const j of m.jugadores) {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;justify-content:space-between;gap:12px;border:1px solid #3a352a;padding:6px 10px;background:#14120d;color:#efe8d0;font-size:18px';
+      const yo = j.id === miId ? ' (tú)' : '';
+      row.innerHTML = `<span>${j.nombre}${yo}</span><span style="color:${j.listo ? '#6aa86a' : '#9a9482'}">${j.listo ? 'LISTO' : 'esperando'}</span>`;
+      list.appendChild(row);
+    }
+    const yo = m.jugadores.find((j) => j.id === miId);
+    miListo = !!yo?.listo;
+    const btn = el.querySelector('#mmo-ready');
+    btn.textContent = miListo ? 'NO ESTOY LISTO' : 'LISTO';
+    btn.disabled = !!m.conectando;
+    btn.style.opacity = m.conectando ? '0.45' : '1';
+    el.style.display = 'flex';
+  }
+
+  function mostrarLobbyError(txt) {
+    const el = crearLobbyUI();
+    el.querySelector('#mmo-lobby-room').textContent = txt;
+    el.querySelector('#mmo-ready').disabled = true;
+    el.querySelector('#mmo-ready').style.opacity = '0.45';
+    el.style.display = 'flex';
+  }
+
+  function ocultarLobby() {
+    if (lobbyEl) lobbyEl.style.display = 'none';
+>>>>>>> Stashed changes
   }
 
   function fov(w) {
     const g = w.map.grid;
+<<<<<<< Updated upstream
     // FOV.compute indexa arrays por tile: SIEMPRE coordenadas enteras (v22:
     // la posición es flotante — un índice fraccionario se escribe en el vacío)
     w.light = FOV.compute(g, Fisica.tileDe(w.player.x), Fisica.tileDe(w.player.y), w.visionActual());
@@ -409,6 +653,47 @@
   }
 
   // ---------- chat ----------
+=======
+    w.light = FOV.compute(g, w.player.x, w.player.y, w.visionActual());
+    for (let i = 0; i < w.light.length; i++) if (w.light[i] > 0) w.explored[i] = 1;
+  }
+
+  function mover(dx, dy) {
+    const w = Game.world;
+    if (!listo || w.escondido) return;
+    const ahora = performance.now();
+    if (ahora - ultPaso < COOLDOWN) return;
+    ultPaso = ahora;
+    const nx = w.player.x + dx, ny = w.player.y + dy;
+    if (MapGen.walkable(MapGen.at(w.map.grid, nx, ny))) {
+      w.player.x = nx; w.player.y = ny;
+      fov(w);
+      if (window.Voz) Voz.actualizar();
+    }
+    enviar({ t: 'mover', dx, dy });
+  }
+
+  function avanzar(s) {
+    const w = Game.world;
+    const [dx, dy] = ROT_VEC[w.player.rot];
+    mover(dx * s, dy * s);
+  }
+
+  function girar(d) {
+    const w = Game.world;
+    w.player.rot = ((w.player.rot + d) % 4 + 4) % 4;
+    enviar({ t: 'rot', rot: w.player.rot });
+  }
+
+  function moverPantalla(dx, dy) {
+    const w = Game.world;
+    if (dy > 0) w.player.dir = 'down';
+    else if (dy < 0) w.player.dir = 'up';
+    else if (dx !== 0) { w.player.dir = 'side'; w.player.flip = dx < 0; }
+    mover(dx, dy);
+  }
+
+>>>>>>> Stashed changes
   function crearChatUI() {
     if (inputChat) return;
     inputChat = document.createElement('input');
@@ -449,10 +734,18 @@
   }
 
   window.Net = {
+<<<<<<< Updated upstream
     iniciar, setInput, setRot, frame,
     accion, usar, luzToggle, mochila,
     abrirChat, chatAbierto,
     get activo() { return listo; },
     get id() { return miId; },
+=======
+    iniciar, cerrar, mover, avanzar, girar, moverPantalla,
+    abrirChat, chatAbierto, normalizarCodigo, enviar,
+    get activo() { return listo; },
+    get id() { return miId; },
+    get opciones() { return opciones; },
+>>>>>>> Stashed changes
   };
 })();

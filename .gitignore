@@ -10,10 +10,10 @@ Desktop.ini
 # Node (el proyecto no usa npm, pero por si alguien instala algo localmente)
 node_modules/
 package-lock.json
+!server/package-lock.json
 
 # Temporales
 *.log
 *.tmp
-
-# BACKROOMS MMO: base de datos local del servidor
-server/datos/
+.deploy-ssh/
+.deploy-tmp/

@@ -33,7 +33,7 @@
   let itemsVersionVista = -1;    // items del suelo rehechos al cambiar world.itemsVersion
   let entitySprites = new Map(); // uid -> THREE.Sprite
   let itemSprites = new Map();   // index -> sprite
-  let otrosSprites = new Map();  // id -> sprite (jugadores remotos del MMO)
+  let otrosSprites = new Map();  // id -> sprite de jugadores remotos online
   let playerSprite = null;
   let texCache = new Map();      // clave -> THREE.Texture
   let grain = null;
@@ -139,6 +139,15 @@
       img.data[i + 3] = 22;
     }
     gctx.putImageData(img, 0, 0);
+  }
+
+  function resize() {
+    if (!renderer || !glCanvas || !overlay || !camera) return;
+    W = glCanvas.width; H = glCanvas.height;
+    renderer.setSize(W, H, false);
+    camera.aspect = W / Math.max(1, H);
+    camera.updateProjectionMatrix();
+    if (composer && composer.setSize) composer.setSize(W, H);
   }
 
   // ---------- pintores frontales a medida (llenan TODO el lienzo: sin márgenes) ----------
@@ -1125,8 +1134,7 @@
 
   function entVisible(world, e) {
     const g = world.map.grid;
-    // v22: posiciones flotantes — el índice de luz va por tile redondeado
-    const idx = Math.round(e.y) * g.w + Math.round(e.x);
+    const idx = e.y * g.w + e.x;
     const lit = world.light[idx];
     const esSmiler = e.def.glyph === 'smiler';
     return lit > 0.05 ||
@@ -1350,17 +1358,12 @@
     // objetos recogidos
     for (const [i, s] of itemSprites) s.visible = !(world.map.items[i]?.taken ?? true);
 
-    // jugadores remotos (BACKROOMS MMO): mismo patrón que las entidades, con el
-    // sprite del jugador orientado según su rotación relativa a la cámara
+    // Jugadores remotos del modo online.
     if (world.otros && window.Otros) {
       const vivos = new Set();
-      // ángulo de cámara en radianes (v22): la orientación relativa decide el sprite
-      const camDir = CAM_MODO === 'tercera'
-        ? (world.online ? p.rot : p.rot * Math.PI / 2)
-        : ((4 - camRot) % 4) * Math.PI / 2;
+      const camDir = CAM_MODO === 'tercera' ? p.rot : ((4 - camRot) % 4);
       for (const o of world.otros) {
         vivos.add(o.id);
-        if (o.escondido) { const sE = otrosSprites.get(o.id); if (sE) sE.visible = false; continue; }
         let s = otrosSprites.get(o.id);
         if (!s) {
           s = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true }));
@@ -1371,13 +1374,18 @@
         const [sid2, flip2] = Otros.spriteDe(o, camDir);
         const f2 = (Math.abs(o.rx - o.x) + Math.abs(o.ry - o.y) > 0.03)
           ? Math.floor(t / 150) % Sprites.frameCount(sid2) : 0;
-        s.visible = true;
         s.material.map = spriteTexFlip(sid2, f2, flip2);
         s.material.needsUpdate = true;
+        s.visible = true;
         s.position.set(o.rx + 0.5, SPRITE_H / 2 + 0.02, o.ry + 0.5);
       }
-      for (const [id, s] of otrosSprites)
-        if (!vivos.has(id)) { actorGroup.remove(s); s.material.dispose(); otrosSprites.delete(id); }
+      for (const [id, s] of otrosSprites) {
+        if (!vivos.has(id)) {
+          actorGroup.remove(s);
+          s.material.dispose();
+          otrosSprites.delete(id);
+        }
+      }
     }
 
     // En el último tramo de Level 0, los mismos materiales pierden el amarillo
@@ -1456,14 +1464,11 @@
     if (CAM_MODO === 'tercera') {
       // --- CÁMARA 3ª PERSONA: pegada a la espalda, baja, inmersiva ---
       const rot = p.rot ?? 2;
+      const [fx3, fz3] = ROT_VEC[rot];
       if (world.moving) camBobT += 0.13;
       const bob = Math.sin(camBobT) * TP.bob * (world.moving ? 1 : 0.12);
-      // el yaw viaja por el camino angular más corto hasta quedar tras el jugador.
-      // v22 online: p.rot ya es un ángulo continuo θ (0=N); el facing es
-      // (sinθ,-cosθ) → yaw = atan2(-sinθ, cosθ) = -θ
-      let yawObjetivo;
-      if (world.online) yawObjetivo = -rot;
-      else { const [fx3, fz3] = ROT_VEC[rot]; yawObjetivo = Math.atan2(-fx3, -fz3); }
+      // el yaw viaja por el camino angular más corto hasta quedar tras el jugador
+      const yawObjetivo = Math.atan2(-fx3, -fz3);
       let dyaw = yawObjetivo - camYaw;
       while (dyaw > Math.PI) dyaw -= Math.PI * 2;
       while (dyaw < -Math.PI) dyaw += Math.PI * 2;
@@ -1571,7 +1576,6 @@
   function drawOverlay(world, t) {
     octx.clearRect(0, 0, W, H);
     if (!window.NOFX) Effects.draw(octx, 0, 0, t, 48, project);
-    // capa social del MMO: nombres flotantes y bocadillos de chat
     if (window.Otros && world.otros) Otros.overlay(octx, project, world, t);
 
     // flash de daño
@@ -1616,7 +1620,7 @@
   }
 
   window.Render3D = {
-    init, frame, project, TILE: 48,
+    init, resize, frame, project, TILE: 48,
     modo: CAM_MODO,
     rotar(dir = 1) { camRot = (camRot + dir + 4) % 4; },
     get rot() { return camRot; },

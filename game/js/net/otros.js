@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 // BACKROOMS MMO — jugadores remotos en tu pantalla.
 // Mantiene el censo (world.otros), interpola sus posiciones y dibuja la capa
 // social: nombre flotante y bocadillos de chat POR JUGADOR (a diferencia de
@@ -7,10 +8,22 @@
   let miId = null;
 
   const CHAT_DUR = 4200; // ms de vida de un bocadillo de chat
+=======
+// BACKROOMS MMO — jugadores remotos y capa social.
+(function () {
+  const porId = new Map();
+  let miId = null;
+  let propio = null;
+  const CHAT_DUR = 4200;
+>>>>>>> Stashed changes
 
   function reset(id) {
     porId.clear();
     miId = id;
+<<<<<<< Updated upstream
+=======
+    propio = null;
+>>>>>>> Stashed changes
     const w = window.Game && Game.world;
     if (w) w.otros = [];
   }
@@ -18,6 +31,7 @@
   function sincroniza() {
     const w = window.Game && Game.world;
     if (w) w.otros = [...porId.values()];
+<<<<<<< Updated upstream
   }
 
   function entra(j) {
@@ -27,10 +41,26 @@
       rx: j.x, ry: j.y, rot: j.rot ?? 2,
       chat: null, chatT: 0,
       escondido: !!j.escondido, luz: false,
+=======
+    if (window.Voz) setTimeout(() => Voz.actualizar(), 0);
+  }
+
+  function entra(j) {
+    if (!j || j.id === miId) return;
+    porId.set(j.id, {
+      id: j.id,
+      nombre: j.nombre,
+      x: j.x, y: j.y,
+      rx: j.x, ry: j.y,
+      rot: j.rot ?? 2,
+      chat: null,
+      chatT: 0,
+>>>>>>> Stashed changes
     });
     sincroniza();
   }
 
+<<<<<<< Updated upstream
   function esconde(id, si) {
     const o = porId.get(id);
     if (o) o.escondido = !!si;
@@ -41,11 +71,14 @@
     if (o) o.luz = !!si;
   }
 
+=======
+>>>>>>> Stashed changes
   function sale(id) {
     porId.delete(id);
     sincroniza();
   }
 
+<<<<<<< Updated upstream
   function mueve(id, x, y) { // teleports (spawn/noclip/corrección)
     const o = porId.get(id);
     if (!o) return;
@@ -62,10 +95,21 @@
     if ((dx || dy) && performance.now() - (o.giroT || 0) > 400)
       o.rot = Math.atan2(dx, -dy);
     o.x = x; o.y = y;
+=======
+  function mueve(id, x, y) {
+    const o = porId.get(id);
+    if (!o) return;
+    if (Math.abs(x - o.x) + Math.abs(y - o.y) > 3) { o.rx = x; o.ry = y; }
+    if (x > o.x) o.rot = 1; else if (x < o.x) o.rot = 3;
+    else if (y > o.y) o.rot = 2; else if (y < o.y) o.rot = 0;
+    o.x = x; o.y = y;
+    if (window.Voz) Voz.actualizar();
+>>>>>>> Stashed changes
   }
 
   function gira(id, rot) {
     const o = porId.get(id);
+<<<<<<< Updated upstream
     if (o) { o.rot = rot; o.giroT = performance.now(); }
   }
 
@@ -75,6 +119,11 @@
   }
 
   // txt ya viene filtrado por el servidor
+=======
+    if (o) o.rot = rot;
+  }
+
+>>>>>>> Stashed changes
   function chat(id, txt, t) {
     const ahora = t ?? performance.now();
     if (id === miId) {
@@ -86,9 +135,13 @@
     o.chat = txt;
     o.chatT = ahora;
   }
+<<<<<<< Updated upstream
   let propio = null; // tu último mensaje: también flota sobre tu cabeza
 
   // interpolación por frame (mismo lerp que usan entidades y jugador)
+=======
+
+>>>>>>> Stashed changes
   function frame() {
     for (const o of porId.values()) {
       o.rx += (o.x - o.rx) * 0.22;
@@ -96,8 +149,11 @@
     }
   }
 
+<<<<<<< Updated upstream
   // ---------- capa 2D sobre ambos renders ----------
   // proj(wx, wy) → [sx, sy] en píxeles de pantalla (los renders ya la tienen).
+=======
+>>>>>>> Stashed changes
   function burbuja(ctx, sx, sy, txt, k) {
     const a = Math.min(1, k * 6, (1 - k) * 4);
     if (a <= 0) return;
@@ -112,7 +168,10 @@
     ctx.beginPath();
     ctx.roundRect(bx, by, bw, bh, 5);
     ctx.fill(); ctx.stroke();
+<<<<<<< Updated upstream
     // cola del bocadillo
+=======
+>>>>>>> Stashed changes
     ctx.beginPath();
     ctx.moveTo(sx - 4, by + bh); ctx.lineTo(sx + 4, by + bh); ctx.lineTo(sx, by + bh + 6);
     ctx.closePath(); ctx.fill();
@@ -134,6 +193,7 @@
     ctx.globalAlpha = 1;
   }
 
+<<<<<<< Updated upstream
   const RADIO_SOCIAL = 13; // casillas: los nombres se leen solo de cerca
 
   function overlay(ctx, proj, world, t) {
@@ -153,6 +213,20 @@
       }
     }
     // tu propio mensaje, sobre tu cabeza
+=======
+  function overlay(ctx, proj, world, t) {
+    frame();
+    for (const o of porId.values()) {
+      const [sx, sy] = proj(o.rx, o.ry);
+      if (sx < -80 || sy < -80 || sx > ctx.canvas.width + 80 || sy > ctx.canvas.height + 80) continue;
+      nombre(ctx, sx, sy, o.nombre);
+      if (o.chat) {
+        const k = (t - o.chatT) / CHAT_DUR;
+        if (k >= 1) o.chat = null;
+        else burbuja(ctx, sx, sy, o.chat, k);
+      }
+    }
+>>>>>>> Stashed changes
     if (propio && world?.player) {
       const k = (t - propio.t0) / CHAT_DUR;
       if (k >= 1) propio = null;
@@ -163,14 +237,26 @@
     }
   }
 
+<<<<<<< Updated upstream
   // sprite del jugador remoto RELATIVO a la cámara (ángulos en radianes, v22)
   function spriteDe(o, camTh) {
     const rel = dir4((o.rot || 0) - (camTh || 0));
+=======
+  function spriteDe(o, camDir) {
+    const rel = ((o.rot - camDir) % 4 + 4) % 4;
+>>>>>>> Stashed changes
     if (rel === 0) return ['player_up', false];
     if (rel === 2) return ['player_down', false];
     return ['player_side', rel === 3];
   }
 
+<<<<<<< Updated upstream
   window.Otros = { reset, entra, sale, mueve, pos, gira, chat, esconde, luz, overlay, spriteDe, dir4, frame,
     get lista() { return [...porId.values()]; } };
+=======
+  window.Otros = {
+    reset, entra, sale, mueve, gira, chat, overlay, spriteDe, frame,
+    get lista() { return [...porId.values()]; },
+  };
+>>>>>>> Stashed changes
 })();

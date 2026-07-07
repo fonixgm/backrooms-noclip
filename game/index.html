@@ -2,20 +2,26 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BACKROOMS MMO</title>
-<link rel="stylesheet" href="css/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>BACKROOMS — No-Clip</title>
+<link rel="stylesheet" href="css/style.css?v=20260707-ui9">
 </head>
 <body>
-<div id="app">
+  <div id="app">
   <!-- Pantalla de título -->
   <div id="screen-title" class="screen">
     <div class="title-box">
-      <h1 class="glitch">BACKROOMS MMO</h1>
+      <h1 class="glitch">BACKROOMS multiplayer</h1>
       <p class="subtitle">sandbox multijugador · fiel a la wiki</p>
       <p class="intro-text">Has atravesado la realidad donde no debías.<br>
       Despiertas en moqueta húmeda, bajo un zumbido amarillo.<br>
       Y no estás solo: otros errantes vagan por estos mismos pasillos.</p>
+      <p class="repo-links">
+        Fork de Fonix:
+        <a href="https://github.com/fonixgm/backrooms-noclip" target="_blank" rel="noopener">github.com/fonixgm/backrooms-noclip</a><br>
+        Proyecto principal:
+        <a href="https://github.com/AgenteMaxo/backrooms-noclip" target="_blank" rel="noopener">github.com/AgenteMaxo/backrooms-noclip</a>
+      </p>
       <div id="profile-box">
         <p class="profile-title">— EXPEDIENTE DE ERRANTE —</p>
         <div class="profile-row">
@@ -33,14 +39,33 @@
         </div>
       </div>
       <div class="seed-row">
-        <input id="seed-input" type="hidden">
-        <label><span data-icon="altavoz" data-icon-size="13"></span> <input type="range" id="vol-slider-title" min="0" max="100" step="1" style="vertical-align:middle;width:110px"></label>
+        <span class="seed-current">Semilla de hoy: <code id="seed-current">0000000000</code></span>
+        <button id="btn-seed-custom" class="btn-small" style="margin-top:0">Personalizar semilla</button>
+        <label id="seed-custom-wrap" style="display:none">Semilla: <input id="seed-input" type="text" spellcheck="false" placeholder="mi-seed"></label>
+        <label style="margin-left:16px"><span data-icon="altavoz" data-icon-size="13"></span> <input type="range" id="vol-slider-title" min="0" max="100" step="1" style="vertical-align:middle;width:110px"></label>
         <button id="btn-sound-menu-title" class="btn-small" style="margin-left:8px;margin-top:0"><span data-icon="engranaje" data-icon-size="13"></span> Sonido</button>
       </div>
       <button id="btn-start" class="btn-big">DESPERTAR EN LEVEL 0</button>
       <button id="btn-continue" class="btn-small" style="display:none">Continuar partida guardada</button>
-      <p class="hint">W: avanzar · S: retroceder · A/D: girar · ESPACIO: interactuar y esconderse · T: hablar<br>
-      Q/E: usar mano izq./der. · F: linterna · B: mochila · M: mapa · L: registro · C: códice · ESC: ajustes</p>
+      <div id="online-box">
+        <p class="profile-title">— BACKROOMS COMPARTIDAS —</p>
+        <div class="profile-row">
+          <button id="btn-online-public" class="btn-small">Entrar en sala pública</button>
+          <input id="online-code" type="password" spellcheck="false" placeholder="código privado" maxlength="24">
+          <button id="btn-online-private" class="btn-small">Entrar privada</button>
+        </div>
+        <p class="online-hint">En web el modo normal es online. Las privadas usan código compartido.</p>
+      </div>
+      <p class="hint">W: avanzar · S: retroceder · A/D: girar · ESPACIO: interactuar · X: escuchar<br>
+      Q/E: usar mano izq./der. · F: linterna · B: mochila · M: mapa · L: registro · J: diario · C: códice · ESC: ajustes<br>
+      Online: T o Enter abre el chat.</p>
+    </div>
+  </div>
+  <div id="rotate-overlay" aria-live="polite">
+    <div>
+      <div class="rotate-icon">↻</div>
+      <h2>Gira el móvil</h2>
+      <p>BACKROOMS se juega en horizontal para que los controles y la vista no tapen el pasillo.</p>
     </div>
   </div>
 
@@ -66,6 +91,7 @@
       <canvas id="gl-canvas" width="960" height="600" style="display:none"></canvas>
       <canvas id="game-canvas" width="960" height="600"></canvas>
       <button id="btn-log" title="Registro completo (L)"></button>
+      <button id="btn-game-menu" title="Menú de partida">MENU</button>
       <div id="log-panel" style="display:none">
         <h3><span data-icon="pergamino" data-icon-size="14"></span> Registro</h3>
         <div id="log-full"></div>
@@ -133,6 +159,32 @@
           <p id="instinto-text">Las Backrooms te reconocen. Un instinto nuevo se abre paso bajo tu piel — elige cuál dejas entrar. <b>No hay vuelta atrás.</b></p>
           <div id="instinto-cards"></div>
           <p class="warn" style="font-size:13px">Sintonía <span id="instinto-nivel"></span>/100 — cuanto más te adaptas, menos te reconoce la realidad al escapar.</p>
+        </div>
+      </div>
+      <div id="touch-controls" aria-label="Controles táctiles">
+        <div class="touch-dpad">
+          <button data-touch="up">▲</button>
+          <button data-touch="left">◀</button>
+          <button data-touch="down">▼</button>
+          <button data-touch="right">▶</button>
+        </div>
+        <div class="touch-actions">
+          <button data-touch="interact" aria-label="Interactuar">ESP</button>
+          <button data-touch="q" aria-label="Usar mano izquierda" title="Mano izquierda"><span data-icon="mano" data-icon-size="26"></span></button>
+          <button data-touch="e" aria-label="Usar mano derecha" title="Mano derecha"><span class="touch-icon-right" data-icon="mano" data-icon-size="26"></span></button>
+          <button data-touch="bag" aria-label="Abrir mochila" title="Mochila"><span data-icon="mochila" data-icon-size="26"></span></button>
+          <button data-touch="map">M</button>
+        </div>
+      </div>
+      <div id="game-menu" style="display:none">
+        <div class="modal-box">
+          <h3><span data-icon="engranaje" data-icon-size="15"></span> Menú</h3>
+          <p>La partida queda guardada automáticamente. Si estás online, salir desconecta tu expedición actual.</p>
+          <div class="modal-btns">
+            <button id="btn-menu-continue" class="btn-small">Continuar</button>
+            <button id="btn-menu-sound" class="btn-small">Sonido / controles</button>
+            <button id="btn-menu-title" class="btn-small">Salir al inicio</button>
+          </div>
         </div>
       </div>
     </div>
@@ -256,9 +308,9 @@
 <script src="js/ui/icons.js"></script>
 <script src="js/ui/ui.js"></script>
 <script src="js/ui/minimap.js"></script>
-<script src="js/sim/fisica.js"></script>
-<script src="js/net/otros.js"></script>
-<script src="js/net/cliente.js"></script>
-<script src="js/main.js"></script>
+<script src="js/net/otros.js?v=20260707-ui9"></script>
+<script src="js/net/cliente.js?v=20260707-ui9"></script>
+<script src="js/net/voz.js?v=20260707-ui9"></script>
+<script src="js/main.js?v=20260707-ui9"></script>
 </body>
 </html>

@@ -720,6 +720,36 @@
       world.log(`Hay ${NOMBRES_CONT[contAqui.id] ?? 'un contenedor'} aquí. Pulsa ESPACIO para registrarlo.`, 'good');
     }
 
+<<<<<<< Updated upstream
+=======
+    if (refreshView) {
+      recomputeDmap();
+      recomputeFov();
+      world.ui.updateHUD();
+    }
+    return false;
+  }
+
+  // ---------- pulso del mundo ----------
+  function worldStep(forceTime = false) {
+    // Online: el servidor valida movimiento/salas. El cliente no adelanta
+    // entidades, hambre, sed, reglas ni salidas locales para no desincronizar.
+    if (world.online) {
+      syncPlayerState();
+      return;
+    }
+    // Las llamadas históricas desde acciones ahora solo sincronizan posición.
+    // El reloj de render invoca worldStep(true) cada tick real.
+    if (world.realTime && !forceTime) {
+      syncPlayerState();
+      return;
+    }
+
+    world.turn++;
+    world.turnTotal++;
+    if (syncPlayerState(false) || world.busy || world.over) return;
+
+>>>>>>> Stashed changes
     // reglas del nivel + necesidades
     Rules.aplicarTurno(world, world.rng);
     // descansar en niveles seguros repone la mente (hasta 70)

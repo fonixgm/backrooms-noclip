@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 // Protocolo v1 de BACKROOMS MMO — mensajes JSON pequeños sobre WebSocket.
 //
 // Cliente → servidor:
@@ -29,16 +30,57 @@ const CAP_SALA = 60;          // jugadores por instancia de nivel
 const CAP_POR_IP = 8;         // conexiones simultáneas por IP
 
 // Parsea y valida la FORMA de un mensaje entrante. Devuelve null si no es válido.
+=======
+// Protocolo v2 de BACKROOMS MMO — JSON pequeño sobre WebSocket.
+// M1 online: salas, movimiento autoritativo y chat. El mapa nunca viaja:
+// servidor y cliente lo generan con la misma semilla.
+'use strict';
+
+const VERSION = 2;
+const MAX_MSG = 65536;       // WebRTC SDP/ICE para voz puede ser grande.
+const MAX_CHAT = 120;
+const COOLDOWN_MOVER = 165;
+const COOLDOWN_CHAT = 1500;
+const CAP_PUBLICA = 36;       // 100 jugadores => 3 instancias aprox.; Level 0 no debe parecer una plaza.
+const CAP_PRIVADA = 12;       // grupo pequeño: mantiene tensión y legibilidad.
+const CAP_POR_IP = 8;
+
+function limpiaCodigo(v) {
+  return String(v || '')
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9-]/g, '')
+    .slice(0, 24);
+}
+
+function limpiaNivel(v) {
+  const s = String(v || 'level-0').trim().toLowerCase();
+  return /^level-[a-z0-9-]+$/.test(s) ? s : 'level-0';
+}
+
+function salaDe(m) {
+  const rawTipo = String(m.sala || m.tipoSala || '').toLowerCase();
+  const privada = rawTipo === 'privada' || rawTipo === 'private' || m.privada === true;
+  if (!privada) return { tipo: 'publica', codigo: '' };
+  return { tipo: 'privada', codigo: limpiaCodigo(m.codigo || m.room || m.salaCodigo) || 'ERRANTES' };
+}
+
+>>>>>>> Stashed changes
 function leer(raw) {
   if (typeof raw !== 'string' && !Buffer.isBuffer(raw)) return null;
   if (raw.length > MAX_MSG) return null;
   let m;
   try { m = JSON.parse(raw.toString('utf8')); } catch (e) { return null; }
   if (!m || typeof m !== 'object' || typeof m.t !== 'string') return null;
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
   switch (m.t) {
     case 'hola':
       if (typeof m.nombre !== 'string' || typeof m.token !== 'string') return null;
       if (m.token.length > 64) return null;
+<<<<<<< Updated upstream
       if (m.nivel !== undefined && (typeof m.nivel !== 'string' || m.nivel.length > 32)) return null;
       return m;
     case 'input': { // v22: ESTADO de movimiento (vector deseado; la velocidad la pone el servidor)
@@ -50,10 +92,30 @@ function leer(raw) {
       const th = +m.th;
       if (!isFinite(th)) return null;
       return { t: 'rot', th };
+=======
+      return {
+        t: 'hola',
+        nombre: m.nombre,
+        token: m.token,
+        v: m.v | 0,
+        nivel: limpiaNivel(m.nivel),
+        ...salaDe(m),
+      };
+    case 'mover': {
+      const dx = m.dx | 0, dy = m.dy | 0;
+      if (Math.abs(dx) + Math.abs(dy) !== 1) return null;
+      return { t: 'mover', dx, dy };
+    }
+    case 'rot': {
+      const rot = m.rot | 0;
+      if (rot < 0 || rot > 3) return null;
+      return { t: 'rot', rot };
+>>>>>>> Stashed changes
     }
     case 'chat':
       if (typeof m.txt !== 'string') return null;
       return { t: 'chat', txt: m.txt.slice(0, MAX_CHAT) };
+<<<<<<< Updated upstream
     case 'accion':
       return { t: 'accion' };                         // ESPACIO contextual
     case 'cruzar':
@@ -73,6 +135,17 @@ function leer(raw) {
       if (m.mano !== undefined) { out.mano = m.mano | 0; if (out.mano !== 0 && out.mano !== 1) return null; }
       if (m.tipo !== undefined) { if (!['cara', 'cuerpo', 'pies'].includes(m.tipo)) return null; out.tipo = m.tipo; }
       return out;
+=======
+    case 'listo':
+      return { t: 'listo', listo: m.listo !== false };
+    case 'voz': {
+      const to = m.to | 0;
+      const kind = String(m.kind || '').slice(0, 16);
+      if (!to || !['offer', 'answer', 'ice'].includes(kind)) return null;
+      const data = m.data;
+      if (typeof data !== 'object' || data === null) return null;
+      return { t: 'voz', to, kind, data };
+>>>>>>> Stashed changes
     }
     case 'ping':
       return { t: 'ping' };
@@ -82,6 +155,12 @@ function leer(raw) {
 }
 
 module.exports = {
+<<<<<<< Updated upstream
   VERSION, MAX_MSG, MAX_CHAT, COOLDOWN_MOVER, COOLDOWN_CHAT, RADIO_CHAT, CAP_SALA, CAP_POR_IP,
   leer,
+=======
+  VERSION, MAX_MSG, MAX_CHAT, COOLDOWN_MOVER, COOLDOWN_CHAT,
+  CAP_PUBLICA, CAP_PRIVADA, CAP_POR_IP,
+  leer, limpiaCodigo,
+>>>>>>> Stashed changes
 };
