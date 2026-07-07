@@ -61,7 +61,13 @@
     handL: 4,
     handR: 5,
     backpack: 1,
-    menu: 9
+    menu: 9,
+    map: 6,
+    log: 7,
+    codex: 8,
+    noclip: 10,
+    journal: 11,
+    chat: 12
   },
   cursorSpeed: 8, dado: true };
   try { Object.assign(window.OPTS, JSON.parse(localStorage.getItem('backrooms-opts')) || {}); }
@@ -194,7 +200,7 @@
   const btnGamepadDefault = document.getElementById('btn-gamepad-default');
   if (btnGamepadDefault) {
     btnGamepadDefault.onclick = () => {
-      OPTS.gamepadMap = { interact: 0, wait: 2, light: 3, handL: 4, handR: 5, backpack: 1, menu: 9 };
+      OPTS.gamepadMap = { interact: 0, wait: 2, light: 3, handL: 4, handR: 5, backpack: 1, menu: 9, map: 6, log: 7, codex: 8, noclip: 10, journal: 11, chat: 12 };
       OPTS.cursorSpeed = 8;
       optCursorSpeed.value = 8;
       optCursorSpeedV.textContent = 8;
@@ -213,6 +219,12 @@
       { id: 'handL', label: 'Usar mano izquierda (Q)' },
       { id: 'handR', label: 'Usar mano derecha (E)' },
       { id: 'backpack', label: 'Mochila' },
+      { id: 'map', label: 'Mapa (M/N)' },
+      { id: 'log', label: 'Registro (L)' },
+      { id: 'journal', label: 'Diario (J)' },
+      { id: 'codex', label: 'Códice (C)' },
+      { id: 'noclip', label: 'No-Clip (G)' },
+      { id: 'chat', label: 'Chat MMO (T)' },
       { id: 'menu', label: 'Menú / Cerrar' }
     ];
     for (const action of actions) {
@@ -592,6 +604,14 @@
         }
       }
       if (justPressed(OPTS.gamepadMap.backpack)) world.ui.toggleBackpack();
+      if (justPressed(OPTS.gamepadMap.map)) Minimap.toggleBig();
+      if (justPressed(OPTS.gamepadMap.log)) world.ui.toggleLog();
+      if (justPressed(OPTS.gamepadMap.journal)) world.ui.toggleJournal();
+      if (justPressed(OPTS.gamepadMap.codex)) world.ui.toggleCodex();
+      if (justPressed(OPTS.gamepadMap.noclip)) Game.noclip();
+      if (justPressed(OPTS.gamepadMap.chat)) {
+        if (world.online && window.Net) Net.abrirChat();
+      }
       if (justPressed(OPTS.gamepadMap.menu)) document.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape' }));
     }
 
