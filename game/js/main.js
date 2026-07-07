@@ -1,4 +1,4 @@
-// Arranque: input, bucle de animación y pantalla de título.
+﻿// Arranque: input, bucle de animación y pantalla de título.
 (function () {
   const world = Game.world;
   world.data = window.GAME_DATA;
@@ -118,11 +118,13 @@
       document.getElementById(id + '-v').textContent = s.value + '%';
     }
     pintarBtnMute();
-    // fila de debug: solo en partida; preselecciona el nivel actual
+    // fila de debug: solo offline. En online manda el servidor; un TP local
+    // desincroniza mapa, posición y colisiones.
     const dbgRow = document.getElementById('debug-row');
     const enJuego = world.level && !world.over;
-    dbgRow.style.display = enJuego ? 'flex' : 'none';
-    if (enJuego) document.getElementById('debug-nivel').value = world.level.id;
+    const debugDisponible = enJuego;
+    dbgRow.style.display = debugDisponible ? 'flex' : 'none';
+    if (debugDisponible) document.getElementById('debug-nivel').value = world.level.id;
     sndMenu.style.display = 'flex';
     if (world.level && !world.over) world.busy = true;
   }
@@ -208,6 +210,12 @@
     document.getElementById('btn-debug-tp').onclick = () => {
       const id = sel.value;
       if (!world.level || world.over || !world.data.levels[id]) return;
+      if (world.online) {
+        cerrarSndMenu();
+        world.log('Solicitando TP debug al servidor...', 'event');
+        if (window.Net?.debugTeleport) Net.debugTeleport(id);
+        return;
+      }
       cerrarSndMenu();
       Game.debugTeleport(id);
     };

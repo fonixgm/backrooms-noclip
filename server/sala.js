@@ -40,6 +40,8 @@ class Sala {
     this.def = def;
     this.map = map;
     this.jugadores = new Map();
+    this.salidasAbiertas = new Set();
+    this.conexiones = new Map();
     this.creada = Date.now();
     this.empezada = false;
   }
@@ -61,6 +63,28 @@ class Sala {
           if (esTransitable(this.map, x, y) && !this.ocupada(x, y)) return [x, y];
         }
     return [sx, sy];
+  }
+
+  buscarSpawnCerca(x0, y0) {
+    if (Number.isFinite(x0) && Number.isFinite(y0) &&
+        esTransitable(this.map, x0, y0) && !this.ocupada(x0, y0)) return [x0, y0];
+    for (let r = 1; r < 18; r++)
+      for (let dy = -r; dy <= r; dy++)
+        for (let dx = -r; dx <= r; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+          const x = x0 + dx, y = y0 + dy;
+          if (esTransitable(this.map, x, y) && !this.ocupada(x, y)) return [x, y];
+        }
+    return this.buscarSpawn();
+  }
+
+  buscarEntradaDesde(nivelOrigen) {
+    const exits = this.map.exits || [];
+    for (let i = 0; i < exits.length; i++) {
+      const ex = exits[i];
+      if (ex?.def?.destino === nivelOrigen) return { i, x: ex.x, y: ex.y };
+    }
+    return null;
   }
 
   censo() {
@@ -109,6 +133,7 @@ class Sala {
         rot: j.rot,
         jugadores,
         sala: this.infoPublica(),
+        abiertas: [...this.salidasAbiertas],
       });
     }
   }
@@ -127,6 +152,35 @@ class Sala {
     this.jugadores.set(id, jug);
     this.enviarLobby();
     return jug;
+  }
+
+  entrarEnPartida(jug, entrada = null) {
+    const puertaEntrada = entrada?.desdeNivel ? this.buscarEntradaDesde(entrada.desdeNivel) : null;
+    const [x, y] = puertaEntrada
+      ? this.buscarSpawnCerca(puertaEntrada.x, puertaEntrada.y)
+      : this.buscarSpawn();
+    jug.x = x; jug.y = y; jug.rot = 2;
+    jug.listo = true;
+    jug.ultMov = 0;
+    jug.ultChat = 0;
+    this.empezada = true;
+    this.jugadores.set(jug.id, jug);
+    this.difundir({ t: 'entra', id: jug.id, nombre: jug.nombre, x, y, rot: jug.rot }, jug.id);
+    this.enviar(jug.ws, {
+      t: 'bienvenida',
+      id: jug.id,
+      nivel: this.nivelId,
+      inst: this.inst,
+      semilla: this.semilla,
+      x,
+      y,
+      rot: jug.rot,
+      jugadores: this.censo(),
+      sala: this.infoPublica(),
+      abiertas: [...this.salidasAbiertas],
+      entrada: entrada ? { ...entrada, salidaRetorno: puertaEntrada?.i ?? null } : null,
+      debug: true,
+    });
   }
 
   salir(jug) {
@@ -179,6 +233,37 @@ class Sala {
     this.enviar(otro.ws, { t: 'voz', from: jug.id, kind: msg.kind, data: msg.data });
   }
 
+  salidaPorIndice(i) {
+    i = i | 0;
+    const ex = (this.map.exits || [])[i];
+    if (!ex) return null;
+    return { i, ex };
+  }
+
+  jugadorSobreSalida(jug, ex) {
+    return !!ex && jug.x === ex.x && jug.y === ex.y;
+  }
+
+  abrirSalida(jug, i) {
+    const s = this.salidaPorIndice(i);
+    if (!s) {
+      this.enviar(jug.ws, { t: 'error', txt: 'Esa salida no existe en esta sala.' });
+      return false;
+    }
+    if (!this.jugadorSobreSalida(jug, s.ex)) {
+      this.enviar(jug.ws, { t: 'mueve', id: jug.id, x: jug.x, y: jug.y });
+      this.enviar(jug.ws, { t: 'aviso', txt: 'Acércate a la salida para tocarla.' });
+      return false;
+    }
+    if (!this.salidasAbiertas.has(s.i)) {
+      this.salidasAbiertas.add(s.i);
+      if (s.ex.def) s.ex.def._abierta = true;
+      this.difundir({ t: 'salida_abierta', i: s.i, x: s.ex.x, y: s.ex.y, texto: s.ex.def?.texto || 'Una salida se abre.' });
+      this.enviar(jug.ws, { t: 'salida_abierta', i: s.i, x: s.ex.x, y: s.ex.y, texto: s.ex.def?.texto || 'La salida se abre.' });
+    }
+    return true;
+  }
+
   enviar(ws, msg) {
     if (ws.readyState === 1) ws.send(JSON.stringify(msg));
   }
@@ -220,6 +305,64 @@ function asignar({ tipo = 'publica', codigo = '', nivelId = 'level-0' }) {
   return { error: 'Todas las salas públicas están llenas.' };
 }
 
+function asignarPartida({ tipo = 'publica', codigo = '', nivelId = 'level-0' }) {
+  tipo = tipo === 'privada' ? 'privada' : 'publica';
+  codigo = tipo === 'privada' ? P.limpiaCodigo(codigo) : '';
+  if (tipo === 'privada') {
+    const clave = claveSala(tipo, codigo || 'ERRANTES', nivelId, 1);
+    let sala = salas.get(clave);
+    if (sala && sala.dia !== diaUtc()) { salas.delete(clave); sala = null; }
+    sala = sala || abrirSala({ tipo, codigo: codigo || 'ERRANTES', nivelId, inst: 1 });
+    if (sala.llena) return { error: `La sala privada ${sala.codigo} está llena (${sala.max}).` };
+    sala.empezada = true;
+    return { sala };
+  }
+  for (let inst = 1; inst < 999; inst++) {
+    const clave = claveSala('publica', '', nivelId, inst);
+    let sala = salas.get(clave);
+    if (sala && sala.dia !== diaUtc()) { salas.delete(clave); sala = null; }
+    sala = sala || abrirSala({ tipo: 'publica', nivelId, inst });
+    if (!sala.llena) {
+      sala.empezada = true;
+      return { sala };
+    }
+  }
+  return { error: 'Todas las salas públicas están llenas.' };
+}
+
+function obtenerPartidaExacta({ tipo = 'publica', codigo = '', nivelId = 'level-0', inst = 1 }) {
+  tipo = tipo === 'privada' ? 'privada' : 'publica';
+  codigo = tipo === 'privada' ? P.limpiaCodigo(codigo) : '';
+  inst = Math.max(1, inst | 0);
+  const clave = claveSala(tipo, tipo === 'privada' ? (codigo || 'ERRANTES') : '', nivelId, inst);
+  let sala = salas.get(clave);
+  if (sala && sala.dia !== diaUtc()) { salas.delete(clave); sala = null; }
+  sala = sala || abrirSala({ tipo, codigo: tipo === 'privada' ? (codigo || 'ERRANTES') : '', nivelId, inst });
+  if (sala.llena) return { error: 'La sala destino está llena.' };
+  sala.empezada = true;
+  return { sala };
+}
+
+function salaParaConexion(origen, salidaIndice, nivelId) {
+  const claveConexion = String(salidaIndice | 0);
+  const previa = origen.conexiones.get(claveConexion);
+  if (previa && previa.nivelId === nivelId) {
+    return obtenerPartidaExacta({
+      tipo: origen.tipo,
+      codigo: origen.codigo,
+      nivelId,
+      inst: previa.inst,
+    });
+  }
+  const r = asignarPartida({
+    tipo: origen.tipo,
+    codigo: origen.codigo,
+    nivelId,
+  });
+  if (!r.error) origen.conexiones.set(claveConexion, { nivelId, inst: r.sala.inst });
+  return r;
+}
+
 function limpiarVacias() {
   const ahora = Date.now();
   for (const [clave, sala] of salas) {
@@ -246,4 +389,4 @@ function estado() {
   };
 }
 
-module.exports = { Sala, asignar, estado, limpiarVacias, diaUtc };
+module.exports = { Sala, asignar, asignarPartida, salaParaConexion, estado, limpiarVacias, diaUtc };
