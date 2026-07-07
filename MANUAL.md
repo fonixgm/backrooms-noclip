@@ -298,8 +298,18 @@ que solo tú puedes aceptar o rechazar.
 
 ## 12. BACKROOMS MMO: tu servidor (v21)
 
-El juego ahora es un mundo compartido: necesita un servidor tuyo encendido. Todo el
-software está preparado — tu única parte manual es contratar dos cosas:
+El juego ahora es un mundo compartido: necesita un servidor encendido.
+
+**Jugar en local (probar en tu PC):** abre una terminal en la carpeta del proyecto y:
+```
+node server/server.js
+```
+Juega en `http://localhost:8080` (dos ventanas = dos jugadores; la de incógnito cuenta
+como otra persona). `Ctrl+C` lo para. La clave de admin sale en la terminal al arrancar.
+Gente de tu misma WiFi puede entrar con `http://TU-IP-LOCAL:8080` (IP con `ipconfig`).
+
+**Para que juegue cualquiera por internet**, hace falta un servidor de verdad — el
+tutorial completo está en `deploy/README.md`. Tu única parte manual es contratar dos cosas:
 
 **A. Contratar (una vez, ~5 €/mes):**
 1. **VPS**: un servidor pequeño con Ubuntu 24.04 (p. ej. Hetzner CX22, DigitalOcean,
