@@ -399,6 +399,12 @@
   }
   function semillaDiaria() { return semillaDiariaNumero(); }
   Game.dailySeedUTC = semillaDiaria;
+  function borrarPartidaGuardadaActual() {
+    try {
+      const nombre = Game.Profiles.activeName() || 'anon';
+      localStorage.removeItem('backrooms-save::' + nombre);
+    } catch (e) {}
+  }
   function opcionesOnlineDesdeParams() {
     const sala = String(params.get('sala') || '').toLowerCase();
     return {
@@ -421,9 +427,11 @@
   if ((params.get('autostart') || params.get('selftest') || params.get('online')) && !Game.Profiles.activeName())
     Game.Profiles.create(params.get('nombre') || 'Errante');
   if (arranqueOnline) {
+    borrarPartidaGuardadaActual();
     Net.iniciar(params.get('nombre') || Game.Profiles.activeName() || 'Errante', opcionesOnlineDesdeParams());
     autoEntrarOnline();
   } else if (params.get('autostart')) {
+    borrarPartidaGuardadaActual();
     Game.startRun(params.get('seed') || semillaDiaria());
     if (params.get('nivel') && world.data.levels[params.get('nivel')]) {
       // salto directo para pruebas
@@ -700,6 +708,7 @@
     if (!P.activeName()) P.create($id('profile-name').value.trim() || 'Errante');
     refreshTitle();
     if (onlinePorDefecto) {
+      borrarPartidaGuardadaActual();
       window.Voz?.activar?.({ auto: true });
       GameViewport.fullscreen?.();
       Net.iniciar(P.activeName() || 'Errante', opcionesOnlineDesdeParams());
@@ -708,6 +717,7 @@
     }
     GameViewport.fullscreen?.();
     const seed = $id('seed-input').value.trim();
+    borrarPartidaGuardadaActual();
     Game.startRun(seed || semillaDiaria());
   }
   $id('btn-start').onclick = empezarPrincipal;
@@ -726,6 +736,7 @@
     }, 100);
   }
   $id('btn-online-public').onclick = () => {
+    borrarPartidaGuardadaActual();
     window.Voz?.activar?.({ auto: true });
     GameViewport.fullscreen?.();
     Net.iniciar(nombreOnline(), { sala: 'publica', nivel: 'level-0' });
@@ -737,6 +748,7 @@
       $id('online-code').focus();
       return;
     }
+    borrarPartidaGuardadaActual();
     window.Voz?.activar?.({ auto: true });
     GameViewport.fullscreen?.();
     Net.iniciar(nombreOnline(), { sala: 'privada', codigo: code, nivel: 'level-0' });
@@ -745,9 +757,13 @@
   $id('btn-again').onclick = () => {
     refreshTitle();
     if (onlinePorDefecto) {
+      borrarPartidaGuardadaActual();
       Net.iniciar(P.activeName() || 'Errante', opcionesOnlineDesdeParams());
       autoEntrarOnline();
-    } else Game.startRun(semillaDiaria());
+    } else {
+      borrarPartidaGuardadaActual();
+      Game.startRun(semillaDiaria());
+    }
   };
   $id('btn-journal-close').onclick = () => world.ui.toggleJournal();
   $id('btn-end-codex').onclick = () => world.ui.toggleCodex(true);
