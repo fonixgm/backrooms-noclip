@@ -522,7 +522,11 @@ class Sala {
           const tx = Math.round(jug.x) + fx * d, ty = Math.round(jug.y) + fy * d;
           if (!esTransitable(this.map, tx, ty)) continue;
           jug.x = tx; jug.y = ty;
-          this.enviar(jug.ws, { t: 'tp', x: jug.x, y: jug.y });
+          // teleport de verdad (como esconder()/cambiarDeSala): sec nuevo para
+          // que caduquen los informes en vuelo del cliente y 'mueve' (ya
+          // manejado por cliente.js) en vez de un 't:tp' que nadie escuchaba
+          jug.sec = (jug.sec || 0) + 1;
+          this.difundir({ t: 'mueve', id: jug.id, x: r2(jug.x), y: r2(jug.y), sec: jug.sec });
           return true;
         }
         this.enviar(jug.ws, { t: 'aviso', txt: `${def.nombre} no encuentra hueco.` });
