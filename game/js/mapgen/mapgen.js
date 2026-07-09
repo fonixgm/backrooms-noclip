@@ -220,7 +220,7 @@
           set(g, x + dx, y + dy, T.SUELO);
     };
     // corredor principal serpenteante: segmentos rectos largos con quiebros
-    let x = 4, y = rng.int(h / 3, (h * 2) / 3);
+    let x = 4, y = rng.int(Math.floor(h / 3), Math.floor((h * 2) / 3));
     let dirY = 0;
     const hitos = [[x, y]];
     while (x < w - 8) {
