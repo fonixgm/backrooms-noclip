@@ -135,7 +135,58 @@
     return g;
   }
 
-  // Habitaciones BSP + corredores (hospitales, oficinas, hoteles)
+  // Ala de hospital (Level 14, 16, 188): varias alas horizontales APILADAS
+  // (según la altura disponible) unidas por un pasillo vertical, con
+  // habitaciones UNIFORMES en "peine" a ambos lados de cada ala (alguna más
+  // grande: quirófano/almacén) — más rígido y repetitivo que el BSP orgánico
+  // de oficinas, como la planta real de un edificio. El ala central aloja el
+  // puesto de enfermería, donde confluye el pasillo vertical.
+  function genHospital(w, h, rng) {
+    const g = grid(w, h, T.PARED);
+    const room = (x, y, rw, rh) => {
+      for (let yy = Math.max(1, y); yy < Math.min(h - 1, y + rh); yy++)
+        for (let xx = Math.max(1, x); xx < Math.min(w - 1, x + rw); xx++) set(g, xx, yy, T.SUELO);
+    };
+    const roomW = 5, roomH = 5, paso = roomW + 2;
+
+    // reparte N alas horizontales en el alto disponible (cada una necesita
+    // sitio para una fila de habitaciones arriba y otra abajo)
+    const yMin = roomH + 3, yMax = h - roomH - 4;
+    const nBandas = Math.max(2, Math.min(4, Math.floor((yMax - yMin) / (roomH * 2 + 5)) + 1));
+    const bandas = [];
+    for (let i = 0; i < nBandas; i++)
+      bandas.push(Math.round(yMin + (nBandas === 1 ? 0 : (i * (yMax - yMin)) / (nBandas - 1))));
+
+    const midX = Math.floor(w / 2);
+    room(midX - 1, 2, 2, h - 4); // pasillo vertical, de punta a punta
+    for (const y of bandas) room(2, y - 1, w - 4, 2); // cada ala horizontal
+
+    const hubBanda = bandas[Math.floor(bandas.length / 2)];
+    const hubW = Math.min(w - 10, rng.int(8, 11)), hubH = Math.min(roomH * 2 + 1, rng.int(7, 9));
+    const hubX = midX - Math.floor(hubW / 2), hubY = hubBanda - Math.floor(hubH / 2);
+    room(hubX, hubY, hubW, hubH); // puesto de enfermería
+
+    const peineH = (y, x0, x1) => {
+      for (let x = x0; x + roomW <= x1; x += paso) {
+        const rw = rng.chance(0.2) ? roomW + 3 : roomW; // de vez en cuando, quirófano
+        const puerta = x + Math.floor(rw / 2);
+        if (y - 3 - roomH > 1) { room(x, y - 3 - roomH, rw, roomH); set(g, puerta, y - 2, T.SUELO); }
+        if (y + 2 + roomH < h - 1) { room(x, y + 2, rw, roomH); set(g, puerta, y + 1, T.SUELO); }
+      }
+    };
+    for (const y of bandas) {
+      if (y === hubBanda) {
+        peineH(y, 4, hubX - 2);
+        peineH(y, hubX + hubW + 2, w - roomW - 2);
+      } else {
+        peineH(y, 4, midX - 3);
+        peineH(y, midX + 3, w - roomW - 2);
+      }
+    }
+    return g;
+  }
+
+  // Habitaciones BSP + corredores (oficinas, hoteles)
   function genOficinas(w, h, rng) {
     const g = grid(w, h, T.PARED);
     const rooms = [];
@@ -388,7 +439,7 @@
       : genPasillos(w, h, rng),
     garaje: (w, h, rng) => genGaraje(w, h, rng),
     tuneles: (w, h, rng) => genTuneles(w, h, rng, { ancho: true }),
-    hospital: (w, h, rng) => genOficinas(w, h, rng),
+    hospital: (w, h, rng) => genHospital(w, h, rng),
     oficinas: (w, h, rng) => genOficinas(w, h, rng),
     exterior: (w, h, rng) => genExterior(w, h, rng),
     bosque: (w, h, rng, lv) => genBosque(w, h, rng, { lagos: (lv.reglas || []).includes('agua_traicionera') ? 5 : 2 }),
