@@ -40,8 +40,8 @@
   };
 
   // el audio se desbloquea con el primer gesto (política de los navegadores)
-  document.addEventListener('keydown', () => Sfx.unlock(), { once: true });
-  document.addEventListener('click', () => Sfx.unlock(), { once: true });
+  document.addEventListener('keydown', () => { Sfx.unlock(); playMenuMusic(); }, { once: true });
+  document.addEventListener('click', () => { Sfx.unlock(); playMenuMusic(); }, { once: true });
 
   // slider de volumen del título (en partida el volumen vive en Ajustes: ESC)
   for (const sid of ['vol-slider-title']) {
@@ -73,7 +73,7 @@
     chat: 12
   },
   cursorSpeed: 8, dado: true,
-  camaraModo: 'libre', camaraInvertir: false, camaraSens: 100 };
+  camaraModo: 'libre', camaraInvertir: false, camaraSens: 100, camaraSeguimiento: 8, resolucion: 'auto16x9', fpsMax: 'vsync', menuMusica: 'menu1' };
   try { 
     const storedOpts = JSON.parse(localStorage.getItem('backrooms-opts')) || {};
     if (storedOpts.gamepadMap) {
@@ -90,14 +90,38 @@
   };
 
   const optCamaraModo = document.getElementById('opt-camara-modo');
+  const rowCamaraSeguimiento = document.getElementById('row-camara-seguimiento');
+  const optCamaraSeguimiento = document.getElementById('opt-camara-seguimiento');
+  const optCamaraSeguimientoV = document.getElementById('opt-camara-seguimiento-v');
+
+  function actualizarVisibilidadSeguimiento() {
+    if (rowCamaraSeguimiento) {
+      rowCamaraSeguimiento.style.display = OPTS.camaraModo === 'bloqueada' ? 'flex' : 'none';
+    }
+  }
+
   if (optCamaraModo) {
     optCamaraModo.value = OPTS.camaraModo || 'libre';
+    actualizarVisibilidadSeguimiento();
     optCamaraModo.onchange = () => {
       OPTS.camaraModo = optCamaraModo.value;
       try { localStorage.setItem('backrooms-opts', JSON.stringify(OPTS)); } catch (e) {}
+      actualizarVisibilidadSeguimiento();
       if (OPTS.camaraModo !== 'libre' && document.pointerLockElement) {
         document.exitPointerLock();
       }
+    };
+  }
+
+  if (optCamaraSeguimiento) {
+    optCamaraSeguimiento.value = OPTS.camaraSeguimiento !== undefined ? OPTS.camaraSeguimiento : 8;
+    if (optCamaraSeguimientoV) optCamaraSeguimientoV.textContent = optCamaraSeguimiento.value;
+    optCamaraSeguimiento.oninput = () => {
+      OPTS.camaraSeguimiento = parseInt(optCamaraSeguimiento.value, 10);
+      if (optCamaraSeguimientoV) optCamaraSeguimientoV.textContent = OPTS.camaraSeguimiento;
+    };
+    optCamaraSeguimiento.onchange = () => {
+      try { localStorage.setItem('backrooms-opts', JSON.stringify(OPTS)); } catch (e) {}
     };
   }
   const optCamaraInvertir = document.getElementById('opt-camara-invertir');
@@ -118,6 +142,27 @@
       if (optCamaraSensV) optCamaraSensV.textContent = OPTS.camaraSens + '%';
     };
     optCamaraSens.onchange = () => {
+      try { localStorage.setItem('backrooms-opts', JSON.stringify(OPTS)); } catch (e) {}
+    };
+  }
+
+  const optResolucion = document.getElementById('opt-resolucion');
+  if (optResolucion) {
+    let rVal = OPTS.resolucion || 'auto16x9';
+    if (rVal === 'auto') rVal = 'auto16x9';
+    optResolucion.value = rVal;
+    optResolucion.onchange = () => {
+      OPTS.resolucion = optResolucion.value;
+      try { localStorage.setItem('backrooms-opts', JSON.stringify(OPTS)); } catch (e) {}
+      ajustarLienzo();
+    };
+  }
+
+  const optFps = document.getElementById('opt-fps');
+  if (optFps) {
+    optFps.value = OPTS.fpsMax || 'vsync';
+    optFps.onchange = () => {
+      OPTS.fpsMax = optFps.value;
       try { localStorage.setItem('backrooms-opts', JSON.stringify(OPTS)); } catch (e) {}
     };
   }
@@ -184,6 +229,32 @@
   // resolución del monitor (nada de cuadro de 960×600 sobre fondo negro)
   function ajustarLienzo() {
     const fs = !!document.fullscreenElement;
+    // 1. Obtener la resolución elegida y su ratio
+    let resW = 960;
+    let resH = 600;
+    let auto = true;
+    let ratio = 16 / 9; // Por defecto auto 16:9
+    
+    let resOpt = (window.OPTS && window.OPTS.resolucion) || 'auto16x9';
+    if (resOpt === 'auto') resOpt = 'auto16x9'; // Fallback para guardado viejo
+    
+    if (resOpt === 'auto16x9') {
+      ratio = 16 / 9;
+      auto = true;
+    } else if (resOpt === 'auto16x10') {
+      ratio = 16 / 10;
+      auto = true;
+    } else {
+      const parts = resOpt.split('x');
+      if (parts.length === 2) {
+        resW = parseInt(parts[0], 10);
+        resH = parseInt(parts[1], 10);
+        auto = false;
+        ratio = resW / resH;
+      }
+    }
+
+    // 2. Calcular el tamaño de pantalla del contenedor (layout size)
     let w = fs ? Math.max(320, window.innerWidth) : 960;
     let h = fs ? Math.max(200, window.innerHeight) : 600;
     if (!fs) {
@@ -192,25 +263,38 @@
       const vh = Math.max(200, Math.floor(vv ? vv.height : window.innerHeight));
       const esTactil = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
       const margen = esTactil ? 0 : 24;
-      const ratio = 16 / 10;
-      w = Math.min(1280, vw - margen);
-      h = Math.min(800, vh - margen);
+      
+      // Ajustar el contenedor al viewport respetando el ratio
+      w = vw - margen;
+      h = vh - margen;
       if (w / h > ratio) w = Math.floor(h * ratio);
       else h = Math.floor(w / ratio);
+      
       w = Math.max(320, w);
       h = Math.max(200, h);
+    } else {
+      // En pantalla completa, reajustar para mantener el ratio con barras negras (letterbox)
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      w = vw;
+      h = vh;
+      if (w / h > ratio) w = Math.floor(h * ratio);
+      else h = Math.floor(w / ratio);
     }
+    
     document.documentElement.style.setProperty('--game-w', `${w}px`);
     document.documentElement.style.setProperty('--game-h', `${h}px`);
-    
-    // Cuentas de resolución interna para rendimiento (máx 1280 de ancho)
-    let rw = w;
-    let rh = h;
-    const maxDimension = 1280;
-    if (w > maxDimension) {
-      const scale = maxDimension / w;
-      rw = Math.round(w * scale);
-      rh = Math.round(h * scale);
+
+    // 3. Establecer resolución interna del lienzo
+    let rw, rh;
+    if (auto) {
+      // Si es auto, la resolución sigue exactamente al tamaño de pantalla
+      rw = w;
+      rh = h;
+    } else {
+      // Si es manual, se usa exactamente la resolución elegida
+      rw = resW;
+      rh = resH;
     }
 
     if (canvas.width !== rw || canvas.height !== rh) {
@@ -952,8 +1036,25 @@
 
     for(let i=0; i<btns.length; i++) lastGamepadState[i] = pressed(i);
   }
+  let lastRenderT = 0;
   function loop(t) {
     pollGamepad(t);
+    
+    // Limitación de FPS
+    const maxFps = (window.OPTS && window.OPTS.fpsMax) || 'vsync';
+    if (maxFps !== 'vsync') {
+      const targetFps = parseInt(maxFps, 10);
+      const fpsInterval = 1000 / targetFps;
+      const elapsed = t - lastRenderT;
+      if (elapsed < fpsInterval - 1) {
+        requestAnimationFrame(loop);
+        return;
+      }
+      lastRenderT = t - (elapsed % fpsInterval);
+    } else {
+      lastRenderT = t;
+    }
+
     requestAnimationFrame(loop);
     const dtBruto = (t - lastFrameT) / 1000 || 0;
     const dtF = Math.min(0.1, dtBruto);
@@ -964,6 +1065,8 @@
     lastFrameT = t;
     if (!world.level || !world.player) return;
     const p = world.player;
+    p.inputX = 0;
+    p.inputY = 0;
 
     // ---------- v22: vector de movimiento por frame (movimiento libre) ----------
     if (world.online && window.Net && Net.activo &&
@@ -976,6 +1079,8 @@
         if (v) { sx += v[0]; sy += v[1]; }
       }
       sx = Math.sign(sx); sy = Math.sign(sy);
+      p.inputX = sx;
+      p.inputY = sy;
       const tercera = use3D && Render3D.modo === 'tercera';
       if (tercera) {
         // v25 — estilo Roblox: WASD mueve RELATIVO A LA CÁMARA (adelante/
@@ -1285,6 +1390,7 @@
   }
 
   function conectarAlServidor(btnOrigen) {
+    if (window.Sfx) Sfx.stopMenu();
     if (!P.activeName()) P.create($id('profile-name').value.trim() || 'Errante');
     refreshTitle();
     const salaPrivada = salaPrivadaTitulo();
@@ -1325,6 +1431,23 @@
     }, 200);
   }
 
+  const CANCIONES_MENU = [
+    { id: 'menu1', titulo: 'Menú Tema 1', autor: '@cris_fon', archivo: 'assets/sounds/Menu/menu1.mp3' },
+    { id: 'thehub', titulo: 'The Hub (Ambiente)', autor: 'Banda Sonora', archivo: 'assets/sounds/niveles/the-hub.mp3' },
+    { id: 'ninguna', titulo: 'Ninguna (Silencio)', autor: '—', archivo: null }
+  ];
+
+  function playMenuMusic() {
+    if (document.getElementById('screen-title').style.display === 'none') return;
+    let trackId = OPTS.menuMusica || 'menu1';
+    const track = CANCIONES_MENU.find(t => t.id === trackId) || CANCIONES_MENU[0];
+    if (track && track.archivo && window.Sfx) {
+      Sfx.playMenu(track.archivo);
+    } else if (window.Sfx) {
+      Sfx.stopMenu();
+    }
+  }
+
   function refreshTitle() {
     const sel = $id('profile-select');
     sel.innerHTML = '';
@@ -1351,6 +1474,8 @@
       btn.textContent = `Continuar en servidor (${saveData.levelId})`;
       btn.onclick = () => conectarAlServidor(btn);
     } else btn.style.display = 'none';
+
+    playMenuMusic();
   }
 
   $id('profile-select').onchange = (ev) => { P.select(ev.target.value); refreshTitle(); };
@@ -1387,6 +1512,64 @@
   };
   $id('btn-codex').onclick = () => world.ui.toggleCodex(true);
   $id('btn-changelog').onclick = () => world.ui.toggleChangelog(true);
+
+  // ---------- Selector de Música de Menú ----------
+  const btnMusicMenu = $id('btn-music-menu');
+  const panelMusic = $id('music-menu');
+  const btnMusicClose = $id('btn-music-close');
+  const listMusic = $id('music-list');
+
+  if (btnMusicMenu) {
+    btnMusicMenu.onclick = () => {
+      listMusic.innerHTML = '';
+      const currentTrack = OPTS.menuMusica || 'menu1';
+
+      CANCIONES_MENU.forEach(track => {
+        const item = document.createElement('div');
+        item.className = 'music-item' + (track.id === currentTrack ? ' active' : '');
+        
+        const info = document.createElement('div');
+        info.className = 'music-info';
+        
+        const title = document.createElement('div');
+        title.className = 'music-title';
+        title.textContent = track.titulo;
+        
+        const author = document.createElement('div');
+        author.className = 'music-author';
+        author.textContent = 'por ' + track.autor;
+        
+        info.appendChild(title);
+        info.appendChild(author);
+        
+        const status = document.createElement('div');
+        status.className = 'music-status';
+        if (track.id === currentTrack) {
+          status.textContent = '🔊 SONANDO';
+        }
+        
+        item.appendChild(info);
+        item.appendChild(status);
+        
+        item.onclick = () => {
+          OPTS.menuMusica = track.id;
+          try { localStorage.setItem('backrooms-opts', JSON.stringify(OPTS)); } catch (e) {}
+          playMenuMusic();
+          btnMusicMenu.click(); // refrescar
+        };
+        
+        listMusic.appendChild(item);
+      });
+      
+      panelMusic.style.display = 'flex';
+    };
+  }
+
+  if (btnMusicClose) {
+    btnMusicClose.onclick = () => {
+      panelMusic.style.display = 'none';
+    };
+  }
 
   $id('btn-start').onclick = () => {
     conectarAlServidor($id('btn-start'));

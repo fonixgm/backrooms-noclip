@@ -46,6 +46,7 @@ const qNiveles = db.prepare('SELECT COUNT(*) AS n FROM visitas WHERE token = ?')
 
 // Al conectar: da de alta (o refresca) y devuelve el expediente del errante.
 function conectar(token, nombre) {
+  console.log(`[db] conectar: token=${JSON.stringify(token)} (type=${typeof token}), nombre=${JSON.stringify(nombre)}`);
   const ahora = Date.now();
   qAlta.run(token, nombre, ahora, ahora);
   const fila = qCarga.get(token);
@@ -60,7 +61,18 @@ function conectar(token, nombre) {
 
 function sumarMuerte(token) { qMuerte.run(token); }
 function sumarEscape(token) { qEscape.run(token); }
-function registrarVisita(token, nivel) { qVisita.run(token, nivel); }
+function registrarVisita(token, nivel) {
+  console.log(`[db] registrarVisita: token=${JSON.stringify(token)} (type=${typeof token}), nivel=${JSON.stringify(nivel)}`);
+  try {
+    qVisita.run(token, nivel);
+  } catch (err) {
+    console.error(`[db] registrarVisita ERROR:`, err);
+    throw err;
+  }
+}
 function ban(token, si = true) { qBan.run(si ? 1 : 0, token); }
 
-module.exports = { conectar, sumarMuerte, sumarEscape, registrarVisita, ban };
+// Exportamos 'db' junto con las funciones para evitar que el recolector de basura (GC)
+// libere la instancia DatabaseSync y cierre la conexión a SQLite, lo que causaría
+// que las sentencias preparadas lancen el error "statement has been finalized".
+module.exports = { db, conectar, sumarMuerte, sumarEscape, registrarVisita, ban };
