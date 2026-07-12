@@ -4,6 +4,9 @@
 // tanda de cambios (junto con VERSION_JUEGO en main.js).
 (function () {
   const CHANGELOG = [
+    { v: 'v27.9', cambios: [
+      'Arreglado (multijugador): recoger dos objetos casi seguidos podía hacer que el segundo desapareciera del mundo sin llegar a tu mochila.',
+    ] },
     { v: 'v27.8', cambios: [
       'Arreglado: usar la Llave de Nivel y elegir un destino podía dejarte sin el botón CRUZAR en cualquier salida el resto de la partida.',
     ] },
