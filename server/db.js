@@ -57,7 +57,6 @@ function conectar(token, nombre) {
   };
 }
 
-
 function sumarMuerte(token) { qMuerte.run(token); }
 function sumarEscape(token) { qEscape.run(token); }
 function registrarVisita(token, nivel) { qVisita.run(token, nivel); }
@@ -87,4 +86,4 @@ function resumen() {
   };
 }
 
-module.exports = { conectar, sumarMuerte, sumarEscape, registrarVisita, ban, resumen };
+module.exports = { db, conectar, sumarMuerte, sumarEscape, registrarVisita, ban, resumen };

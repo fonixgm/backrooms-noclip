@@ -16,6 +16,7 @@
   let camRot = 0;          // rotación de cámara en pasos de 90° (0-3), tecla Q (modo alta)
   let camYaw = 0;          // yaw animado (radianes)
   let yawLibre = null;     // v25 online: cámara LIBRE (ratón, estilo Roblox); null = aún sin tocar
+  let ultimoOrbitoT = 0;   // v26: timestamp del último movimiento manual de cámara (órbita)
   // altura de muros: en 3ª persona son de altura real (la cámara va a 1.5 y JAMÁS
   // ve por encima → nunca se rompe la sensación de interior)
   const WALL_H = CAM_MODO === 'tercera' ? 2.3 : 1.2;
@@ -1565,12 +1566,50 @@
       // (yawLibre) y el personaje se mueve relativo a la cámara; sin arrastrar
       // aún, la cámara se queda donde está. Solo (offline): sigue a la espalda.
       let yawObjetivo;
-      if (world.online) yawObjetivo = yawLibre === null ? camYaw : yawLibre;
-      else { const [fx3, fz3] = ROT_VEC[rot]; yawObjetivo = Math.atan2(-fx3, -fz3); }
+      let factorSuavidad = world.online ? 0.55 : 0.12;
+      if (world.online) {
+        if (window.OPTS && window.OPTS.camaraModo === 'bloqueada') {
+          // Cámara bloqueada (Seguimiento)
+          const segVal = window.OPTS.camaraSeguimiento !== undefined ? window.OPTS.camaraSeguimiento : 8;
+          const yaOrbitoHacePoco = (performance.now() - ultimoOrbitoT) < 1000;
+
+          // Se considera que camina hacia adelante si se mueve y inputY es negativo (W, W+A, W+D)
+          const caminaAdelante = world.moving && p.inputY < 0;
+
+          if (caminaAdelante) {
+            p.camaraDebeAlinear = true;
+          }
+
+          // Si camina hacia adelante, se alinea inmediatamente. 
+          // Si está quieto pero quedó con realineación pendiente, se alinea suavemente siempre que no haya orbitado de forma manual recientemente.
+          const debeAlinearAhora = caminaAdelante || (p.camaraDebeAlinear && !yaOrbitoHacePoco);
+
+          if (debeAlinearAhora) {
+            yawObjetivo = -p.rot;
+            yawLibre = yawObjetivo;
+            factorSuavidad = segVal / 100;
+          } else {
+            yawObjetivo = yawLibre === null ? camYaw : yawLibre;
+          }
+        } else {
+          yawObjetivo = yawLibre === null ? camYaw : yawLibre;
+        }
+      } else {
+        const [fx3, fz3] = ROT_VEC[rot];
+        yawObjetivo = Math.atan2(-fx3, -fz3);
+      }
       let dyaw = yawObjetivo - camYaw;
       while (dyaw > Math.PI) dyaw -= Math.PI * 2;
       while (dyaw < -Math.PI) dyaw += Math.PI * 2;
-      camYaw += dyaw * (world.online ? 0.55 : 0.12); // el ratón pide respuesta directa
+
+      // Si está realineando y ya se alineó casi del todo, apagar el flag para dejar la cámara libre
+      if (window.OPTS && window.OPTS.camaraModo === 'bloqueada' && p.camaraDebeAlinear) {
+        if (!world.moving && Math.abs(dyaw) < 0.01) {
+          p.camaraDebeAlinear = false;
+        }
+      }
+
+      camYaw += dyaw * factorSuavidad; // el ratón/seguimiento pide respuesta directa o suave
       const ox = Math.sin(camYaw) * TP.dist;
       const oz = Math.cos(camYaw) * TP.dist;
       let target = new THREE.Vector3(px + ox, TP.alto + bob, pz + oz);
@@ -1740,7 +1779,10 @@
     get rot() { return camRot; },
     // v25 — cámara libre (online): el ratón orbita; el movimiento es relativo a ella
     get yaw() { return camYaw; },
-    orbita(d) { yawLibre = (yawLibre === null ? camYaw : yawLibre) + d; },
+    orbita(d) {
+      yawLibre = (yawLibre === null ? camYaw : yawLibre) + d;
+      ultimoOrbitoT = performance.now();
+    },
     // v25 — pantalla completa real: relanza el render a la resolución nueva
     resize(w, h) {
       if (!renderer) return;

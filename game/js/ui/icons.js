@@ -227,6 +227,10 @@
     '............', '............', '..cccccccc..', '.cccccccccc.',
     '.cc.d..b..c.', '.cd.d.c.r.c.', '.cc.d.....c.', '.ccc....ccc.',
     '..c......c..', '............', '............', '............'] };
+  D.nota = { pal: { n: '#d9c66e', w: '#efe8d0' }, m: [
+    '....nnnnnnnn', '....nnnnnnnw', '....n.....n.', '....n.....n.',
+    '....n.....n.', '....n.....n.', '..nnn...nnn.', '.nnnn..nnnn.',
+    '.nnnn..nnnn.', '..nn....nn..', '............', '............'] };
   D.pergamino = { pal: { p: '#d8c9a0', P: '#a8946a', l: '#6a5c40' }, m: [
     '............', '..PPPPPPPP..', '..Pppppppp..', '..pllllllp..',
     '..pppppppp..', '..plllllpp..', '..pppppppp..', '..pllllllp..',
@@ -243,7 +247,7 @@
     '📖': 'libro', '🚪': 'puerta', '⭐': 'estrella', '☠': 'calavera',
     '〰': 'onda', '♾': 'infinito', '❄': 'frio', '●': 'punto', '☔': 'paraguas',
     '🍖': 'carne', '👁': 'ojo', '👀': 'ojos', '⌀': 'diametro', '🕰': 'reloj',
-    '🪶': 'pluma', '∅': 'vacio', '🪞': 'espejo', '🌫': 'niebla', '🔪': 'cuchillo',
+    '🪶': 'pluma', '∅': 'vacio', '🪞': 'espejo', '🌫': 'niebla', '🔪': 'cuchillo', '🎵': 'nota',
   };
 
   const cache = {}, urls = {}, overrides = {};
