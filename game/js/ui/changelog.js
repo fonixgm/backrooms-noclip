@@ -4,6 +4,10 @@
 // tanda de cambios (junto con VERSION_JUEGO en main.js).
 (function () {
   const CHANGELOG = [
+    { v: 'v27.7', cambios: [
+      'Nuevos sprites del personaje, y una capa visual sobre él cuando llevas puesta la máscara de gas.',
+      'Los iconos de la mochila y del HUD ahora también admiten arte personalizado.',
+    ] },
     { v: 'v27.6', cambios: [
       'Música ambiental real para Level 6 ("Lights Out").',
     ] },

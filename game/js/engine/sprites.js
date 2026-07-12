@@ -986,10 +986,9 @@
 
   build();
   window.Sprites = {
-    get, tryOverrides, drawProp, frameCount, tiene, list: () => Object.keys(DEFS),
-    CAPA_MASCARA_GAS,
     get, tryOverrides, drawProp, frameCount, tiene,
     list: () => Object.keys(DEFS),
+    CAPA_MASCARA_GAS,
     version: () => overrideVersion,
     overridePaths: rutasOverride,
   };
