@@ -4,6 +4,9 @@
 // tanda de cambios (junto con VERSION_JUEGO en main.js).
 (function () {
   const CHANGELOG = [
+    { v: 'v27.8', cambios: [
+      'Arreglado: usar la Llave de Nivel y elegir un destino podía dejarte sin el botón CRUZAR en cualquier salida el resto de la partida.',
+    ] },
     { v: 'v27.7', cambios: [
       'Nuevos sprites del personaje, y una capa visual sobre él cuando llevas puesta la máscara de gas.',
       'Los iconos de la mochila y del HUD ahora también admiten arte personalizado.',
