@@ -4,6 +4,10 @@
 // tanda de cambios (junto con VERSION_JUEGO en main.js).
 (function () {
   const CHANGELOG = [
+    { v: 'v27.10', cambios: [
+      'Arreglado (multijugador): los objetos del suelo ya recogidos no vuelven a aparecer al volver a entrar a la misma sala.',
+      'Los objetos encontrados en multijugador ahora también se registran en el códice.',
+    ] },
     { v: 'v27.9', cambios: [
       'Arreglado (multijugador): recoger dos objetos casi seguidos podía hacer que el segundo desapareciera del mundo sin llegar a tu mochila.',
     ] },
