@@ -114,9 +114,11 @@ function caminoLegal(grid, x0, y0, x1, y1) {
 }
 
 function destinoDisponible(def) {
-  return def && def.destino && (DATA.levels[def.destino] ||
-    def.destino === '*aleatoria' || def.destino === '*visitada' ||
-    def.destino.startsWith('*opciones:'));
+  const destino = def && def.destino;
+  if (!destino) return false;
+  if (DATA.levels[destino] || destino === '*aleatoria' || destino === '*visitada') return true;
+  if (!destino.startsWith('*opciones:')) return false;
+  return destino.slice('*opciones:'.length).split(',').some((id) => DATA.levels[id]);
 }
 
 class Sala {
@@ -179,6 +181,29 @@ class Sala {
               !this.map.exits.some((exit) => exit.x === x && exit.y === y)) return [x, y];
         }
     return this.buscarSpawn(cx, cy);
+  }
+
+  // Localiza el acceso personal de vuelta cerca del spawn. Las transiciones
+  // verticales/objetos pueden ocupar cualquier suelo libre; una puerta,
+  // ventana o boquete exige una pared REAL al norte porque ambos renders
+  // componen esos accesos sobre esa cara del muro.
+  buscarLugarRetorno(necesitaPared) {
+    const [sx, sy] = this.map.spawn;
+    const dist = MapGen.bfsDist(this.map.grid, sx, sy);
+    const ocupada = (x, y) =>
+      this.map.exits.some((e) => e.x === x && e.y === y) ||
+      (this.map.props || []).some((p) => p.x === x && p.y === y) ||
+      (this.map.items || []).some((i) => !i.taken && i.x === x && i.y === y) ||
+      this.ocupada(x, y);
+    let mejor = null, mejorD = Infinity;
+    for (let y = 1; y < this.map.grid.h; y++)
+      for (let x = 0; x < this.map.grid.w; x++) {
+        const d = dist[y * this.map.grid.w + x];
+        if (d < 0 || d > mejorD || !esTransitable(this.map, x, y) || ocupada(x, y)) continue;
+        if (necesitaPared && MapGen.at(this.map.grid, x, y - 1) !== MapGen.T.PARED) continue;
+        if (d < mejorD) { mejor = [x, y]; mejorD = d; }
+      }
+    return mejor;
   }
 
   censo() {
@@ -256,7 +281,13 @@ class Sala {
   prepararCaminata(jug) {
     jug.pasosSala = 0;
     jug.distSala = 0;
-    jug.caminataObjetivo = (this.map.caminatas || []).some(destinoDisponible)
+    // Si llegaste caminando, desandar la transición tiene prioridad sobre
+    // las demás rutas de distancia del nivel. Sigue siendo una caminata: no
+    // se materializa una puerta en el spawn.
+    const vuelta = jug.retorno && jug.retorno._mec === 'caminata' && destinoDisponible(jug.retorno)
+      ? jug.retorno : null;
+    jug.caminataDef = vuelta || (this.map.caminatas || []).find(destinoDisponible) || null;
+    jug.caminataObjetivo = jug.caminataDef
       ? MapGen.walkingGoal(this.def, `${jug.token}::${this.clave}`, 1, 0)
       : 0;
   }
@@ -386,7 +417,9 @@ class Sala {
     // canal de romper: alejarse del punto de inicio lo interrumpe
     if (jug.canal && Fisica.dist(m.x, m.y, jug.canal.origen[0], jug.canal.origen[1]) > 0.3)
       this.cancelarCanal(jug, 'Te apartas: dejas lo que estabas haciendo.');
-    this.proximidad(jug);
+    // Un no-clip puede cambiar al jugador de sala inmediatamente. No sigamos
+    // procesando supervivencia/caminata sobre la sala antigua.
+    if (this.proximidad(jug)) return;
     this.supervivencia(jug, d);
     this.caminataAvanza(jug, d);
     this.manilaAvanza(jug);
@@ -437,7 +470,7 @@ class Sala {
       if (pasos % 20 === 0 || pasos >= jug.caminataObjetivo)
         this.enviar(jug.ws, { t: 'caminata', pasos, objetivo: jug.caminataObjetivo });
       if (pasos >= jug.caminataObjetivo) {
-        const defC = this.resolverDestino(jug, (this.map.caminatas || []).find(destinoDisponible));
+        const defC = this.resolverDestino(jug, jug.caminataDef);
         if (!defC) {
           jug.caminataObjetivo = 0;
           this.enviar(jug.ws, { t: 'aviso', txt: 'La ruta ya no coincide con el catálogo actual.' });
@@ -453,8 +486,14 @@ class Sala {
   // ya NO se gestionan aquí — el botín es individual y lo recoge el cliente.
   proximidad(jug) {
     const s = this.salidaCerca(jug, 0.6);
+    if (s && s.ex.def._mec === 'noclip') {
+      jug.ofertaEn = s.i;
+      this.cruzar(jug, true);
+      return true;
+    }
     if (s && jug.ofertaEn !== s.i) this.ofrecer(jug, s);
     else if (!s && jug.ofertaEn !== null && !this.salidaCerca(jug, 1.0)) jug.ofertaEn = null;
+    return false;
   }
 
   salidaCerca(jug, radio) {
@@ -463,14 +502,14 @@ class Sala {
       const d = Fisica.dist(e.x, e.y, jug.x, jug.y);
       if (d <= mejorD) { mejorD = d; mejor = { i, ex: e }; }
     });
-    // tu puerta personal de retorno (v23) compite como una salida más
-    if (jug.retorno) {
+    // Tu retorno físico personal compite como una salida más. El retorno por
+    // caminata se procesa por distancia en caminataAvanza(), nunca aquí.
+    if (jug.retorno && jug.retorno._mec !== 'caminata' &&
+        Number.isFinite(jug.retorno.x) && Number.isFinite(jug.retorno.y)) {
       const r = jug.retorno;
       const d = Fisica.dist(r.x, r.y, jug.x, jug.y);
       if (d <= mejorD) {
-        mejor = { i: 'R', ex: { x: r.x, y: r.y, def: {
-          texto: 'El camino por el que llegaste sigue abierto', destino: r.destino, tipo: 'retorno',
-        } } };
+        mejor = { i: 'R', ex: { x: r.x, y: r.y, def: r } };
       }
     }
     return mejor;
@@ -509,7 +548,9 @@ class Sala {
       this.iniciarRomper(jug, s);
       return;
     }
-    // 3) salida normal: reofrecer
+    // 3) el no-clip tampoco pregunta al usar ESPACIO.
+    if (s && s.ex.def._mec === 'noclip') { this.cruzar(jug, true); return; }
+    // 4) salida normal: reofrecer
     if (s) { this.ofrecer(jug, s); return; }
     if (prop) { this.esconder(jug, true, prop); return; }
     this.enviar(jug.ws, { t: 'aviso', txt: 'No hay nada con lo que interactuar aquí.' });
@@ -618,10 +659,13 @@ class Sala {
         d = Math.min(20, d + 2);
       const umbral = Math.round(def.riesgoVoid * 20);
       const exito = d > umbral; // offline: d <= umbral === caes
-      this.enviar(jug.ws, { t: 'dado', id: jug.id, valor: d, exito });
+      if (def._mec !== 'noclip')
+        this.enviar(jug.ws, { t: 'dado', id: jug.id, valor: d, exito });
       if (!exito) { this.morir(jug, 'el Vacío'); return; }
     }
-    if (this.alCruzar) this.alCruzar(jug, this, def);
+    if (this.alCruzar) this.alCruzar(jug, this, def, def._mec === 'noclip'
+      ? { sinTarjeta: true, sinRetorno: true, silencioso: true }
+      : undefined);
   }
 
   // ---------- manos: tubería (golpe hacia donde miras) y linterna ----------
@@ -1181,9 +1225,72 @@ function prepararSala(sala) {
 // esSinRetorno en game.js (caídas, vacío, desplomes) para que el mundo
 // online respete la física del modo original
 function esSinRetorno(def) {
+  if (def._mec === 'noclip') return true;
   if (def.sinRetorno) return true;
   if (def.tipo === 'void') return true;
   return /agujero|caes |caer |caída|desplom|abismo|pozo|trampilla|no.?clip|desmay|despiert/i.test(def.texto || '');
+}
+
+// Naturaleza física del camino por el que se entra. Solo los accesos que se
+// pueden desandar generan retorno; caídas, no-clip, muerte y permanencias
+// anómalas son unidireccionales.
+function estiloRetornoDe(def) {
+  if (!def || esSinRetorno(def)) return null;
+  const mec = def._mec || def.mecanica;
+  if (mec === 'noclip' || mec === 'romper_suelo' || mec === 'manila') return null;
+  if (mec === 'caminata') return 'caminata';
+  if (mec === 'romper') return 'boquete';
+  const texto = (def.texto || '').toLowerCase();
+  if (/ventana/.test(texto)) return 'ventana';
+  if (/puerta|portón|porton|verja|compuerta|salida de emergencia/.test(texto)) return 'puerta';
+  if (/escalera|ascensor|elevador/.test(texto)) return 'escalera';
+  if (def.ritual) return 'ritual';
+  return null;
+}
+
+function defRetornoDe(origen, defEntrada, opts) {
+  if ((opts && opts.sinRetorno) || !origen) return null;
+  const estilo = estiloRetornoDe(defEntrada);
+  if (!estilo) return null;
+  const base = {
+    destino: origen,
+    tipo: 'retorno',
+    _retornoEstilo: estilo,
+    _abierta: true,
+  };
+  if (estilo === 'caminata') return {
+    ...base,
+    texto: 'Desandar el camino recorrido conduce de vuelta.',
+    mecanica: 'caminata',
+    _mec: 'caminata',
+  };
+  if (estilo === 'ventana') return {
+    ...base,
+    texto: 'La ventana por la que llegaste sigue abierta.',
+    _pared: true,
+  };
+  if (estilo === 'puerta') return {
+    ...base,
+    texto: 'La puerta por la que llegaste sigue abierta.',
+    ritual: defEntrada.ritual,
+    _pared: true,
+  };
+  if (estilo === 'boquete') return {
+    ...base,
+    texto: 'El boquete por el que llegaste sigue abierto.',
+    mecanica: 'romper',
+    _mec: 'romper',
+    _pared: true,
+  };
+  if (estilo === 'escalera') return {
+    ...base,
+    texto: 'La escalera por la que llegaste conduce de vuelta.',
+  };
+  return {
+    ...base,
+    texto: 'El mismo acceso por el que llegaste sigue disponible.',
+    ritual: defEntrada.ritual,
+  };
 }
 
 function mirarAlejandose(jug, puertaX, puertaY) {
@@ -1197,24 +1304,27 @@ function cambiarDeSala(jug, salaVieja, defSalida, opts) {
   salaVieja.salir(jug);
   const nueva = asignar(defSalida.destino, salaVieja.grupo);
   prepararSala(nueva);
-  // ---------- puerta de RETORNO (v23): la puerta que cruzaste te espera ----------
-  // salvo que llegaras cayendo/por el vacío/noclip (caminata o /tp): de ahí no se vuelve
+  // ---------- RETORNO FIEL AL ACCESO DE ENTRADA ----------
+  // Puerta→puerta, ventana→ventana, caminata→caminata. Las caídas,
+  // no-clip, muerte y /tp no dejan un acceso inventado al otro lado.
   const origen = salaVieja.nivelId;
   if (!jug.visitados) jug.visitados = new Set([origen]);
   jug.visitados.add(nueva.nivelId);
-  const sinSalidaMaterializada = !nueva.map.exits.some((exit) => destinoDisponible(exit.def)) &&
-    !(nueva.map.caminatas || []).some(destinoDisponible);
-  const conRetorno = origen !== nueva.nivelId && (sinSalidaMaterializada || (
-    !(opts && opts.sinRetorno) && !(opts && opts.sinTarjeta) && !esSinRetorno(defSalida)
-  ));
+  const defRetorno = origen !== nueva.nivelId ? defRetornoDe(origen, defSalida, opts) : null;
   jug.retorno = null;
   // cruzar por aquí SIEMPRE devuelve al mundo (un espectador viaja por
   // moverEspectador): si un guardián espectando usa /tp, el flag no puede
   // sobrevivir en el servidor con el cliente ya fuera del modo
   jug.espectador = null;
   let x, y;
-  const iVuelta = conRetorno
-    ? nueva.map.exits.findIndex((e) => e.def.destino === origen) : -1;
+  // Reutiliza una salida natural solo si tiene la MISMA naturaleza que el
+  // acceso de entrada. Una zona de no-clip de vuelta no sustituye una puerta.
+  const iVuelta = defRetorno && defRetorno._mec !== 'caminata'
+    ? nueva.map.exits.findIndex((e) =>
+        e.def.destino === origen &&
+        estiloRetornoDe(e.def) === defRetorno._retornoEstilo &&
+        (!defRetorno._pared || MapGen.at(nueva.map.grid, e.x, e.y - 1) === MapGen.T.PARED))
+    : -1;
   if (iVuelta >= 0) {
     // el nivel ya tiene la puerta que conecta de vuelta: apareces a su lado
     const ex = nueva.map.exits[iVuelta];
@@ -1223,14 +1333,26 @@ function cambiarDeSala(jug, salaVieja, defSalida, opts) {
     jug.x = x; jug.y = y;
     mirarAlejandose(jug, ex.x, ex.y);
   } else {
-    if (conRetorno) {
-      // puerta personal: SOLO tú la ves — es TU camino de vuelta
-      const [rx, ry] = nueva.map.spawn;
-      [x, y] = nueva.buscarSpawnJunto(rx, ry);
-      jug.retorno = { x: rx, y: ry, destino: origen };
+    if (defRetorno && defRetorno._mec === 'caminata') {
+      // No hay actor ni puerta: el camino de vuelta se activa recorriendo
+      // distancia real, igual que la caminata que trajo al jugador.
+      jug.retorno = defRetorno;
+      [x, y] = nueva.buscarSpawn();
       jug.ofertaEn = null;
-      jug.x = x; jug.y = y;
-      mirarAlejandose(jug, rx, ry);
+    } else if (defRetorno) {
+      // Acceso físico personal: solo se crea si existe una ubicación válida.
+      const lugar = nueva.buscarLugarRetorno(!!defRetorno._pared);
+      if (lugar) {
+        const [rx, ry] = lugar;
+        [x, y] = nueva.buscarSpawnJunto(rx, ry);
+        jug.retorno = { ...defRetorno, x: rx, y: ry };
+        jug.ofertaEn = null;
+        jug.x = x; jug.y = y;
+        mirarAlejandose(jug, rx, ry);
+      } else {
+        [x, y] = nueva.buscarSpawn();
+        jug.ofertaEn = null;
+      }
     } else {
       [x, y] = nueva.buscarSpawn();
       jug.ofertaEn = null;
@@ -1250,7 +1372,7 @@ function cambiarDeSala(jug, salaVieja, defSalida, opts) {
   nueva.jugadores.set(id, jug);
   nueva.enviar(jug.ws, {
     t: 'nivel', nivel: nueva.nivelId, inst: nueva.inst, semilla: nueva.semilla, privada: nueva.privada,
-    x, y, rot: jug.rot, sec: jug.sec, via: defSalida.texto,
+    x, y, rot: jug.rot, sec: jug.sec, via: opts && opts.silencioso ? null : defSalida.texto,
     sinTarjeta: !!(opts && opts.sinTarjeta),
     salud: jug.salud, sed: jug.sed, cordura: jug.cordura, oxigeno: jug.oxigeno,
     inv: jug.inv, manos: jug.manos, equipo: jug.equipo,
@@ -1302,7 +1424,7 @@ function moverEspectador(esp, salaVieja, nueva, objetivo) {
 
 const api = {
   Sala, salas, crearSala, asignar, todas, totalJugadores,
-  prepararSala, cambiarDeSala, esSinRetorno, moverEspectador,
+  prepararSala, cambiarDeSala, esSinRetorno, estiloRetornoDe, defRetornoDe, moverEspectador,
   usarDb, ganchos, metricas, activarRemodel, fijarSemillaBase,
   generarMapa, esTransitable,
   SALA_PUBLICA, GRACIA_SALA_VACIA, CAP_SALA, COOLDOWN_CHAT, RADIO_CHAT,

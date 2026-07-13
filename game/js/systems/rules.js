@@ -11,6 +11,76 @@
         if (world.turn % (filtrado ? 40 : 20) === 0) world.sanity(-1);
       },
     },
+    luces_inestables: {
+      nombre: 'Iluminación inestable',
+      icono: '⚡',
+      desc: 'Los fluorescentes fallan, parpadean y dejan zonas a oscuras durante unos instantes.',
+    },
+    apagones: {
+      nombre: 'Apagones del garaje',
+      icono: '■',
+      desc: 'Las luces colgantes pueden apagarse por completo y regresar sin aviso.',
+      turno(world, rng) {
+        if ((world._blackoutHasta || -1) > world.turn) {
+          if (world.turn + 1 === world._blackoutHasta)
+            world.log('Las luminarias del garaje vuelven a encenderse una tras otra.', 'event');
+          return;
+        }
+        if (world.turn > 20 && world.turn % 70 === 0 && rng.chance(0.58)) {
+          world._blackoutHasta = world.turn + rng.int(9, 18);
+          world.log('Un chasquido seco recorre el techo. El garaje queda a oscuras.', 'danger');
+          world.sanity(-2);
+          if (window.Sfx) Sfx.play('apagado');
+        }
+      },
+    },
+    deterioro_longitudinal: {
+      nombre: 'Deterioro por distancia',
+      icono: '↠',
+      desc: 'Cuanto más avanzas, más calor, niebla, fallos de luz y daños estructurales aparecen.',
+      entrar(world) {
+        world._deterioroNivel = 0;
+        world._deterioroTramo = 0;
+      },
+      turno(world) {
+        const objetivo = world.level.deterioroPasos || 1200;
+        const fase = Math.max(0, Math.min(1, (world.pasosNivel || 0) / objetivo));
+        world._deterioroNivel = fase;
+        world.visionMod = Math.min(world.visionMod || 0, -Math.floor(fase * 3));
+        const tramo = Math.min(4, Math.floor(fase * 5));
+        if (tramo > (world._deterioroTramo || 0)) {
+          world._deterioroTramo = tramo;
+          world.log([
+            '',
+            'El aire se vuelve más pesado. La niebla ya roza la moqueta.',
+            'Cada vez faltan más paneles de luz. El papel pintado comienza a rasgarse.',
+            'El calor resulta sofocante y los apagones duran cada vez más.',
+            'Las paredes están abiertas por grietas. Las falsas salidas se multiplican.',
+          ][tramo], tramo >= 3 ? 'danger' : 'event');
+          world.sanity(-tramo);
+        }
+        if (fase > 0.78 && world.turn % 80 === 0) world.hurt(2, 'el calor y el agotamiento de The Exit', true);
+      },
+    },
+    libros_sueltos: {
+      nombre: 'Suelo cubierto de libros',
+      icono: '▤',
+      desc: 'Las pilas de libros frenan el paso y pueden hacerte tropezar o delatar tu posición.',
+      turno(world, rng) {
+        const px = Math.round(world.player.x), py = Math.round(world.player.y);
+        const libros = (world.map.props || []).find((p) =>
+          p.id === 'libros_caidos' && p.x === px && p.y === py);
+        if (!libros || libros._pisadoTurno === world.turn) return;
+        libros._pisadoTurno = world.turn;
+        world.hacerRuido(px, py, 6);
+        if (window.Sfx) Sfx.play('papeles');
+        if (rng.chance(0.28)) {
+          world.log('Los libros se deslizan bajo tus pies. Tropiezas y el golpe resuena entre las estanterías.', 'danger');
+          world.sanity(-1);
+          if (rng.chance(0.2)) world.hurt(1, 'una caída sobre los libros', true);
+        }
+      },
+    },
     no_euclidiano: {
       nombre: 'Espacio no euclidiano',
       icono: '♾',

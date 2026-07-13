@@ -31,11 +31,13 @@ Parámetros de URL útiles: `?seed=misemilla&autostart=1`, `?render=2d` y `?nofx
 pipeline/       Scripts Node (descarga de la wiki, parseo, fichas, mapa, empaquetado)
 data/raw/       Snapshot local de Levels, Entities, Objects, Phenomena y Groups (1.134 páginas activas)
 data/parsed/    Grafo estructurado: 752 niveles, 199 entidades, 88 objetos y 139 fenómenos/grupos
-data/game/      Catálogo jugable: 731 niveles, 16 entidades y 84 objetos + mapa.html
+data/game/      Catálogo jugable: 732 niveles, 16 entidades y 84 objetos + mapa.html
 game/           El juego (HTML/JS/Canvas puro, cero dependencias)
 ```
 
-El motor clasifica el catálogo en 31 biomas activos con geometría, paleta, materiales y mobiliario diferenciados.
+El motor clasifica el catálogo en 34 biomas activos. Cada ficha incorpora además un contrato de
+topología separado del material: una biblioteca, un garaje, un teatro o una prisión ya no se
+reducen automáticamente al mismo laberinto.
 Las categorías ambientales explícitas de Fandom actúan como contratos: `Darkness` limita
 visión e iluminación y `Aquatic` activa agua transitable, oxígeno, ahogo y respiraderos.
 Los biomas urbanos generan fachadas, accesos e interiores transitables.
@@ -48,7 +50,8 @@ node pipeline/parse.js       # wikitext -> data/parsed/*.json
 node pipeline/parse.test.js  # pruebas del parser (sin dependencias)
 node pipeline/level0-audit.js            # 100 semillas fijas (regresión reproducible)
 node pipeline/level0-audit.js --random   # muestra nueva; imprime cómo reproducirla
-node pipeline/build-levels.js # catálogo parseado - Joke + overrides -> 731 fichas jugables
+node pipeline/build-levels.js # catálogo parseado - Joke + fichas externas -> 732 niveles jugables
+node pipeline/map-audit.js    # contratos sin soporte y fichas que aún dependen solo del bioma
 node pipeline/make-map.js    # regenerar data/game/mapa-piloto.html
 node pipeline/make-catalog-map.js # regenerar data/game/mapa.html (catálogo completo)
 node pipeline/build-data.js  # OBLIGATORIO tras editar data/game/*.json -> game/js/data.js
@@ -65,10 +68,11 @@ Con el servidor en marcha también está disponible en `http://localhost:8080/ma
 
 ## Actualizar y personalizar niveles
 
-De las 752 páginas clasificadas como niveles, 21 marcadas como Joke se excluyen. Las 731
+De las 752 páginas del snapshot clasificadas como niveles, 21 marcadas como Joke se excluyen. Las 731
 restantes se convierten automáticamente en salas jugables. Las 41 fichas cuidadas a mano viven en `data/game/levels.curated.es.json` y
 sobrescriben la versión procedural. Tras actualizar la wiki o editar esos overrides,
-ejecuta `build-levels.js`, `build-data.js` y `make-map.js`.
+restantes, más Level 0.01 importado de la wiki vigente, forman 732 fichas. Después ejecuta
+`build-levels.js`, `build-data.js` y `make-map.js`.
 
 ## Contribuir
 

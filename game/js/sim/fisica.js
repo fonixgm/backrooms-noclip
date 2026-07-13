@@ -15,12 +15,21 @@
   const SUBPASO = 0.2;         // integración por tramos: nada atraviesa esquinas
 
   // transitable según los valores de MapGen.T (0 suelo, 1 pared, 2 vacío,
-  // 3 agua, 4 suelo decorado) — duplicado aquí a propósito: este archivo no
+  // 3 agua, 4 suelo decorado, 5 obstáculo especial, 6 libros caídos,
+  // 7 charco y 8 obstáculo sólido) —
+  // duplicado aquí a propósito: este archivo no
   // puede depender de mapgen en el servidor ni de window en Node
   function transitable(grid, tx, ty) {
     if (tx < 0 || ty < 0 || tx >= grid.w || ty >= grid.h) return false;
     const t = grid.t[ty * grid.w + tx];
-    return t === 0 || t === 3 || t === 4;
+    return t === 0 || t === 3 || t === 4 || t === 6 || t === 7;
+  }
+
+  function factorTerreno(grid, cx, cy) {
+    const tx = Math.floor(cx), ty = Math.floor(cy);
+    if (tx < 0 || ty < 0 || tx >= grid.w || ty >= grid.h) return 1;
+    const tile = grid.t[ty * grid.w + tx];
+    return tile === 6 ? 0.58 : tile === 7 ? 0.82 : 1;
   }
 
   // ¿el círculo con centro (cx,cy) y radio r pisa algún tile NO transitable?
@@ -50,7 +59,8 @@
     let cx = x + 0.5, cy = y + 0.5;
     const n = Math.max(1, Math.ceil(paso / SUBPASO));
     for (let i = 0; i < n; i++) {
-      const sx = ux / n, sy = uy / n;
+      const factor = factorTerreno(grid, cx, cy);
+      const sx = (ux / n) * factor, sy = (uy / n) * factor;
       if (!chocaCentro(grid, cx + sx, cy, r)) cx += sx;
       if (!chocaCentro(grid, cx, cy + sy, r)) cy += sy;
     }
@@ -71,7 +81,7 @@
     return a;
   }
 
-  const Fisica = { RADIO, VEL_JUGADOR, GIRO_JUGADOR, SUBPASO, transitable, mover, dist, tileDe, normAng,
+  const Fisica = { RADIO, VEL_JUGADOR, GIRO_JUGADOR, SUBPASO, transitable, factorTerreno, mover, dist, tileDe, normAng,
     choca: (grid, x, y, r) => chocaCentro(grid, x + 0.5, y + 0.5, r ?? RADIO) };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = Fisica;

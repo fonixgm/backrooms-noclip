@@ -117,7 +117,11 @@
   "descripcion": "Un aparcamiento interminable de pilares de hormigón y luces colgantes. Charcos de agua de almendras se evaporan en una niebla espesa. Aquí hay recursos, y por eso también hay cosas que esperan.",
   "cita": "La niebla nunca se disipa del todo. Y a veces la niebla te mira.",
   "reglas": [
-   "niebla"
+   "niebla",
+   "luces_inestables",
+   "apagones",
+   "calor",
+   "no_euclidiano"
   ],
   "entidades": [
    {
@@ -1124,7 +1128,7 @@
   "nombre": "Level 130: «The Infinite Apartments»",
   "clase": "Clase 2 · Peligroso",
   "peligro": 2,
-  "bioma": "oficinas",
+  "bioma": "residencial",
   "tam": [
    64,
    56
@@ -1501,7 +1505,7 @@
   "nombre": "Level 188: «The Windows»",
   "clase": "Seguro · Anómalo",
   "peligro": 1,
-  "bioma": "hospital",
+  "bioma": "hotel",
   "tam": [
    44,
    40
@@ -2518,7 +2522,7 @@
   "nombre": "Level 995: «Karmaland Amusement Park»",
   "clase": "Clase variable",
   "peligro": 2,
-  "bioma": "ciudad",
+  "bioma": "recreativo",
   "tam": [
    50,
    46
@@ -3274,7 +3278,7 @@
   "nombre": "Level 499",
   "clase": "Anómalo · Bolera",
   "peligro": 2,
-  "bioma": "oficinas",
+  "bioma": "recreativo",
   "tam": [
    72,
    58
@@ -3386,13 +3390,66 @@
   "particulas": null,
   "sonido": "futurista"
  },
+ "the-end": {
+  "id": "the-end",
+  "wikiTitle": "The End",
+  "nombre": "The End",
+  "clase": "Índice de amenaza Beta · Estabilidad inconstante · Sin vida",
+  "peligro": 2,
+  "bioma": "biblioteca",
+  "tam": [
+   112,
+   72
+  ],
+  "paleta": {
+   "suelo": "#646968",
+   "pared": "#c8b982",
+   "detalle": "#8b643d",
+   "luz": "#fff0b5",
+   "fondo": "#0d0b08"
+  },
+  "vision": 11,
+  "oscuridad": 0.2,
+  "descripcion": "Una biblioteca aparentemente infinita formada por grandes salas abiertas y corredores anchos. Sus estanterías están casi vacías, los muebles se alinean de forma imposible con las paredes y algunos ordenadores antiguos muestran «The End» antes de apagarse. El silencio, los fluorescentes defectuosos y una geometría que se deforma terminan desorientando y provocando alucinaciones.",
+  "cita": "No es el final: es el umbral silencioso entre dos lugares.",
+  "reglas": [
+   "no_euclidiano",
+   "alucinaciones",
+   "aislamiento",
+   "luces_inestables",
+   "libros_sueltos"
+  ],
+  "entidades": [],
+  "objetos": [],
+  "salidas": [
+   {
+    "texto": "Una puerta de salida conduce a un nivel aleatorio",
+    "destino": "*aleatoria",
+    "tipo": "normal"
+   },
+   {
+    "texto": "Hacer no-clip durante una distorsión permite entrar en la escena que aparece",
+    "destino": "*aleatoria",
+    "tipo": "arriesgada"
+   }
+  ],
+  "esEscape": false,
+  "url": "https://backrooms.fandom.com/wiki/The_End",
+  "estilo": {
+   "pared": "libreria_comercial",
+   "suelo": "moqueta"
+  },
+  "particulas": "polvo",
+  "sonido": "biblioteca_silenciosa",
+  "infinito": true
+ },
  "level-910": {
   "id": "level-910",
   "wikiTitle": "Level 910",
   "nombre": "Level 910: «Thunderous Shallows»",
   "clase": "Clase 5e · Ambiental extremo",
   "peligro": 5,
-  "bioma": "exterior",
+  "bioma": "acuatico",
   "tam": [
    64,
    64
@@ -3446,5 +3503,130 @@
   },
   "particulas": "lluvia",
   "sonido": "viento"
+ },
+ "level-37-2": {
+  "wikiTitle": "Level 37.2",
+  "nombre": "Level 37.2: «Sunlit Pools»",
+  "bioma": "acuatico",
+  "paleta": {
+   "suelo": "#315b62",
+   "pared": "#d7e2de",
+   "detalle": "#70aaa8",
+   "luz": "#e8fff8",
+   "fondo": "#071114"
+  },
+  "vision": 9,
+  "oscuridad": 0.14,
+  "descripcion": "Un complejo luminoso de cámaras blancas irregulares cubiertas por agua cristalina hasta las rodillas, con plataformas secas aisladas y grandes vanos entre salas.",
+  "reglas": [
+   "agua_traicionera",
+   "aislamiento"
+  ],
+  "estilo": {
+   "pared": "azulejo_blanco",
+   "suelo": "agua"
+  },
+  "particulas": null,
+  "sonido": "agua"
+ },
+ "level-0-01": {
+  "externo": true,
+  "id": "level-0-01",
+  "wikiTitle": "Level 0.01",
+  "nombre": "Level 0.01: «The Exit?»",
+  "clase": "Clase 2 · Salida muy difícil · Riesgo ambiental alto · Sin entidades",
+  "peligro": 3,
+  "bioma": "pasillos",
+  "tam": [
+   128,
+   54
+  ],
+  "paleta": {
+   "suelo": "#6b6245",
+   "pared": "#a39a6b",
+   "detalle": "#594e35",
+   "luz": "#ddd39a",
+   "fondo": "#090805"
+  },
+  "vision": 6,
+  "oscuridad": 0.5,
+  "descripcion": "Un sistema aparentemente infinito de corredores amarillos largos y mundanos. La distancia no abre el espacio: lo degrada. La temperatura, la humedad, la niebla, los apagones, las grietas y las falsas salidas empeoran cuanto más avanzas, mientras todo contacto con otros seres vivos desaparece.",
+  "cita": "Cinco millas. Quinientas millas. No importa: no hay una salida a la vista.",
+  "reglas": [
+   "zumbido",
+   "luces_inestables",
+   "apagones",
+   "alucinaciones",
+   "aislamiento",
+   "calor",
+   "niebla",
+   "deterioro_longitudinal"
+  ],
+  "entidades": [],
+  "objetos": [],
+  "salidas": [
+   {
+    "texto": "Una rara puerta de cristal conduce a Level 1.5",
+    "destino": "level-1-5",
+    "tipo": "rara"
+   },
+   {
+    "texto": "Derribar una sección de yeso podrido abre el paso a Level 14",
+    "destino": "level-14",
+    "tipo": "arriesgada",
+    "mecanica": "romper"
+   },
+   {
+    "texto": "Un hueco sobre un panel de luz conduce al ático de Level 28",
+    "destino": "level-28",
+    "tipo": "rara"
+   },
+   {
+    "texto": "El yeso fundido hace colapsar el corredor hacia Level 221",
+    "destino": "level-221",
+    "tipo": "arriesgada"
+   },
+   {
+    "texto": "Recordar con precisión el zumbido de Level 0 puede devolverte allí",
+    "destino": "level-0",
+    "tipo": "rara"
+   }
+  ],
+  "entradasDesde": [
+   {
+    "origen": "level-0",
+    "texto": "Una puerta de hormigón marcada con EXIT conduce a Level 0.01",
+    "tipo": "rara"
+   },
+   {
+    "origen": "level-176",
+    "texto": "Una salida de incendios fuera de lugar conduce a Level 0.01",
+    "tipo": "rara"
+   }
+  ],
+  "esEscape": false,
+  "url": "https://backrooms.fandom.com/wiki/Level_0.01",
+  "estilo": {
+   "pared": "papel_rayas",
+   "suelo": "moqueta_humeda"
+  },
+  "particulas": "vapor",
+  "sonido": "hum_clasico",
+  "infinito": true,
+  "deterioroPasos": 1300,
+  "mapa": {
+   "topologia": "laberinto_longitudinal",
+   "apertura": "lineal",
+   "rasgos": [
+    "luces_inestables",
+    "apagones",
+    "objetos_caidos",
+    "calor",
+    "deterioro",
+    "geometria_mutable"
+   ],
+   "fuente": "wiki_prioritaria",
+   "soportada": true
+  }
  }
 }

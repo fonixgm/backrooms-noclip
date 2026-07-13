@@ -1,14 +1,17 @@
 // Generación procedural de mapas por arquetipo de bioma.
-// Tiles: 0 suelo · 1 pared · 2 vacío (abismo) · 3 agua · 4 suelo decorado
+// Tiles: 0 suelo · 1 pared · 2 vacío · 3 agua · 4 decorado · 5 estantería · 6 libros · 7 charco · 8 obstáculo
 (function () {
-  const T = { SUELO: 0, PARED: 1, VACIO: 2, AGUA: 3, DECOR: 4 };
+  const T = {
+    SUELO: 0, PARED: 1, VACIO: 2, AGUA: 3, DECOR: 4,
+    ESTANTERIA: 5, LIBROS: 6, CHARCO: 7, OBSTACULO: 8,
+  };
 
   function grid(w, h, fill) {
     return { w, h, t: new Uint8Array(w * h).fill(fill) };
   }
   const at = (g, x, y) => (x < 0 || y < 0 || x >= g.w || y >= g.h ? T.PARED : g.t[y * g.w + x]);
   const set = (g, x, y, v) => { if (x >= 0 && y >= 0 && x < g.w && y < g.h) g.t[y * g.w + x] = v; };
-  const walkable = (v) => v === T.SUELO || v === T.AGUA || v === T.DECOR;
+  const walkable = (v) => v === T.SUELO || v === T.AGUA || v === T.DECOR || v === T.LIBROS || v === T.CHARCO;
 
   // ---------- arquetipos ----------
 
@@ -93,8 +96,46 @@
     return g;
   }
 
+  // Level 0.01: corredores muy largos y paralelos. La estructura conserva
+  // cruces suficientes para jugar, pero obliga a recorrer ejes longitudinales
+  // en lugar de serpentear por el laberinto celular de Level 0.
+  function genLaberintoLongitudinal(w, h, rng) {
+    const g = grid(w, h, T.PARED);
+    const bandas = [];
+    for (let y = 5; y < h - 4; y += 10) {
+      bandas.push(y);
+      for (let x = 1; x < w - 1; x++) for (let dy = -1; dy <= 1; dy++) set(g, x, y + dy, T.SUELO);
+      // Ensanchamientos escasos: descansos visuales, nunca una retícula de salas.
+      for (let x = rng.int(12, 20); x < w - 12; x += rng.int(20, 34)) {
+        const arriba = rng.chance(0.5);
+        const y0 = arriba ? y - 5 : y + 2;
+        for (let yy = y0; yy < y0 + 4; yy++) for (let xx = x; xx < x + rng.int(6, 11); xx++) set(g, xx, yy, T.SUELO);
+      }
+    }
+    // Conectores alternos garantizan un único componente sin borrar la lectura
+    // horizontal. Algunos son torcidos para que la repetición no sea perfecta.
+    for (let i = 0; i < bandas.length - 1; i++) {
+      const x = 10 + ((i * 23 + rng.int(0, 12)) % Math.max(14, w - 24));
+      for (let y = bandas[i]; y <= bandas[i + 1]; y++) for (let dx = -1; dx <= 1; dx++) set(g, x + dx, y, T.SUELO);
+      if (rng.chance(0.65)) {
+        const x2 = Math.min(w - 8, x + rng.int(18, 36));
+        for (let y = bandas[i]; y <= bandas[i + 1]; y++) set(g, x2, y, T.SUELO);
+      }
+    }
+    // El extremo oriental ya muestra daños; durante la partida la regla
+    // ambiental amplifica esos síntomas según la distancia caminada.
+    let deterioradas = 0;
+    for (let y = 2; y < h - 2; y++) for (let x = Math.floor(w * 0.62); x < w - 2; x++) {
+      if (at(g, x, y) === T.SUELO && rng.chance(((x / w) - 0.55) * 0.12)) {
+        set(g, x, y, T.DECOR); deterioradas++;
+      }
+    }
+    g._longitudinal = { bandas: bandas.length, eje: 'x', deterioradas };
+    return g;
+  }
+
   // Espacio abierto con pilares (Level 1)
-  function genGaraje(w, h, rng) {
+  function genGaraje(w, h, rng, opts = {}) {
     const g = grid(w, h, T.SUELO);
     for (let x = 0; x < w; x++) { set(g, x, 0, T.PARED); set(g, x, h - 1, T.PARED); }
     for (let y = 0; y < h; y++) { set(g, 0, y, T.PARED); set(g, w - 1, y, T.PARED); }
@@ -110,6 +151,35 @@
       else for (let j = 0; j < len; j++) set(g, x, y + j, T.PARED);
     }
     for (let i = 0; i < 26; i++) set(g, rng.int(2, w - 3), rng.int(2, h - 3), T.DECOR);
+    if (opts.level1) {
+      const props = [];
+      // Charcos persistentes de agua de almendras: transitables pero más
+      // lentos, y visualmente responsables de la niebla del nivel.
+      for (let i = 0; i < Math.max(5, Math.floor(w * h / 900)); i++) {
+        const cx = rng.int(4, w - 5), cy = rng.int(4, h - 5);
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -2; dx <= 2; dx++) {
+          if ((dx * dx) / 4 + dy * dy > 1.4 || !walkable(at(g, cx + dx, cy + dy))) continue;
+          set(g, cx + dx, cy + dy, T.CHARCO);
+        }
+      }
+      // Los coches son deliberadamente rarísimos. Cada uno ocupa dos tiles
+      // sólidos: se ven como vehículos y no se atraviesan como una pegatina.
+      const cars = Math.max(1, Math.min(3, Math.floor(w * h / 3200) + 1));
+      for (let i = 0; i < cars; i++) {
+        for (let intento = 0; intento < 80; intento++) {
+          const x = rng.int(4, w - 6), y = rng.int(4, h - 5);
+          if (!walkable(at(g, x, y)) || !walkable(at(g, x + 1, y))) continue;
+          set(g, x, y, T.OBSTACULO); set(g, x + 1, y, T.OBSTACULO);
+          props.push({ x, y, id: 'coche', ancho: 2, color: rng.pick(['rojo', 'azul', 'blanco', 'negro']) });
+          break;
+        }
+      }
+      g._propsEstructurales = props;
+      g._garaje = {
+        charcos: [...g.t].filter((tile) => tile === T.CHARCO).length,
+        coches: props.length,
+      };
+    }
     return g;
   }
 
@@ -223,6 +293,97 @@
       while (x1 !== x2) { set(g, x1, y1, T.SUELO); set(g, x1, y1 + 1, T.SUELO); x1 += Math.sign(x2 - x1); }
       while (y1 !== y2) { set(g, x1, y1, T.SUELO); set(g, x1 + 1, y1, T.SUELO); y1 += Math.sign(y2 - y1); }
     }
+    return g;
+  }
+
+  // The End no es una biblioteca académica ni cuatro laberintos de anaqueles:
+  // es una librería comercial tipo Borders abandonada. La mitad delantera es
+  // una sala de venta muy abierta, con caja, expositores, pilares y rótulos;
+  // al fondo quedan hileras bajas de estanterías separadas por pasillos anchos.
+  function genBiblioteca(w, h, rng) {
+    const g = grid(w, h, T.SUELO);
+    for (let x = 0; x < w; x++) { set(g, x, 0, T.PARED); set(g, x, h - 1, T.PARED); }
+    for (let y = 0; y < h; y++) { set(g, 0, y, T.PARED); set(g, w - 1, y, T.PARED); }
+    const midX = Math.floor(w / 2);
+    const pasillo = Math.max(7, Math.min(11, Math.floor(w / 11) | 1));
+    const fondoHasta = h - 27;
+    const props = [];
+
+    // Dos bloques de hileras bajas. Cada fila tiene un corte irregular, como
+    // si faltase un módulo o alguien hubiese desplazado una estantería.
+    const fila = (x0, x1, y) => {
+      const hueco = rng.int(x0 + 5, x1 - 5);
+      for (let x = x0 + rng.int(0, 1); x <= x1 - rng.int(0, 1); x++) {
+        if (Math.abs(x - hueco) <= 1) continue;
+        set(g, x, y, T.ESTANTERIA);
+      }
+    };
+    for (let y = 6; y <= fondoHasta; y += 5) {
+      fila(5, midX - Math.ceil(pasillo / 2) - 1, y);
+      fila(midX + Math.ceil(pasillo / 2) + 1, w - 6, y);
+    }
+
+    // Dos zonas sin anaqueles rompen la repetición y funcionan como áreas de
+    // lectura/exposición, como las grandes manchas de moqueta de las fotos.
+    const readingHalls = [
+      { x: 8, y: 13, w: 13, h: 10 },
+      { x: w - 23, y: Math.max(9, fondoHasta - 12), w: 14, h: 10 },
+    ];
+    for (const hall of readingHalls)
+      for (let y = hall.y; y < hall.y + hall.h; y++)
+        for (let x = hall.x; x < hall.x + hall.w; x++) set(g, x, y, T.SUELO);
+
+    // Pilares cuadrados de centro comercial, siempre en los pasillos entre
+    // filas. Son obstáculos reales, no decoración atravesable.
+    for (let y = 8; y < h - 20; y += 15) for (let x = 12; x < w - 10; x += 16) {
+      if (Math.abs(x - midX) < pasillo / 2 + 1 || at(g, x, y) !== T.SUELO) continue;
+      set(g, x, y, T.OBSTACULO);
+      props.push({ x, y, id: 'pilar_biblioteca' });
+    }
+
+    // Mostrador de caja en U frente al punto de aparición. La abertura trasera
+    // evita encerrar al jugador y los terminales descansan sobre el propio mueble.
+    const cajaY = h - 15, cajaX0 = midX - 10, cajaX1 = midX + 10;
+    for (let x = cajaX0; x <= cajaX1; x++) {
+      if (Math.abs(x - midX) <= 1) continue;
+      set(g, x, cajaY, T.OBSTACULO);
+      props.push({ x, y: cajaY, id: 'mostrador' });
+    }
+    for (const x of [cajaX0, cajaX1]) for (let y = cajaY - 3; y < cajaY; y++) {
+      set(g, x, y, T.OBSTACULO);
+      props.push({ x, y, id: 'mostrador', orientacion: 'vertical' });
+    }
+    for (const x of [cajaX0 + 4, cajaX1 - 4])
+      props.push({ x, y: cajaY, id: 'terminal_biblioteca' });
+
+    // Mesas bajas de novedades en la zona abierta. También tienen colisión.
+    const expositores = [
+      [midX - 20, h - 24], [midX + 18, h - 24],
+      [midX - 29, h - 12], [midX + 27, h - 11],
+    ];
+    for (const [x, y] of expositores) {
+      set(g, x, y, T.OBSTACULO);
+      props.push({ x, y, id: 'mesa_expositora' });
+    }
+
+    // Los dos encuadres icónicos: THE END sobre la caja y THE END IS NEAR al
+    // fondo. Al ser carteles suspendidos no bloquean el suelo.
+    props.push({ x: midX, y: cajaY, id: 'cartel_the_end' });
+    props.push({ x: midX, y: 5, id: 'cartel_the_end_near' });
+
+    let shelfTiles = 0;
+    for (let y = 1; y < h - 1; y++)
+      for (let x = 1; x < w - 1; x++) if (at(g, x, y) === T.ESTANTERIA) shelfTiles++;
+    g._biblioteca = {
+      shelfTiles, corridorWidth: pasillo, readingHalls,
+      checkout: { x: cajaX0, y: cajaY, w: cajaX1 - cajaX0 + 1 },
+      columns: props.filter((prop) => prop.id === 'pilar_biblioteca').length,
+      signs: 2,
+    };
+    g._propsEstructurales = props;
+    g._spawnPool = [];
+    for (let y = h - 9; y <= h - 6; y++)
+      for (let x = midX - 4; x <= midX + 4; x++) if (at(g, x, y) === T.SUELO) g._spawnPool.push([x, y]);
     return g;
   }
 
@@ -384,6 +545,51 @@
     return g;
   }
 
+  // Redes de pasarelas: el espacio negativo domina y los nodos habitables se
+  // conectan mediante puentes anchos. Sirve para complejos sobre agua o vacio
+  // sin convertirlos en una coleccion de torres inconexas.
+  function genPasarelas(w, h, rng) {
+    const g = grid(w, h, T.VACIO);
+    const nodos = [];
+    const carve = (x, y, rw, rh, tile = T.SUELO) => {
+      for (let yy = Math.max(1, y); yy < Math.min(h - 1, y + rh); yy++)
+        for (let xx = Math.max(1, x); xx < Math.min(w - 1, x + rw); xx++) set(g, xx, yy, tile);
+    };
+    const total = Math.max(6, Math.floor(w / 17));
+    for (let i = 0; i < total; i++) {
+      const rw = rng.int(8, 13), rh = rng.int(6, 10);
+      const x = Math.min(w - rw - 2, 3 + Math.floor(i * (w - 18) / Math.max(1, total - 1)));
+      const banda = i % 3;
+      const yCentro = banda === 0 ? Math.floor(h * 0.28) : banda === 1 ? Math.floor(h * 0.7) : Math.floor(h * 0.5);
+      const y = Math.max(2, Math.min(h - rh - 2, yCentro - Math.floor(rh / 2) + rng.int(-3, 3)));
+      carve(x, y, rw, rh);
+      nodos.push({ x, y, w: rw, h: rh, cx: x + Math.floor(rw / 2), cy: y + Math.floor(rh / 2) });
+    }
+    const bridge = (a, b) => {
+      let x = a.cx, y = a.cy;
+      while (x !== b.cx) {
+        for (let d = -1; d <= 1; d++) if (at(g, x, y + d) === T.VACIO) set(g, x, y + d, T.DECOR);
+        x += Math.sign(b.cx - x);
+      }
+      while (y !== b.cy) {
+        for (let d = -1; d <= 1; d++) if (at(g, x + d, y) === T.VACIO) set(g, x + d, y, T.DECOR);
+        y += Math.sign(b.cy - y);
+      }
+    };
+    for (let i = 1; i < nodos.length; i++) bridge(nodos[i - 1], nodos[i]);
+    if (nodos.length > 4) { bridge(nodos[0], nodos[3]); bridge(nodos[2], nodos[nodos.length - 1]); }
+
+    // Algunas plataformas alojan cabinas o pabellones con una puerta real.
+    for (const [i, n] of nodos.entries()) if (i % 2 === 0 && n.w >= 9 && n.h >= 7) {
+      const x0 = n.x + 2, y0 = n.y + 2, x1 = n.x + n.w - 3, y1 = n.y + n.h - 3;
+      for (let x = x0; x <= x1; x++) { set(g, x, y0, T.PARED); set(g, x, y1, T.PARED); }
+      for (let y = y0; y <= y1; y++) { set(g, x0, y, T.PARED); set(g, x1, y, T.PARED); }
+      set(g, Math.floor((x0 + x1) / 2), y1, T.SUELO);
+    }
+    g._pasarelas = { nodos: nodos.length, puentes: nodos.length + (nodos.length > 4 ? 1 : -1) };
+    return g;
+  }
+
   // Complejo inundado: islas de suelo conectadas entre grandes bolsas de agua.
   function genAcuatico(w, h, rng, opts = {}) {
     const g = genExterior(w, h, rng, { density: opts.density ?? 0.32 });
@@ -396,6 +602,36 @@
           if (((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1 && at(g, x, y) === T.SUELO)
             set(g, x, y, T.AGUA);
     }
+    return g;
+  }
+
+  // Level 37.2: salas blancas anchas cubiertas por agua somera. El agua no
+  // aparece como charcos aislados: domina todas las camaras, con plataformas
+  // secas escasas y vanos amplios entre tabiques.
+  function genPiscinas(w, h, rng) {
+    const g = grid(w, h, T.AGUA);
+    for (let x = 0; x < w; x++) { set(g, x, 0, T.PARED); set(g, x, h - 1, T.PARED); }
+    for (let y = 0; y < h; y++) { set(g, 0, y, T.PARED); set(g, w - 1, y, T.PARED); }
+    let camaras = 1;
+    for (let x = 17; x < w - 8; x += rng.int(15, 20)) {
+      for (let y = 1; y < h - 1; y++) set(g, x, y, T.PARED);
+      for (let y = 7; y < h - 5; y += 15) for (let dx = -1; dx <= 2; dx++) set(g, x + dx, y, T.AGUA);
+      camaras++;
+    }
+    for (let y = 15; y < h - 8; y += rng.int(13, 18)) {
+      for (let x = 1; x < w - 1; x++) set(g, x, y, T.PARED);
+      for (let x = 9; x < w - 6; x += 19) for (let dy = -1; dy <= 2; dy++) set(g, x, y + dy, T.AGUA);
+      camaras++;
+    }
+    let plataformas = 0;
+    for (let i = 0; i < 9; i++) {
+      const x0 = rng.int(3, w - 10), y0 = rng.int(3, h - 8);
+      const rw = rng.int(3, 7), rh = rng.int(2, 5);
+      for (let y = y0; y < y0 + rh; y++) for (let x = x0; x < x0 + rw; x++)
+        if (at(g, x, y) === T.AGUA) set(g, x, y, T.DECOR);
+      plataformas++;
+    }
+    g._piscinas = { camaras, plataformas };
     return g;
   }
 
@@ -455,6 +691,266 @@
       const puertaY = arriba ? cy - 3 : cy + 3;
       set(g, x + 4, puertaY, T.SUELO);
     }
+    return g;
+  }
+
+  // Arquitecturas semanticas detectadas en la wiki. Comparten utilidades,
+  // pero no la planta: una prision, un teatro y un aeropuerto dejan de caer
+  // en el mismo laberinto aunque tengan materiales parecidos.
+  function genArquitectura(w, h, rng, tipo) {
+    const g = grid(w, h, T.PARED);
+    const props = [];
+    const carve = (x, y, rw, rh, tile = T.SUELO) => {
+      for (let yy = Math.max(1, y); yy < Math.min(h - 1, y + rh); yy++)
+        for (let xx = Math.max(1, x); xx < Math.min(w - 1, x + rw); xx++) set(g, xx, yy, tile);
+    };
+    const prop = (x, y, id, extra = {}) => {
+      if (!walkable(at(g, x, y))) return;
+      set(g, x, y, T.OBSTACULO);
+      props.push({ x, y, id, contenedor: false, ...extra });
+    };
+
+    if (tipo === 'sala_unica') {
+      // Una camara unica conserva escala y lineas de vision; solo unos pocos
+      // soportes o muebles rompen el vacio sin crear corredores artificiales.
+      carve(2, 2, w - 4, h - 4);
+      for (let y = 8; y < h - 7; y += 12) for (let x = 9; x < w - 8; x += 16)
+        if (rng.chance(0.55)) prop(x, y, 'mesa');
+      g._salaUnica = { area: (w - 4) * (h - 4) };
+    } else if (tipo === 'hotel_atrio') {
+      carve(2, 2, w - 4, h - 4);
+      const ax = Math.floor(w * 0.27), ay = Math.floor(h * 0.25);
+      const aw = Math.max(12, Math.floor(w * 0.46)), ah = Math.max(10, Math.floor(h * 0.5));
+      // Patio central rodeado por un anillo de pasillos y habitaciones. Las
+      // cuatro aperturas impiden que el patio sea una caja decorativa aislada.
+      for (let x = ax; x < ax + aw; x++) { set(g, x, ay, T.PARED); set(g, x, ay + ah - 1, T.PARED); }
+      for (let y = ay; y < ay + ah; y++) { set(g, ax, y, T.PARED); set(g, ax + aw - 1, y, T.PARED); }
+      carve(ax + 1, ay + 1, aw - 2, ah - 2, T.DECOR);
+      carve(ax + Math.floor(aw / 2) - 1, ay - 1, 3, 3);
+      carve(ax + Math.floor(aw / 2) - 1, ay + ah - 2, 3, 3);
+      carve(ax - 1, ay + Math.floor(ah / 2) - 1, 3, 3);
+      carve(ax + aw - 2, ay + Math.floor(ah / 2) - 1, 3, 3);
+      for (let x = 8; x < w - 7; x += 9) {
+        for (let y = 3; y < ay - 2; y++) set(g, x, y, T.PARED);
+        for (let y = ay + ah + 2; y < h - 3; y++) set(g, x, y, T.PARED);
+        prop(x - 3, 5, 'cama'); prop(x - 3, h - 6, 'cama');
+      }
+      g._atrio = { x: ax, y: ay, w: aw, h: ah };
+    } else if (tipo === 'viviendas_conectadas') {
+      carve(2, 2, w - 4, h - 4);
+      const cx = Math.floor(w / 2);
+      // Dos ejes comunes y una reticula de viviendas, cada tabique con puerta.
+      for (let x = 2; x < w - 2; x++) if (Math.abs(x - cx) > 1)
+        for (let y = 11; y < h - 3; y += 11) set(g, x, y, T.PARED);
+      for (let x = 10; x < w - 3; x += 10)
+        for (let y = 2; y < h - 2; y++) if (y % 11 > 2) set(g, x, y, T.PARED);
+      carve(cx - 1, 2, 3, h - 4);
+      for (let y = 11; y < h - 3; y += 11)
+        for (let x = 5; x < w - 4; x += 10) carve(x, y - 1, 2, 3);
+      for (let y = 6; y < h - 4; y += 11)
+        for (let x = 6; x < w - 5; x += 10) prop(x, y, 'cama');
+    } else if (tipo === 'sotanos_conectados') {
+      carve(2, 2, w - 4, h - 4);
+      const cy = Math.floor(h / 2);
+      // Sotanos domesticos unidos por una galeria comun, con tabiques
+      // irregulares y pequenas filtraciones que alteran el movimiento.
+      carve(2, cy - 2, w - 4, 5);
+      for (let x = 11; x < w - 7; x += 12) {
+        for (let y = 3; y < h - 3; y++) if (Math.abs(y - cy) > 2) set(g, x, y, T.PARED);
+        carve(x - 1, cy - 3, 3, 7);
+      }
+      let filtraciones = 0;
+      for (let y = 6; y < h - 5; y += 9) for (let x = 6; x < w - 5; x += 11)
+        if (at(g, x, y) === T.SUELO && rng.chance(0.45)) { set(g, x, y, T.CHARCO); filtraciones++; }
+      g._sotanos = { filtraciones };
+    } else if (tipo === 'recinto_deportivo') {
+      carve(2, 2, w - 4, h - 4);
+      const banda = Math.max(10, Math.floor((w - 8) / 3));
+      for (let k = 0; k < 3; k++) {
+        const x0 = 4 + k * banda;
+        for (let y = 6; y < h - 8; y++) {
+          set(g, x0, y, T.DECOR); set(g, Math.min(w - 4, x0 + banda - 2), y, T.DECOR);
+        }
+        for (let y = 8; y < h - 9; y += 8) prop(Math.min(w - 5, x0 + banda - 4), y, 'marcador');
+      }
+      for (let x = 5; x < w - 5; x += 5) prop(x, h - 5, 'banco');
+      g._pistas = 3;
+    } else if (tipo === 'galerias_comerciales') {
+      carve(2, 2, w - 4, h - 4);
+      const cx = Math.floor(w / 2), cy = Math.floor(h / 2);
+      for (let x = 3; x < w - 3; x += 10)
+        for (let y = 3; y < h - 3; y++) if (Math.abs(y - cy) > 2 && y % 12 > 2) set(g, x, y, T.PARED);
+      for (let y = 9; y < h - 4; y += 12)
+        for (let x = 3; x < w - 3; x++) if (Math.abs(x - cx) > 2 && x % 10 > 2) set(g, x, y, T.PARED);
+      carve(cx - 2, 2, 5, h - 4); carve(2, cy - 2, w - 4, 5);
+      for (let y = 6; y < h - 5; y += 8) for (let x = 6; x < w - 5; x += 10)
+        if (Math.abs(x - cx) > 3 && Math.abs(y - cy) > 3) prop(x, y, 'mostrador');
+    } else if (tipo === 'planta_estudio') {
+      carve(2, 2, w - 4, h - 4);
+      // Platós grandes alrededor de una espina técnica; cada set conserva
+      // accesos anchos y equipamiento sólido, no cubículos de oficina.
+      const cy = Math.floor(h / 2);
+      carve(2, cy - 2, w - 4, 5);
+      for (let x = 12; x < w - 8; x += 16) {
+        for (let y = 3; y < h - 3; y++) if (Math.abs(y - cy) > 2) set(g, x, y, T.PARED);
+        carve(x - 1, cy - 3, 3, 7);
+        prop(x - 5, Math.max(5, cy - 8), 'camara_estudio');
+        prop(x + 5, Math.min(h - 6, cy + 8), 'foco_estudio');
+      }
+      g._platos = Math.max(2, Math.floor(w / 16));
+    } else if (tipo === 'banos_publicos') {
+      carve(2, 2, w - 4, h - 4);
+      const cy = Math.floor(h / 2);
+      for (let x = 5; x < w - 4; x += 5) {
+        for (let y = 3; y < cy - 2; y++) set(g, x, y, T.PARED);
+        for (let y = cy + 2; y < h - 3; y++) set(g, x, y, T.PARED);
+        carve(x - 1, cy - 3, 2, 3); carve(x - 1, cy + 1, 2, 3);
+        prop(x - 2, 4, 'lavabo'); prop(x - 2, h - 5, 'lavabo');
+      }
+      carve(2, cy - 2, w - 4, 5);
+    } else if (tipo === 'castillo') {
+      carve(2, 2, w - 4, h - 4);
+      const mx = Math.max(8, Math.floor(w * 0.22)), my = Math.max(7, Math.floor(h * 0.2));
+      // Patio de armas, galerias perimetrales y cuatro bloques de torre.
+      for (let x = mx; x < w - mx; x++) { set(g, x, my, T.PARED); set(g, x, h - my - 1, T.PARED); }
+      for (let y = my; y < h - my; y++) { set(g, mx, y, T.PARED); set(g, w - mx - 1, y, T.PARED); }
+      carve(Math.floor(w / 2) - 2, my - 1, 5, 3); carve(Math.floor(w / 2) - 2, h - my - 1, 5, 3);
+      carve(mx - 1, Math.floor(h / 2) - 2, 3, 5); carve(w - mx - 1, Math.floor(h / 2) - 2, 3, 5);
+      for (const [x, y] of [[4, 4], [w - 10, 4], [4, h - 10], [w - 10, h - 10]]) {
+        for (let yy = y; yy < y + 6; yy++) for (let xx = x; xx < x + 6; xx++)
+          if (xx === x || yy === y || xx === x + 5 || yy === y + 5) set(g, xx, yy, T.PARED);
+        carve(x + 2, y + 2, 2, 2);
+      }
+      prop(Math.floor(w / 2), Math.floor(h / 2), 'altar');
+    } else if (tipo === 'sala_columnada') {
+      carve(1, 1, w - 2, h - 2);
+      let pilares = 0;
+      for (let y = 6; y < h - 5; y += 7) for (let x = 6; x < w - 5; x += 7) {
+        set(g, x, y, T.PARED); set(g, x + 1, y, T.PARED);
+        set(g, x, y + 1, T.PARED); set(g, x + 1, y + 1, T.PARED); pilares++;
+      }
+      g._columnas = pilares;
+    } else if (tipo === 'zoologico') {
+      // Senderos de tierra en cruz y en anillo; los recintos tienen puertas y
+      // terreno propio, y por tanto son visitables en lugar de simples muros.
+      carve(2, 2, w - 4, h - 4, T.DECOR);
+      const cx = Math.floor(w / 2), cy = Math.floor(h / 2);
+      for (let y = 3; y < h - 3; y++) for (let x = 3; x < w - 3; x++)
+        if (Math.abs(x - cx) > 2 && Math.abs(y - cy) > 2) set(g, x, y, T.PARED);
+      carve(cx - 2, 2, 5, h - 4, T.DECOR); carve(2, cy - 2, w - 4, 5, T.DECOR);
+      let recintos = 0;
+      for (let y = 5; y < h - 12; y += 15) for (let x = 5; x < w - 15; x += 18) {
+        const rw = Math.min(12, w - x - 3), rh = Math.min(10, h - y - 3);
+        carve(x + 1, y + 1, rw - 2, rh - 2, rng.chance(0.3) ? T.AGUA : T.DECOR);
+        for (let xx = x; xx < x + rw; xx++) { set(g, xx, y, T.PARED); set(g, xx, y + rh - 1, T.PARED); }
+        for (let yy = y; yy < y + rh; yy++) { set(g, x, yy, T.PARED); set(g, x + rw - 1, yy, T.PARED); }
+        const puertaX = x + Math.floor(rw / 2), puertaY = y < cy ? y + rh - 1 : y;
+        set(g, puertaX, puertaY, T.SUELO);
+        // Une cada recinto al eje mas cercano para garantizar acceso.
+        for (let yy = Math.min(puertaY, cy); yy <= Math.max(puertaY, cy); yy++) set(g, puertaX, yy, T.DECOR);
+        prop(x + 2, y + 2, rng.chance(0.3) ? 'tanque_acuatico' : 'cartel_zoo');
+        recintos++;
+      }
+      for (let x = 9; x < w - 8; x += 22) if (at(g, x, cy) === T.DECOR) prop(x, cy, 'carrito_zoo');
+      g._zoologico = { recintos, senderos: 2, cx, cy };
+    } else if (tipo === 'parque_recreativo') {
+      carve(2, 2, w - 4, h - 4);
+      for (let y = 7; y < h - 6; y += 9) for (let x = 7; x < w - 6; x += 10) {
+        prop(x, y, 'maquina_arcade');
+        if (rng.chance(0.45)) prop(x + 2, y, 'maquina_arcade');
+      }
+      for (let y = 12; y < h - 7; y += 18) carve(3, y, w - 6, 3, T.DECOR);
+    } else if (tipo === 'cementerio') {
+      carve(1, 1, w - 2, h - 2, T.DECOR);
+      // Senderos ortogonales entre hileras de tumbas y mausoleos cerrados.
+      for (let y = 6; y < h - 5; y += 5) for (let x = 5; x < w - 4; x += 4)
+        if (x % 16 > 3 && y % 20 > 3) prop(x, y, 'lapida');
+      for (let x = 3; x < w - 3; x++) set(g, x, Math.floor(h / 2), T.SUELO);
+      for (let y = 3; y < h - 3; y++) set(g, Math.floor(w / 2), y, T.SUELO);
+      for (const [x, y] of [[5, 5], [w - 12, 5], [5, h - 11], [w - 12, h - 11]]) {
+        for (let yy = y; yy < y + 6; yy++) for (let xx = x; xx < x + 7; xx++)
+          if (xx === x || yy === y || xx === x + 6 || yy === y + 5) set(g, xx, yy, T.PARED);
+        carve(x + 3, y + 5, 1, 2);
+      }
+    } else if (tipo === 'prision') {
+      const cx = Math.floor(w / 2);
+      carve(cx - 2, 1, 5, h - 2);
+      for (let y = 3; y < h - 6; y += 7) {
+        for (const side of [-1, 1]) {
+          const x = side < 0 ? 2 : cx + 4;
+          const rw = side < 0 ? cx - 5 : w - cx - 6;
+          carve(x, y, rw, 5);
+          carve(side < 0 ? cx - 3 : cx + 3, y + 2, 2, 1);
+          for (let xx = x + 3; xx < x + rw - 1; xx += 5) set(g, xx, y + 4, T.PARED);
+        }
+      }
+    } else if (tipo === 'aeropuerto') {
+      const cy = Math.floor(h / 2);
+      carve(1, cy - 4, w - 2, 9);                         // terminal longitudinal
+      for (let x = 4; x < w - 9; x += 11) {
+        carve(x, 3, 8, cy - 7); carve(x, cy + 5, 8, h - cy - 8);
+        carve(x + 3, cy - 5, 2, 11);                      // puertas de embarque
+        for (let yy = 7; yy < cy - 5; yy += 3) prop(x + 2, yy, 'asiento_terminal');
+        for (let yy = cy + 7; yy < h - 5; yy += 3) prop(x + 5, yy, 'asiento_terminal');
+      }
+    } else if (tipo === 'estadio') {
+      carve(1, 1, w - 2, h - 2);
+      const margenX = Math.max(8, Math.floor(w * 0.18));
+      const margenY = Math.max(7, Math.floor(h * 0.2));
+      for (let y = 3; y < h - 3; y += 3) for (let x = 3; x < w - 3; x += 3) {
+        const campo = x >= margenX && x < w - margenX && y >= margenY && y < h - margenY;
+        const pasillo = x === margenX - 2 || x === w - margenX + 1 || y === margenY - 2 || y === h - margenY + 1;
+        if (!campo && !pasillo) prop(x, y, 'grada');
+      }
+      g._campo = { x: margenX, y: margenY, w: w - margenX * 2, h: h - margenY * 2 };
+    } else if (tipo === 'teatro') {
+      carve(2, 2, w - 4, h - 4);
+      const escenarioY = Math.max(5, Math.floor(h * 0.22));
+      for (let y = escenarioY + 5; y < h - 4; y += 3)
+        for (let x = 4; x < w - 4; x += 3)
+          if (Math.abs(x - w / 2) > 2) prop(x, y, 'butaca');
+      for (let x = 4; x < w - 4; x++) set(g, x, escenarioY, T.DECOR);
+      g._escenario = { x: 4, y: escenarioY - 4, w: w - 8, h: 5 };
+    } else if (tipo === 'templo') {
+      const naveX = Math.max(4, Math.floor(w * 0.18));
+      carve(naveX, 2, w - naveX * 2, h - 4);
+      carve(2, Math.floor(h * 0.42), w - 4, Math.max(7, Math.floor(h * 0.16))); // crucero
+      for (let y = 8; y < h - 9; y += 5)
+        for (const x of [naveX + 3, w - naveX - 4]) prop(x, y, 'banco');
+      prop(Math.floor(w / 2), 5, 'altar');
+    } else if (tipo === 'museo') {
+      carve(2, 2, w - 4, h - 4);
+      for (let x = 10; x < w - 8; x += 12) {
+        for (let y = 3; y < h - 3; y++) if (y % 14 > 3) set(g, x, y, T.PARED);
+      }
+      for (let y = 10; y < h - 8; y += 14) {
+        for (let x = 3; x < w - 3; x++) if (x % 12 > 3) set(g, x, y, T.PARED);
+      }
+      for (let y = 6; y < h - 5; y += 8) for (let x = 6; x < w - 5; x += 8) prop(x, y, 'vitrina');
+    } else if (tipo === 'almacen') {
+      carve(1, 1, w - 2, h - 2);
+      for (let x = 5; x < w - 5; x += 6)
+        for (let y = 4; y < h - 4; y++)
+          if (y % 13 > 2) { set(g, x, y, T.ESTANTERIA); set(g, x + 1, y, T.ESTANTERIA); }
+      for (let x = 3; x < w - 3; x += 14) prop(x, h - 4, 'palet');
+    } else if (tipo === 'restaurante') {
+      carve(2, 2, w - 4, h - 4);
+      const cocinaX = Math.floor(w * 0.7);
+      for (let y = 3; y < h - 3; y++) if (y % 9 > 2) set(g, cocinaX, y, T.PARED);
+      for (let y = 6; y < h - 5; y += 5) for (let x = 6; x < cocinaX - 3; x += 6) prop(x, y, 'mesa');
+      for (let y = 5; y < h - 5; y += 6) prop(w - 6, y, 'encimera');
+    } else { // bunker
+      carve(2, 2, w - 4, h - 4);
+      for (let x = 10; x < w - 7; x += 11) {
+        for (let y = 3; y < h - 3; y++) if (y % 12 > 2) set(g, x, y, T.PARED);
+        carve(x - 1, Math.floor(h / 2) - 1, 3, 3);
+      }
+      for (let y = 10; y < h - 7; y += 12) {
+        for (let x = 3; x < w - 3; x++) if (x % 11 > 2) set(g, x, y, T.PARED);
+      }
+    }
+    g._propsEstructurales = props;
+    g._arquitectura = { tipo, props: props.length };
     return g;
   }
 
@@ -528,10 +1024,13 @@
           atajos: Math.floor(w * 1.35),
         })
       : genPasillos(w, h, rng),
-    garaje: (w, h, rng) => genGaraje(w, h, rng),
+    garaje: (w, h, rng, lv) => genGaraje(w, h, rng, { level1: lv.id === 'level-1' }),
     tuneles: (w, h, rng) => genTuneles(w, h, rng, { ancho: true }),
     hospital: (w, h, rng) => genHospital(w, h, rng),
     oficinas: (w, h, rng) => genOficinas(w, h, rng),
+    biblioteca: (w, h, rng) => genBiblioteca(w, h, rng),
+    recreativo: (w, h, rng) => genArquitectura(w, h, rng, 'parque_recreativo'),
+    cementerio: (w, h, rng) => genArquitectura(w, h, rng, 'cementerio'),
     exterior: (w, h, rng) => genExterior(w, h, rng),
     bosque: (w, h, rng, lv) => genBosque(w, h, rng, { lagos: (lv.reglas || []).includes('agua_traicionera') ? 5 : 2 }),
     ciudad: (w, h, rng) => genCiudad(w, h, rng),
@@ -560,12 +1059,74 @@
     ruinas: (w, h, rng) => genCiudad(w, h, rng),
     surreal: (w, h, rng) => genPasillos(w, h, rng, { salas: 14, irregulares: true, atajos: Math.floor(w * 1.5) }),
   };
+  Object.assign(GENS, {
+    laberinto_salas: GENS.pasillos,
+    garaje_abierto: GENS.garaje,
+    tuneles_anchos: GENS.tuneles,
+    alas_hospitalarias: GENS.hospital,
+    planta_oficinas: GENS.oficinas,
+    terreno_abierto: GENS.exterior,
+    bosque_claros: GENS.bosque,
+    ciudad_transitable: GENS.ciudad,
+    vertical: GENS.torres,
+    invernadero: GENS.invernadero,
+    instalacion_inundada: (w, h, rng, lv) => lv.id === 'level-37-2'
+      ? genPiscinas(w, h, rng)
+      : genAcuatico(w, h, rng, { lagos: 10 }),
+    oceano_abierto: GENS.oceano,
+    plataformas: (w, h, rng) => genPasarelas(w, h, rng),
+    planta_hotel: GENS.hotel,
+    galerias_comerciales: GENS.centro_comercial,
+    barrio_transitable: GENS.residencial,
+    alas_escolares: GENS.escuela,
+    nave_industrial: GENS.industrial,
+    alas_laboratorio: GENS.laboratorio,
+    andenes: GENS.estacion,
+    vagones: GENS.tren,
+    carretera: GENS.carretera,
+    geometria_surreal: GENS.surreal,
+    laberinto_no_euclidiano: GENS.pasillos,
+    laberinto_longitudinal: (w, h, rng) => genLaberintoLongitudinal(w, h, rng),
+    garaje_infinito: GENS.garaje,
+    biblioteca_abierta: GENS.biblioteca,
+    hotel_atrio: (w, h, rng) => genArquitectura(w, h, rng, 'hotel_atrio'),
+    aguas_someras: (w, h, rng) => { const g = genOceano(w, h, rng); g._arquitectura = { tipo: 'aguas_someras', props: 0 }; return g; },
+    viviendas_conectadas: (w, h, rng) => genArquitectura(w, h, rng, 'viviendas_conectadas'),
+    sotanos_conectados: (w, h, rng) => genArquitectura(w, h, rng, 'sotanos_conectados'),
+    recinto_deportivo: (w, h, rng) => genArquitectura(w, h, rng, 'recinto_deportivo'),
+    galerias_comerciales: (w, h, rng) => genArquitectura(w, h, rng, 'galerias_comerciales'),
+    castillo: (w, h, rng) => genArquitectura(w, h, rng, 'castillo'),
+    cuevas: (w, h, rng) => { const g = genTuneles(w, h, rng, { walkers: 7 }); g._arquitectura = { tipo: 'cuevas', props: 0 }; return g; },
+    sala_columnada: (w, h, rng) => genArquitectura(w, h, rng, 'sala_columnada'),
+    parque_recreativo: (w, h, rng) => genArquitectura(w, h, rng, 'parque_recreativo'),
+    cementerio: (w, h, rng) => genArquitectura(w, h, rng, 'cementerio'),
+    zoologico: (w, h, rng) => genArquitectura(w, h, rng, 'zoologico'),
+    planta_estudio: (w, h, rng) => genArquitectura(w, h, rng, 'planta_estudio'),
+    banos_publicos: (w, h, rng) => genArquitectura(w, h, rng, 'banos_publicos'),
+    aeronave: (w, h, rng) => { const g = genTren(w, h, rng); g._arquitectura = { tipo: 'aeronave', props: 0 }; return g; },
+    estacion_espacial: (w, h, rng) => genArquitectura(w, h, rng, 'bunker'),
+    vacio_cosmico: (w, h, rng) => genPasarelas(w, h, rng),
+    sala_unica: (w, h, rng) => genArquitectura(w, h, rng, 'sala_unica'),
+    corredor_longitudinal: (w, h, rng) => { const g = genLaberintoLongitudinal(w, h, rng); g._arquitectura = { tipo: 'corredor_longitudinal', props: 0 }; return g; },
+    prision: (w, h, rng) => genArquitectura(w, h, rng, 'prision'),
+    templo: (w, h, rng) => genArquitectura(w, h, rng, 'templo'),
+    aeropuerto: (w, h, rng) => genArquitectura(w, h, rng, 'aeropuerto'),
+    estadio: (w, h, rng) => genArquitectura(w, h, rng, 'estadio'),
+    teatro: (w, h, rng) => genArquitectura(w, h, rng, 'teatro'),
+    museo: (w, h, rng) => genArquitectura(w, h, rng, 'museo'),
+    bunker: (w, h, rng) => genArquitectura(w, h, rng, 'bunker'),
+    almacen: (w, h, rng) => genArquitectura(w, h, rng, 'almacen'),
+    restaurante: (w, h, rng) => genArquitectura(w, h, rng, 'restaurante'),
+  });
 
   // mecánicas de salida derivadas del texto de la wiki (v20): las salidas no
   // son solo puertas — romper paredes agrietadas, caminar hasta perderte…
   function mecanicaDe(s) {
     if (s.mecanica) return s.mecanica;
     const t = (s.texto || '').toLowerCase();
+    // El no-clip no es una puerta ni una pared que se rompe: es una zona
+    // desfasada que se atraviesa y transporta al jugador al tocarla.
+    if (/no.?clip/.test(t)) return 'noclip';
     if (/(romp|quebr|abre)[^.]*(suelo|piso)|suelo (falso|débil|agrietado)/.test(t)) return 'romper_suelo';
     if (/(romp|derrib|golpea|atraviesa|agriet)[^.]*(pared|muro)|pared (falsa|débil|agrietada)/.test(t)) return 'romper';
     if (/caminar sin rumbo|camina[r]? (durante|hasta|lejos)|andar (durante|hasta|sin)|deambul|vagar? (por|durante|hasta)|durante horas|durante días|kilómetros/.test(t)) return 'caminata';
@@ -604,7 +1165,7 @@
       w = Math.min(190, Math.round(w * esc));
       h = Math.min(190, Math.round(h * esc));
     }
-    const gen = GENS[levelDef.bioma] ?? GENS.pasillos;
+    const gen = GENS[levelDef.mapa?.topologia] ?? GENS[levelDef.bioma] ?? GENS.pasillos;
     let g = gen(w, h, rng, levelDef);
     keepLargest(g);
     let floors = collectFloors(g);
@@ -616,13 +1177,19 @@
 
     const requiereAire = (levelDef.reglas || []).includes('respiracion_acuatica');
     const sueloSeco = floors.filter(([x, y]) => at(g, x, y) !== T.AGUA);
+    const accesoTematico = g._zoologico ? floors.filter(([x, y]) =>
+      Math.abs(x - g._zoologico.cx) <= 2 || Math.abs(y - g._zoologico.cy) <= 2) : [];
     const urbano = ['ciudad', 'residencial'].includes(levelDef.bioma);
     const accesosUrbanos = urbano ? floors.filter(([x, y]) =>
       (at(g, x - 1, y) === T.PARED && at(g, x + 1, y) === T.PARED) ||
       (at(g, x, y - 1) === T.PARED && at(g, x, y + 1) === T.PARED)) : [];
     const juntoAcceso = urbano ? floors.filter(([x, y]) => accesosUrbanos.some(([ax, ay]) =>
       Math.abs(ax - x) + Math.abs(ay - y) === 1)) : [];
-    const spawnPool = requiereAire && sueloSeco.length ? sueloSeco : juntoAcceso.length ? juntoAcceso : floors;
+    const spawnTematico = (g._spawnPool || []).filter(([x, y]) => walkable(at(g, x, y)));
+    const spawnPool = spawnTematico.length ? spawnTematico
+      : requiereAire && sueloSeco.length ? sueloSeco
+      : accesoTematico.length ? accesoTematico
+      : juntoAcceso.length ? juntoAcceso : floors;
     const spawn = rng.pick(spawnPool);
     const dist = bfsDist(g, spawn[0], spawn[1]);
     const reach = floors.filter(([x, y]) => dist[y * g.w + x] > 0);
@@ -691,6 +1258,11 @@
       return libres.length ? rng.pick(libres) : null;
     };
 
+    // Los muebles estructurales ya forman parte de la planta: reserva sus
+    // celdas antes de repartir objetos y decoración aleatoria para que nada se
+    // superponga al mostrador, los pilares o los expositores.
+    for (const prop of g._propsEstructurales || []) reservar([prop.x, prop.y]);
+
     // objetos
     const items = [];
     for (const o of levelDef.objetos || []) {
@@ -706,7 +1278,8 @@
     // props decorativos y contenedores registrables por bioma
     const PROPS_BIOMA = {
       pasillos: ['cable'], garaje: ['cono', 'bidon'], tuneles: ['bidon', 'cable'],
-      hospital: ['camilla', 'silla'], oficinas: ['silla', 'caja'],
+      hospital: ['camilla', 'silla'], oficinas: ['silla', 'caja'], biblioteca: [],
+      recreativo: ['silla'], cementerio: ['roca_p'],
       bosque: ['seta', 'roca_p'], exterior: ['roca_p'], ciudad: ['farola'], torres: ['caja'],
       invernadero: ['silla', 'caja'],
       acuatico: ['roca_p', 'bidon'], oceano: ['roca_p', 'caja'],
@@ -721,7 +1294,7 @@
     };
     const CONT_BIOMA = {
       pasillos: 'taquilla', garaje: 'taquilla', tuneles: 'cofre', hospital: 'nevera',
-      oficinas: 'archivador', bosque: 'cofre', exterior: 'cofre', ciudad: 'cofre', torres: 'cofre',
+      oficinas: 'archivador', biblioteca: 'archivador', recreativo: 'archivador', cementerio: 'cofre', bosque: 'cofre', exterior: 'cofre', ciudad: 'cofre', torres: 'cofre',
       invernadero: 'cofre',
       acuatico: 'cofre', oceano: 'cofre', desierto: 'cofre', nevado: 'cofre',
       espacial: 'cofre', cielo: 'cofre', hotel: 'nevera', centro_comercial: 'archivador',
@@ -731,14 +1304,47 @@
       ruinas: 'cofre', surreal: 'cofre',
     };
     const props = [];
+    for (const structural of g._propsEstructurales || []) props.push({ ...structural, contenedor: false });
     // los muebles "de pared" van físicamente pegados a un muro (pared al norte)
-    const PROPS_PARED = new Set(['taquilla', 'archivador', 'nevera', 'reloj', 'camilla', 'farola']);
+    const PROPS_PARED = new Set(['taquilla', 'archivador', 'nevera', 'reloj', 'camilla', 'farola', 'estanteria', 'ordenador', 'salida_falsa']);
     const conParedNorte = reach.filter(([x, y]) => at(g, x, y - 1) === T.PARED);
     const sitioPara = (id) => {
       const pool = PROPS_PARED.has(id) && conParedNorte.length ? conParedNorte : reach;
       return elegirLibre(pool);
     };
     const decorativos = PROPS_BIOMA[levelDef.bioma] ?? [];
+    if (levelDef.bioma === 'biblioteca') {
+      for (let i = 0, n = rng.int(18, 30); i < n; i++) {
+        const p = elegirLibre(reach);
+        if (!p) continue;
+        reservar(p);
+        set(g, p[0], p[1], T.LIBROS);
+        props.push({ x: p[0], y: p[1], id: 'libros_caidos', contenedor: false });
+      }
+      for (const id of [
+        ...Array(rng.int(2, 4)).fill('ordenador'),
+        ...Array(rng.int(6, 10)).fill('silla'),
+      ]) {
+        const p = sitioPara(id);
+        if (!p) continue;
+        reservar(p);
+        props.push({ x: p[0], y: p[1], id, contenedor: false });
+      }
+    }
+    if (levelDef.id === 'level-0-01') {
+      for (let i = 0; i < rng.int(7, 12); i++) {
+        const p = sitioPara('salida_falsa');
+        if (!p) continue;
+        reservar(p);
+        props.push({ x: p[0], y: p[1], id: 'salida_falsa', contenedor: false });
+      }
+      for (let i = 0; i < rng.int(10, 18); i++) {
+        const p = elegirLibre(reach);
+        if (!p) continue;
+        reservar(p);
+        props.push({ x: p[0], y: p[1], id: rng.chance(0.5) ? 'botella_vacia' : 'zapato_roto', contenedor: false });
+      }
+    }
     if (urbano) {
       const elegidos = rng.shuffle(accesosUrbanos).slice(0, 18);
       for (const p of elegidos) {
@@ -760,7 +1366,7 @@
         props.push({ x: p[0], y: p[1], id, contenedor: esCont, registrado: esCont ? false : undefined });
       }
     }
-    const nCont = rng.int(3, 5);
+    const nCont = levelDef.bioma === 'biblioteca' ? rng.int(0, 1) : rng.int(3, 5);
     for (let i = 0; i < nCont; i++) {
       const id = CONT_BIOMA[levelDef.bioma] ?? 'cofre';
       const p = sitioPara(id);

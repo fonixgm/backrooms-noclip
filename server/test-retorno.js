@@ -1,6 +1,5 @@
-// Arnés v23 (parte 2): caso de PUERTA PERSONAL de retorno — cruce a un nivel
-// que NO tiene salida natural de vuelta (level-1 → the-hub) y regreso por ella.
-// También: una salida con texto de no-clip NO debe dejar puerta de vuelta.
+// Retorno fiel: una PUERTA de entrada crea otra puerta apoyada en pared;
+// no-clip y caídas no dejan acceso de vuelta.
 'use strict';
 
 const path = require('path');
@@ -67,8 +66,12 @@ class Cliente {
       const g = this.map.grid;
       const dist = MapGen.bfsDist(g, tx, ty);
       const t0 = Date.now();
+      const secInicio = this.sec || 0;
       let tAnt = Date.now();
       const paso = setInterval(() => {
+        // Una transición automática puede cambiar mapa y posición antes de que
+        // el siguiente tick compruebe la distancia al objetivo antiguo.
+        if ((this.sec || 0) !== secInicio) { clearInterval(paso); return res(); }
         const d = Fisica.dist(this.x, this.y, tx, ty);
         if (d <= radio) { clearInterval(paso); return res(); }
         if (Date.now() - t0 > 90000) {
@@ -111,20 +114,24 @@ class Cliente {
     await c.conectar();
     await c.esperaMsg((m) => m.t === 'bienvenida', 4000);
 
-    // salida de level-1 hacia the-hub (sin puerta natural de vuelta allí)
-    const salida = c.map.exits.find((e) => e.def.destino === 'the-hub' && !e.def._mec);
-    ok(!!salida, 'level-1 tiene la salida hacia the-hub');
+    // Puerta de Level 1 hacia Level 4.3, sin puerta natural de vuelta allí.
+    const salida = c.map.exits.find((e) =>
+      e.def.destino === 'level-4-3' && /puerta/i.test(e.def.texto || ''));
+    ok(!!salida, 'level-1 tiene una puerta hacia level-4-3');
     const origen = { x: salida.x, y: salida.y };
     await c.irA(salida.x, salida.y, 0.5);
     await c.esperaMsg((m) => m.t === 'oferta', 5000);
     let n0 = c.buzon.length;
     c.enviar({ t: 'cruzar', si: true });
     const niv = await c.esperaMsg((m) => m.t === 'nivel', 5000, n0);
-    ok(niv.nivel === 'the-hub', `cruce a ${niv.nivel}`);
+    ok(niv.nivel === 'level-4-3', `cruce por puerta a ${niv.nivel}`);
     const natural = c.map.exits.find((e) => e.def.destino === 'level-1');
-    ok(!natural, 'the-hub NO tiene puerta natural hacia level-1 (el caso que buscamos)');
+    ok(!natural, 'level-4-3 NO tiene puerta natural hacia level-1 (el caso que buscamos)');
     ok(!!niv.retorno, 'llega la puerta PERSONAL de retorno');
     if (niv.retorno) {
+      ok(niv.retorno._retornoEstilo === 'puerta', 'el retorno conserva el tipo puerta');
+      ok(MapGen.at(c.map.grid, niv.retorno.x, niv.retorno.y - 1) === MapGen.T.PARED,
+        'la puerta personal queda apoyada en una pared real');
       const distanciaPuerta = Math.hypot(niv.retorno.x - niv.x, niv.retorno.y - niv.y);
       ok(distanciaPuerta >= 0.9 && distanciaPuerta <= 2,
         'apareces junto a la puerta personal, no encima de ella');
@@ -153,15 +160,19 @@ class Cliente {
       ok(!c.map.exits.some((e) => e.def.tipo === 'retorno'), 'nota: el retorno nunca vive en el mapa compartido');
     }
 
-    // salida con texto de NO-CLIP: no debe dejar puerta de vuelta
+    // NO-CLIP: tocar la anomalía cambia de nivel sin oferta, tarjeta ni retorno.
     const noclip = c.map.exits.find((e) => /no.?clip/i.test(e.def.texto || ''));
     ok(!!noclip, 'level-1 tiene una salida de no-clip para probar');
     if (noclip) {
-      await c.irA(noclip.x, noclip.y, 0.5);
-      await c.esperaMsg((m) => m.t === 'oferta', 6000, n0);
       n0 = c.buzon.length;
-      c.enviar({ t: 'cruzar', si: true });
+      await c.irA(noclip.x, noclip.y, 0.5);
       const niv3 = await c.esperaMsg((m) => m.t === 'nivel', 5000, n0);
+      const mensajesCruce = c.buzon.slice(n0).map((entry) => entry.m);
+      // El camino puede rozar otras puertas y recibir sus ofertas; la zona
+      // concreta de no-clip nunca debe producir una propia.
+      ok(!mensajesCruce.some((m) => m.t === 'oferta' && m.texto === noclip.def.texto),
+        'no-clip online no pregunta si quieres cruzar');
+      ok(niv3.sinTarjeta === true && !niv3.via, 'no-clip online es inmediato y silencioso');
       ok(!niv3.retorno, `no-clip a ${niv3.nivel} SIN puerta de retorno (correcto)`);
     }
     c.ws.close();

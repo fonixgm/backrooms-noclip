@@ -5,7 +5,7 @@
 
   function blocks(g, x, y) {
     const v = (x < 0 || y < 0 || x >= g.w || y >= g.h) ? T.PARED : g.t[y * g.w + x];
-    return v === T.PARED;
+    return v === T.PARED || v === T.ESTANTERIA || v === T.OBSTACULO;
   }
 
   // línea de Bresenham: ¿hay visión directa de (x0,y0) a (x1,y1)?

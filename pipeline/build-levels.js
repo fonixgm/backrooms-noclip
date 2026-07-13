@@ -14,6 +14,7 @@ const OUTPUT_PATH = path.join(ROOT, 'data', 'game', 'levels.es.json');
 const parsedAll = JSON.parse(fs.readFileSync(PARSED_PATH, 'utf8'));
 const { playableLevels } = require('./level-policy');
 const { PALETTES, DESCRIPTIONS } = require('./biomes');
+const { contractFor } = require('./map-contracts');
 const parsed = playableLevels(parsedAll);
 const curated = JSON.parse(fs.readFileSync(CURATED_PATH, 'utf8'));
 
@@ -57,37 +58,42 @@ function biomeText(level) {
 function inferBiome(level) {
   const text = biomeText(level);
   const rules = [
+    ['cementerio', /\b(?:cemetery|cemeteries|graveyard|burial ground|mausoleum)\b/],
+    ['recreativo', /\b(?:bowling|roller rink|skating rink|amusement park|theme park|arcade complex|unnerving arcade|bounce houses?|carnival|casino|game room|party rooms?|nightclubs?)\b/],
     ['oceano', /\b(?:ocean|seabed|undersea|open water|maritime)\b/],
     ['acuatico', /\b(?:aquatic|flooded|submerged|underwater|pool|waterpark)\b/],
     ['desierto', /\b(?:desert|dune|sandstorm|arid|wasteland)\b/],
     ['nevado', /\b(?:frigid|winter|snow|snowy|icy|glacier|frozen)\b/],
+    ['granja', /\b(?:farm|farmland|wheat fields?|barley fields?|barn|crop fields?|rural fields?)\b/],
+    ['exterior', /\b(?:meadow|pasture|grassland|countryside|field of|grassy (?:hills?|fields?)|outdoor expanse|rural area|island|beach|mountain|rocky,? dead landscape|level plain|arrangements? of basins)\b/],
     ['espacial', /\b(?:outer space|space station|spaceship|cosmic|planet|asteroid|vacuum)\b/],
-    ['cielo', /\b(?:sky|cloud|airborne|floating island)\b/],
+    ['cielo', /\b(?:cloudscape|floating island|airborne structure|platforms? (?:in|above) the sky|layers of clouds|moving sky|expanse of clouds)\b/],
     ['hotel', /\b(?:hotel|motel|resort|guest room)\b/],
-    ['centro_comercial', /\b(?:mall|shopping centre|shopping center|retail|supermarket|storefront)\b/],
-    ['residencial', /\b(?:residential|apartment|house|neighborhood|suburb)\b/],
+    ['centro_comercial', /\b(?:mall|shopping centre|shopping center|retail|supermarket|storefront|video rental|public market|convenience store)\b/],
+    ['residencial', /\b(?:residential|apartment|house|household|mansion|attic|neighborhood|suburb|living rooms?|bedrooms?)\b/],
     ['escuela', /\b(?:school|classroom|university|college|kindergarten|campus)\b/],
     ['laboratorio', /\b(?:laboratory|research facility|testing chamber|scientific facility)\b/],
     ['fabrica', /\b(?:factory|assembly line|manufacturing|foundry)\b/],
-    ['industrial', /\b(?:industrial|warehouse|power plant|machinery|boiler room)\b/],
+    ['industrial', /\b(?:industrial|warehouse|power plants?|power reactors?|nuclear (?:and power )?reactors?|machinery|boiler room)\b/],
     ['alcantarillas', /\b(?:sewer|sewage|drainage|storm drain)\b/],
     ['estacion', /\b(?:station|platform|terminal|metro|subway)\b/],
     ['tren', /\b(?:train|railway|railroad|locomotive|carriage)\b/],
     ['carretera', /\b(?:highway|road|motorway|freeway|asphalt)\b/],
-    ['pantano', /\b(?:swamp|marsh|bog|wetland)\b/],
-    ['parque', /\b(?:park|playground|recreation area)\b/],
+    ['pantano', /\b(?:swamp|marsh|bog|wetland|surface is made of nothing but mulch and water)\b/],
+    ['parque', /\b(?:park|playground|recreation area|zoo|zoological)\b/],
     ['granja', /\b(?:farm|farmland|barn|crop field|rural)\b/],
     ['ruinas', /\b(?:ruin|ruined|derelict|collapsed building|abandoned city)\b/],
-    ['surreal', /\b(?:surrealism|surreal|dreamcore|weirdcore|glitched levels|glitch|abstraction)\b/],
+    ['surreal', /\b(?:surrealism|surreal|dreamcore|weirdcore|glitched levels|glitch|abstraction|no stable layout|ever-changing structure|abstract environments?|cybercore|vaporwave)\b/],
     ['ciudad', /\b(?:metropolitan|city|town|village|street)\b/],
     ['tuneles', /\b(?:tunnel|cave|cavern|underground|mine)\b/],
     ['hospital', /\b(?:hospital|medical|clinic|surgery|ward|asylum)\b/],
     ['garaje', /\b(?:garage|parking)\b/],
-    ['oficinas', /\b(?:office|library|workplace)\b/],
+    ['biblioteca', /\b(?:library|libraries|bookshelf|bookshelves|bookcase|bookcases|reading room)\b/],
+    ['oficinas', /\b(?:office|workplace)\b/],
     ['invernadero', /\b(?:greenhouse|garden|botanical|glasshouse)\b/],
     ['bosque', /\b(?:forest|woodland|jungle|grove)\b/],
     ['torres', /\b(?:tower|skyscraper|vertical|stairwell)\b/],
-    ['exterior', /\b(?:island|beach|field|mountain|outdoor)\b/],
+    ['exterior', /\b(?:island|beach|fields?|mountain|outdoor)\b/],
   ];
   return rules.find(([, re]) => re.test(text))?.[0] || 'pasillos';
 }
@@ -111,6 +117,7 @@ function inferRules(level) {
   if (/extreme heat|scorch|burning|very hot/.test(text)) rules.push('calor');
   if (/corrosi|acid rain/.test(text)) rules.push('lluvia_corrosiva');
   if (/non.?euclidean|shift(?:ing)? (?:room|wall)|constantly change/.test(text)) rules.push('no_euclidiano');
+  if (/faulty light|flicker(?:ing)?|lights? (?:shut|shutting|turn(?:ing)? off)/.test(text)) rules.push('luces_inestables');
   if (/hallucinat|psychological|mental effect|sanity/.test(text)) rules.push('alucinaciones');
   if (/isolat|no other (?:life|people)|complete solitude/.test(text)) rules.push('aislamiento');
   if (/aquatic|ocean|submerged|underwater|flood|drown|dangerous water|strong current/.test(text)) rules.push('agua_traicionera');
@@ -192,6 +199,7 @@ function spanishDescription(title, biome, danger, rules) {
     no_euclidiano: 'La geometría cambia y no respeta las distancias normales.',
     alucinaciones: 'La exposición prolongada puede alterar la percepción.',
     aislamiento: 'El aislamiento afecta a la cordura de los viajeros.',
+    luces_inestables: 'Los fluorescentes parpadean y pueden apagarse durante unos segundos.',
     agua_traicionera: 'Las zonas inundadas presentan corrientes y riesgos anómalos.',
   };
   const details = rules.map((rule) => ruleText[rule]).filter(Boolean).join(' ');
@@ -202,6 +210,8 @@ function styleForBiome(biome) {
   const styles = {
     pasillos: ['papel_rayas', 'moqueta'], garaje: ['hormigon', 'hormigon'],
     tuneles: ['ladrillo', 'piedra'], hospital: ['asilo', 'baldosa'], oficinas: ['azulejo', 'baldosa'],
+    biblioteca: ['azulejo', 'baldosa_oscura'], recreativo: ['azulejo', 'moqueta_cenefa'],
+    cementerio: ['piedra', 'tierra'],
     exterior: ['brutalismo', 'tierra'], bosque: ['madera', 'hierba'], ciudad: ['ladrillo', 'adoquin'],
     torres: ['metal_futurista', 'panel'], invernadero: ['cristal', 'piedra'],
     acuatico: ['azulejo', 'baldosa'], oceano: ['brutalismo', 'piedra'], desierto: ['brutalismo', 'tierra'],
@@ -269,6 +279,7 @@ function makeGenerated(title, level) {
     estilo: styleForBiome(bioma),
     particulas: particlesForBiome(bioma, peligro),
     sonido: reglas.includes('oscuridad_total') ? 'oscuridad' : null,
+    mapa: contractFor(title, level, bioma),
     generado: true,
   };
 }
@@ -320,6 +331,23 @@ for (const [title, parsedLevel] of Object.entries(parsed)) {
   const base = makeGenerated(title, parsedLevel);
   const custom = curated[base.id];
   output[base.id] = custom ? mergeCurated(base, custom, parsedLevel) : base;
+  if (custom && !custom.mapa)
+    output[base.id].mapa = contractFor(title, parsedLevel, output[base.id].bioma);
+}
+
+// Páginas vigentes que todavía no aparecen en el índice descargado. Se
+// mantienen como fichas externas explícitas para no perder niveles importantes
+// entre una actualización de la wiki y la siguiente regeneración del snapshot.
+for (const [id, custom] of Object.entries(curated)) {
+  if (output[id] || !custom.externo) continue;
+  const { externo, entradasDesde = [], ...level } = custom;
+  if (!level.mapa?.topologia) throw new Error(`${id}: ficha externa sin contrato de mapa`);
+  output[id] = { ...level, id, generado: false };
+  for (const entrada of entradasDesde) {
+    const source = output[entrada.origen];
+    if (!source || source.salidas.some((route) => route.destino === id)) continue;
+    source.salidas.push({ texto: entrada.texto, destino: id, tipo: entrada.tipo || 'rara' });
+  }
 }
 
 // Algunas páginas documentan la conexión solo en "Entrances" o en la prosa
@@ -385,6 +413,9 @@ for (const [title, parsedLevel] of Object.entries(parsed)) {
     level.estilo = styleForBiome(level.bioma);
     level.particulas = particlesForBiome(level.bioma, level.peligro);
   }
+  // Las categorías anteriores pueden corregir el bioma de un override antiguo;
+  // el contrato se calcula al final para que topología y material no diverjan.
+  if (!curated[level.id]?.mapa) level.mapa = contractFor(title, parsedLevel, level.bioma);
 }
 
 const blocked = [];

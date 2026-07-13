@@ -68,8 +68,9 @@
         if (!world.explored[idx]) continue;
         const v = g.t[idx];
         if (v === T.VACIO) continue;
-        ctx.fillStyle = v === T.PARED ? 'rgba(190,178,140,0.85)'
-          : v === T.AGUA ? 'rgba(70,110,150,0.7)'
+        ctx.fillStyle = v === T.ESTANTERIA ? 'rgba(116,78,45,0.9)'
+          : v === T.PARED ? 'rgba(190,178,140,0.85)'
+          : (v === T.AGUA || v === T.CHARCO) ? 'rgba(70,110,150,0.7)'
           : 'rgba(90,84,66,0.55)';
         ctx.fillRect(ox + x * S, oy + y * S, S, S);
       }

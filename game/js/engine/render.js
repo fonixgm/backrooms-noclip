@@ -2,6 +2,7 @@
 // pixel-art, props, efectos de combate y oscuridad estilo Darkwood.
 (function () {
   const { T } = MapGen;
+  const REDUCE_FLICKER = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
   let TILE, canvas, ctx, W, H, grain;
 
   function init(c) {
@@ -274,6 +275,27 @@
     const cx = x + 24;
     const pulse = 0.6 + Math.sin(t / 400) * 0.25;
     const col = ex.def.tipo === 'escape' ? '#6ae86a' : '#e8c95a';
+
+    // No-clip: una interferencia casi integrada en el muro, nunca una puerta.
+    // Las bandas desplazadas dan una pista visual sin convertirla en un portal.
+    if (ex.def._mec === 'noclip') {
+      const by = northWall ? y - 37 : y - 2;
+      const drift = Math.round(Math.sin(t / 170) * 3);
+      ctx.save();
+      ctx.globalCompositeOperation = 'screen';
+      ctx.globalAlpha = 0.12 + pulse * 0.1;
+      ctx.fillStyle = '#c9c7a5';
+      ctx.fillRect(cx - 15 + drift, by + 5, 30, 3);
+      ctx.fillRect(cx - 12 - drift, by + 17, 25, 2);
+      ctx.fillRect(cx - 16 + drift, by + 29, 32, 3);
+      ctx.globalAlpha = 0.13;
+      ctx.fillStyle = '#7eb4ac';
+      ctx.fillRect(cx - 14 - drift, by + 10, 4, 23);
+      ctx.fillStyle = '#a87575';
+      ctx.fillRect(cx + 10 + drift, by + 8, 3, 27);
+      ctx.restore();
+      return;
+    }
     if (ex.def.ritual) { drawRitual(ex, x, y, t, col, pulse); return; }
 
     // Suelo falso todavía cerrado: grietas sobre la moqueta, no un agujero ya abierto.
@@ -551,8 +573,13 @@
     ctx.fillStyle = world.level.paleta.fondo;
     ctx.fillRect(-12, -12, W + 24, H + 24);
 
+    const lucesInestables = (world.level.reglas || []).includes('luces_inestables');
+    const apagado = (world._blackoutHasta || -1) > world.turn;
+    const deterioro = world._deterioroNivel || 0;
     let flicker = 1;
-    if (Math.random() < 0.012) flicker = 0.72;
+    if (apagado) flicker = 0.035;
+    else if (!window.NOFX && !REDUCE_FLICKER && Math.random() < (lucesInestables ? 0.045 + deterioro * 0.08 : 0.012))
+      flicker = lucesInestables && Math.random() < 0.35 + deterioro * 0.35 ? 0.08 : 0.62;
     world._flicker = world._flicker === undefined ? 1 : world._flicker * 0.85 + flicker * 0.15;
     const fl = world._flicker;
 
@@ -571,16 +598,17 @@
         if (v === T.VACIO) continue; // el fondo es el cielo/abismo
         const sx = x * TILE - cam.x, sy = y * TILE - cam.y;
         let img;
-        if (v === T.AGUA) img = world.tiles.agua;
+        if (v === T.AGUA || v === T.CHARCO) img = world.tiles.agua;
         else if (v === T.DECOR) img = world.tiles.decor;
         else img = world.tiles.suelo[(x * 7 + y * 13) % world.tiles.suelo.length];
         ctx.drawImage(img, sx, sy);
         // oclusión ambiental: sombra donde el suelo toca una pared
-        if (v !== T.PARED) {
+        if (v !== T.PARED && v !== T.ESTANTERIA) {
           ctx.fillStyle = 'rgba(0,0,0,0.16)';
-          if (MapGen.at(g, x, y - 1) === T.PARED) ctx.fillRect(sx, sy, TILE, 5);
-          if (MapGen.at(g, x - 1, y) === T.PARED) ctx.fillRect(sx, sy, 5, TILE);
-          if (MapGen.at(g, x + 1, y) === T.PARED) ctx.fillRect(sx + TILE - 5, sy, 5, TILE);
+          const obstaculo = (tile) => tile === T.PARED || tile === T.ESTANTERIA;
+          if (obstaculo(MapGen.at(g, x, y - 1))) ctx.fillRect(sx, sy, TILE, 5);
+          if (obstaculo(MapGen.at(g, x - 1, y))) ctx.fillRect(sx, sy, 5, TILE);
+          if (obstaculo(MapGen.at(g, x + 1, y))) ctx.fillRect(sx + TILE - 5, sy, 5, TILE);
         }
       }
 
@@ -628,7 +656,8 @@
         const prs = propsAt.get(idx);
         if (prs && (light > 0.05 || world.explored[idx]))
           for (const pr of prs) {
-            Sprites.drawProp(ctx, pr.id, sx + 24, sy + 24, t, null);
+            const ancho = pr.ancho || 1;
+            Sprites.drawProp(ctx, pr.id, sx + 24 * ancho, sy + 24, t, pr.color || null);
             if (pr.contenedor && !pr.registrado) { // brillo de "se puede registrar"
               ctx.save();
               ctx.globalAlpha = 0.5 + Math.sin(t / 300) * 0.3;
@@ -638,7 +667,10 @@
             }
           }
 
-        if (g.t[idx] === T.PARED) {
+        if (g.t[idx] === T.ESTANTERIA) {
+          if (light > 0.02 || world.explored[idx])
+            Sprites.drawProp(ctx, 'estanteria', sx + 24, sy + 33, t, null);
+        } else if (g.t[idx] === T.PARED) {
           if (world.tiles.wallStyle === 'arbol') {
             ctx.drawImage(world.tiles.arbol, sx, sy - 18);
           } else if (world.tiles.wallStyle === 'roca') {

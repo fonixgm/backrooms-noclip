@@ -107,8 +107,10 @@ class Cliente {
       const g = this.map.grid;
       const dist = MapGen.bfsDist(g, tx, ty);
       const t0 = Date.now();
+      const secInicio = this.sec || 0;
       let tAnt = Date.now();
       const paso = setInterval(() => {
+        if ((this.sec || 0) !== secInicio) { clearInterval(paso); return res(); }
         const d = Fisica.dist(this.x, this.y, tx, ty);
         if (d <= radio) { clearInterval(paso); return res(); }
         if (Date.now() - t0 > 60000) {
@@ -297,16 +299,21 @@ const espera = (ms) => new Promise((r) => setTimeout(r, ms));
       // ¿la puerta de vuelta existe?
       const mapaDest = generarMapa(niv.nivel, niv.semilla).map;
       const puertaVuelta = mapaDest.exits.find((e) => e.def.destino === nivelId);
-      if (puertaVuelta) {
+      if (niv.retorno) {
+        ok(niv.retorno.destino === nivelId, `el retorno personal vuelve a ${nivelId}`);
+        ok(niv.retorno._retornoEstilo === 'ventana',
+          'entrar por ventana crea una ventana personal, no reutiliza el no-clip natural');
+        ok(MapGen.at(mapaDest.grid, niv.retorno.x, niv.retorno.y - 1) === MapGen.T.PARED,
+          'la ventana personal queda colocada en una pared real');
+      } else if (puertaVuelta) {
         const d = Math.hypot(puertaVuelta.x - niv.x, puertaVuelta.y - niv.y);
         ok(d >= 0.9 && d <= 8, `apareces JUNTO a la puerta que vuelve a ${nivelId}, no encima (a ${d.toFixed(1)} tiles)`);
         ok(!niv.retorno, 'no hace falta puerta personal: el nivel ya tenía la suya');
       } else {
-        ok(!!niv.retorno, 'sin puerta natural: llega puerta personal de retorno');
-        if (niv.retorno) ok(niv.retorno.destino === nivelId, `la puerta personal vuelve a ${niv.retorno.destino}`);
+        ok(false, 'la transición reversible debe conservar un retorno al origen');
       }
       // --- volver por ella ---
-      const objetivo = puertaVuelta || niv.retorno;
+      const objetivo = niv.retorno || puertaVuelta;
       if (objetivo) {
         // alejarse primero (histéresis: >1 tile de TODA salida) y volver
         await espera(300);
@@ -319,18 +326,26 @@ const espera = (ms) => new Promise((r) => setTimeout(r, ms));
           if (c.map.exits.every((e) => Math.hypot(e.x - lx, e.y - ly) > 1.8)) lejos = [lx, ly];
         }
         if (lejos) { try { await c.irA(lejos[0], lejos[1], 0.6); } catch (e) {} }
-        await c.irA(objetivo.x, objetivo.y, 0.5);
-        const oferta2 = await c.espera((m) => m.t === 'oferta', 5000, c.buzon.length - 4);
         n0 = c.buzon.length;
-        c.enviar({ t: 'cruzar', si: true });
-        const niv2 = await c.espera((m) => m.t === 'nivel', 5000, n0);
+        await c.irA(objetivo.x, objetivo.y, 0.5);
+        let niv2;
+        if (!niv.retorno && puertaVuelta?.def?._mec === 'noclip') {
+          niv2 = await c.espera((m) => m.t === 'nivel', 5000, n0);
+          ok(!c.buzon.slice(n0).some((entry) => entry.m.t === 'oferta' &&
+            entry.m.texto === puertaVuelta.def.texto), 'el no-clip de vuelta cruza sin oferta');
+        } else {
+          await c.espera((m) => m.t === 'oferta', 5000, n0);
+          n0 = c.buzon.length;
+          c.enviar({ t: 'cruzar', si: true });
+          niv2 = await c.espera((m) => m.t === 'nivel', 5000, n0);
+        }
         ok(niv2.nivel === nivelId, `la puerta de retorno te devuelve a ${niv2.nivel}`);
         // Si la puerta usada para volver es ella misma sin-retorno (p. ej. un
         // no-clip de un nivel A hacia el nuestro, que no es la MISMA puerta por
         // la que salimos), cambiarDeSala() no busca pareja natural y usa el
         // spawn por defecto: no tiene sentido exigir cercanía al origen (misma
         // regla que esSinRetorno en server.js/game.js).
-        const objetivoSinRetorno = puertaVuelta &&
+        const objetivoSinRetorno = !niv.retorno && puertaVuelta &&
           /agujero|caes |caer |caída|desplom|abismo|pozo|trampilla|no.?clip|desmay|despiert/i.test(puertaVuelta.def.texto || '');
         if (objetivoSinRetorno) {
           ok(true, 'la puerta usada para volver es sin-retorno (no-clip/caída): no aplica cercanía al origen');
@@ -347,6 +362,16 @@ const espera = (ms) => new Promise((r) => setTimeout(r, ms));
     const nivTp = await c.espera((m) => m.t === 'nivel', 5000, n0);
     ok(nivTp.nivel === 'level-1', '/tp funciona para el guardián');
     ok(!nivTp.retorno, '/tp NO deja puerta personal de retorno');
+
+    // /tp tampoco inventa retorno, aunque el destino carezca de salidas.
+    n0 = c.buzon.length;
+    c.enviar({ t: 'chat', txt: '/tp level-712' });
+    const nivCiego = await c.espera((m) => m.t === 'nivel', 5000, n0);
+    ok(nivCiego.nivel === 'level-712', '/tp llega a un nivel sin salidas catalogadas');
+    ok(c.map.exits.length === 0 && (c.map.caminatas || []).length === 0,
+      'level-712 no finge una salida que la wiki no documenta');
+    ok(!nivCiego.retorno,
+      'un /tp a nivel sin salidas no inventa una puerta de retorno');
 
     // --- ping con eco ---
     n0 = c.buzon.length;

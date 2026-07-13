@@ -875,6 +875,242 @@
         ctx.fillRect(cx - 7, cy - 2, 14, 4);
         ctx.fillRect(cx + 5, cy + 2, 3, 8); ctx.fillRect(cx - 7, cy + 2, 3, 8);
         break;
+      case 'estanteria': {
+        const f = mueble(ctx, cx, cy + 12, 23, 39, '#967047');
+        ctx.fillStyle = '#4a3728';
+        for (let i = 0; i < 4; i++) {
+          const sy = f.y + 4 + i * 8;
+          ctx.fillRect(f.x + 2, sy, f.w - 4, 5);
+          ctx.fillStyle = '#c49a62';
+          ctx.fillRect(f.x + 2, sy + 5, f.w - 4, 2);
+          ctx.fillStyle = '#4a3728';
+        }
+        // Apenas quedan libros: unos pocos lomos rompen el vacío negro.
+        ctx.fillStyle = '#75584b'; ctx.fillRect(f.x + 4, f.y + 5, 2, 4);
+        ctx.fillStyle = '#596c62'; ctx.fillRect(f.x + 16, f.y + 21, 2, 4);
+        break;
+      }
+      case 'ordenador': {
+        ctx.fillStyle = '#5b5549';
+        ctx.fillRect(cx - 13, cy + 3, 26, 5);
+        ctx.fillRect(cx - 10, cy + 8, 3, 5); ctx.fillRect(cx + 7, cy + 8, 3, 5);
+        ctx.fillStyle = '#c7c0a8';
+        ctx.fillRect(cx - 9, cy - 14, 18, 17);
+        ctx.fillStyle = '#171d18';
+        ctx.fillRect(cx - 7, cy - 12, 14, 11);
+        ctx.fillStyle = Math.floor(t / 650) % 5 === 0 ? '#d9ddd0' : '#405147';
+        ctx.fillRect(cx - 5, cy - 9, 10, 1.5);
+        ctx.fillStyle = '#918b78';
+        ctx.fillRect(cx - 11, cy + 1, 22, 3);
+        break;
+      }
+      case 'libros_caidos': {
+        ctx.fillStyle = 'rgba(30,22,15,0.45)';
+        ctx.beginPath(); ctx.ellipse(cx, cy + 9, 14, 5, 0, 0, 7); ctx.fill();
+        const libros = [
+          [-11, 4, 13, 5, '#715044', -0.18],
+          [-2, 0, 15, 5, '#53665c', 0.12],
+          [-7, -5, 12, 5, '#87704c', -0.05],
+        ];
+        for (const [x, y, w, h, color, rot] of libros) {
+          ctx.save(); ctx.translate(cx + x, cy + y); ctx.rotate(rot);
+          ctx.fillStyle = color; ctx.fillRect(0, 0, w, h);
+          ctx.fillStyle = '#d7c9a3'; ctx.fillRect(2, 1, w - 3, h - 2);
+          ctx.restore();
+        }
+        break;
+      }
+      case 'coche': {
+        const colores = { rojo: '#7d302b', azul: '#314e70', blanco: '#b9b8ae', negro: '#292b2c' };
+        const color = colores[shade] || colores.negro;
+        // Vista oblicua y deliberadamente ancha: el vehiculo ocupa dos
+        // casillas logicas y su dibujo comunica ese volumen.
+        ctx.fillStyle = '#17191a';
+        for (const wx of [-25, 18]) ctx.fillRect(cx + wx, cy + 6, 10, 7);
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(cx - 29, cy + 7); ctx.lineTo(cx - 23, cy - 7);
+        ctx.lineTo(cx - 10, cy - 13); ctx.lineTo(cx + 15, cy - 13);
+        ctx.lineTo(cx + 28, cy - 3); ctx.lineTo(cx + 31, cy + 8);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#18232b';
+        ctx.beginPath();
+        ctx.moveTo(cx - 8, cy - 11); ctx.lineTo(cx + 12, cy - 11);
+        ctx.lineTo(cx + 20, cy - 4); ctx.lineTo(cx - 15, cy - 4);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#d5c77f'; ctx.fillRect(cx + 24, cy, 5, 3);
+        ctx.strokeStyle = 'rgba(0,0,0,0.55)'; ctx.lineWidth = 1.5;
+        ctx.stroke();
+        break;
+      }
+      case 'mesa':
+        ctx.fillStyle = '#6b5540'; ctx.fillRect(cx - 13, cy - 5, 26, 12);
+        ctx.fillStyle = '#897058'; ctx.fillRect(cx - 13, cy - 7, 26, 5);
+        ctx.fillStyle = '#42362b'; ctx.fillRect(cx - 10, cy + 7, 3, 6); ctx.fillRect(cx + 7, cy + 7, 3, 6);
+        break;
+      case 'cama':
+        ctx.fillStyle = '#564a3e'; ctx.fillRect(cx - 15, cy - 9, 30, 20);
+        ctx.fillStyle = '#b6b1a4'; ctx.fillRect(cx - 13, cy - 8, 26, 17);
+        ctx.fillStyle = '#ddd7c8'; ctx.fillRect(cx - 11, cy - 7, 9, 15);
+        ctx.strokeStyle = '#3d352d'; ctx.strokeRect(cx - 15.5, cy - 9.5, 31, 21);
+        break;
+      case 'mostrador': {
+        // Un módulo llena la casilla para que una fila forme un mostrador
+        // continuo, como el gran frente de caja de las referencias.
+        const f = mueble(ctx, cx, cy + 11, 49, 25, '#76583c');
+        ctx.fillStyle = '#a59073'; ctx.fillRect(f.x - 2, f.y - 4, f.w + 4, 5);
+        ctx.fillStyle = '#352f2b'; ctx.fillRect(f.x + 4, f.y + 6, f.w - 8, 3);
+        break;
+      }
+      case 'pilar_biblioteca': {
+        ctx.fillStyle = 'rgba(30,24,18,0.35)';
+        ctx.beginPath(); ctx.ellipse(cx + 4, cy + 10, 13, 6, 0, 0, 7); ctx.fill();
+        ctx.fillStyle = '#b5a26e'; ctx.fillRect(cx - 8, cy - 28, 17, 39);
+        ctx.fillStyle = '#d1bf88'; ctx.fillRect(cx - 8, cy - 28, 5, 39);
+        ctx.fillStyle = '#8f7d54'; ctx.fillRect(cx + 6, cy - 28, 3, 39);
+        ctx.fillStyle = '#dfd1a2'; ctx.fillRect(cx - 9, cy - 29, 19, 3);
+        break;
+      }
+      case 'mesa_expositora': {
+        ctx.fillStyle = 'rgba(35,25,18,0.35)';
+        ctx.beginPath(); ctx.ellipse(cx, cy + 11, 17, 6, 0, 0, 7); ctx.fill();
+        ctx.fillStyle = '#7b5a39'; ctx.fillRect(cx - 15, cy - 4, 30, 13);
+        ctx.fillStyle = '#b48650'; ctx.fillRect(cx - 17, cy - 8, 34, 7);
+        for (const [x, y, color] of [[-12, -11, '#6f4b3f'], [-3, -13, '#53665c'], [6, -11, '#8a7048']]) {
+          ctx.fillStyle = color; ctx.fillRect(cx + x, cy + y, 9, 4);
+          ctx.fillStyle = '#d5c69f'; ctx.fillRect(cx + x + 1, cy + y + 1, 7, 2);
+        }
+        break;
+      }
+      case 'terminal_biblioteca': {
+        ctx.fillStyle = '#c7c0a8'; ctx.fillRect(cx - 9, cy - 19, 18, 16);
+        ctx.fillStyle = '#263029'; ctx.fillRect(cx - 7, cy - 17, 14, 10);
+        ctx.fillStyle = '#d7ddd0'; ctx.font = 'bold 5px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('THE END', cx, cy - 10);
+        ctx.fillStyle = '#8f8874'; ctx.fillRect(cx - 2, cy - 3, 4, 5);
+        break;
+      }
+      case 'cartel_the_end':
+      case 'cartel_the_end_near': {
+        const near = id === 'cartel_the_end_near';
+        ctx.fillStyle = 'rgba(20,16,12,0.35)'; ctx.fillRect(cx - 27, cy - 21, 54, 5);
+        ctx.fillStyle = '#e3d5a7'; ctx.fillRect(cx - 29, cy - 39, 58, 20);
+        ctx.strokeStyle = '#8b7954'; ctx.strokeRect(cx - 29.5, cy - 39.5, 59, 21);
+        ctx.fillStyle = '#171512'; ctx.font = `bold ${near ? 7 : 10}px sans-serif`; ctx.textAlign = 'center';
+        ctx.fillText(near ? 'THE END IS NEAR' : 'THE END', cx, cy - 26);
+        break;
+      }
+      case 'marcador':
+        ctx.fillStyle = '#26333a'; ctx.fillRect(cx - 12, cy - 13, 24, 20);
+        ctx.fillStyle = '#79d7d1'; ctx.fillRect(cx - 9, cy - 10, 18, 10);
+        ctx.fillStyle = '#b7fff3'; ctx.font = '7px monospace'; ctx.textAlign = 'center'; ctx.fillText('00', cx, cy - 3);
+        ctx.fillStyle = '#1c2327'; ctx.fillRect(cx - 9, cy + 7, 3, 6); ctx.fillRect(cx + 6, cy + 7, 3, 6);
+        break;
+      case 'maquina_arcade': {
+        const f = mueble(ctx, cx, cy + 12, 20, 35, '#37334d');
+        ctx.fillStyle = '#161724'; ctx.fillRect(f.x + 3, f.y + 3, f.w - 6, 11);
+        ctx.fillStyle = '#62d7dc'; ctx.fillRect(f.x + 5, f.y + 5, f.w - 10, 6);
+        ctx.fillStyle = '#c94d87'; ctx.beginPath(); ctx.arc(cx - 4, f.y + 20, 2, 0, 7); ctx.fill();
+        ctx.fillStyle = '#e8d36d'; ctx.fillRect(cx + 2, f.y + 19, 5, 2);
+        break;
+      }
+      case 'cartel_zoo':
+        ctx.fillStyle = '#594c37'; ctx.fillRect(cx - 2, cy - 1, 4, 14);
+        ctx.fillStyle = '#d2c49a'; ctx.fillRect(cx - 12, cy - 17, 24, 17);
+        ctx.strokeStyle = '#574a34'; ctx.strokeRect(cx - 12.5, cy - 17.5, 25, 18);
+        ctx.fillStyle = '#405c42'; ctx.font = 'bold 7px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('ZOO', cx, cy - 7);
+        break;
+      case 'carrito_zoo':
+        ctx.fillStyle = '#5d4b36'; ctx.fillRect(cx - 13, cy - 5, 26, 14);
+        ctx.fillStyle = '#b49b64'; ctx.fillRect(cx - 15, cy - 9, 30, 6);
+        ctx.fillStyle = '#252725';
+        ctx.beginPath(); ctx.arc(cx - 9, cy + 11, 3, 0, 7); ctx.fill();
+        ctx.beginPath(); ctx.arc(cx + 9, cy + 11, 3, 0, 7); ctx.fill();
+        ctx.fillStyle = '#8d3030'; ctx.fillRect(cx - 8, cy - 18, 16, 9);
+        break;
+      case 'tanque_acuatico':
+        ctx.fillStyle = '#273b43'; ctx.fillRect(cx - 12, cy - 18, 24, 30);
+        ctx.fillStyle = 'rgba(70,160,185,0.72)'; ctx.fillRect(cx - 9, cy - 15, 18, 23);
+        ctx.fillStyle = '#b5ebef';
+        for (let i = 0; i < 4; i++) ctx.fillRect(cx - 7 + i * 4, cy + 3 - (i % 2) * 7, 2, 2);
+        ctx.strokeStyle = '#71878d'; ctx.strokeRect(cx - 12.5, cy - 18.5, 25, 31);
+        break;
+      case 'lapida':
+        ctx.fillStyle = '#656963';
+        ctx.beginPath(); ctx.arc(cx, cy - 7, 9, Math.PI, 0); ctx.lineTo(cx + 9, cy + 11); ctx.lineTo(cx - 9, cy + 11); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#8a8e87'; ctx.fillRect(cx - 1, cy - 8, 2, 12); ctx.fillRect(cx - 5, cy - 4, 10, 2);
+        ctx.fillStyle = '#444842'; ctx.fillRect(cx - 12, cy + 11, 24, 3);
+        break;
+      case 'salida_falsa':
+        ctx.fillStyle = '#514b40'; ctx.fillRect(cx - 12, cy - 23, 24, 35);
+        ctx.fillStyle = '#24221e'; ctx.fillRect(cx - 9, cy - 20, 18, 32);
+        ctx.fillStyle = '#5ee07b'; ctx.shadowColor = '#5ee07b'; ctx.shadowBlur = 7;
+        ctx.font = 'bold 6px monospace'; ctx.textAlign = 'center'; ctx.fillText('EXIT', cx, cy - 26);
+        ctx.fillStyle = '#b5aa88'; ctx.beginPath(); ctx.arc(cx + 6, cy - 2, 1.8, 0, 7); ctx.fill();
+        break;
+      case 'botella_vacia':
+        ctx.fillStyle = 'rgba(180,205,190,0.6)'; ctx.fillRect(cx - 3, cy - 5, 7, 16);
+        ctx.fillStyle = '#7f9488'; ctx.fillRect(cx - 2, cy - 9, 5, 5);
+        break;
+      case 'zapato_roto':
+        ctx.fillStyle = '#40372f'; ctx.fillRect(cx - 10, cy + 2, 20, 8);
+        ctx.fillStyle = '#6a5949'; ctx.fillRect(cx - 8, cy - 3, 9, 7);
+        ctx.strokeStyle = '#1f1b18'; ctx.beginPath(); ctx.moveTo(cx + 2, cy + 2); ctx.lineTo(cx + 8, cy + 8); ctx.stroke();
+        break;
+      case 'camara_estudio':
+        ctx.fillStyle = '#25282a'; ctx.fillRect(cx - 10, cy - 13, 20, 14);
+        ctx.fillStyle = '#111416'; ctx.beginPath(); ctx.arc(cx + 9, cy - 6, 6, 0, 7); ctx.fill();
+        ctx.fillStyle = '#697278'; ctx.beginPath(); ctx.moveTo(cx - 5, cy + 1); ctx.lineTo(cx - 13, cy + 13); ctx.lineTo(cx - 1, cy + 2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(cx + 4, cy + 1); ctx.lineTo(cx + 13, cy + 13); ctx.lineTo(cx + 1, cy + 2); ctx.fill();
+        break;
+      case 'foco_estudio':
+        ctx.fillStyle = '#303336'; ctx.fillRect(cx - 7, cy - 13, 14, 13);
+        ctx.fillStyle = '#efe1a4'; ctx.shadowColor = '#fff0a0'; ctx.shadowBlur = 10;
+        ctx.beginPath(); ctx.arc(cx, cy - 7, 5, 0, 7); ctx.fill();
+        ctx.fillStyle = '#55595b'; ctx.fillRect(cx - 2, cy, 4, 13);
+        break;
+      case 'lavabo':
+        ctx.fillStyle = '#d5d9d4'; ctx.beginPath(); ctx.ellipse(cx, cy - 2, 13, 8, 0, 0, 7); ctx.fill();
+        ctx.fillStyle = '#788184'; ctx.beginPath(); ctx.ellipse(cx, cy - 2, 8, 4, 0, 0, 7); ctx.fill();
+        ctx.fillStyle = '#aeb5b2'; ctx.fillRect(cx - 3, cy + 5, 6, 8);
+        break;
+      case 'encimera': {
+        const f = mueble(ctx, cx, cy + 10, 25, 22, '#77756d');
+        ctx.fillStyle = '#b4b2a9'; ctx.fillRect(f.x - 1, f.y - 4, f.w + 2, 5);
+        ctx.fillStyle = '#30383b'; ctx.fillRect(cx - 5, f.y - 3, 10, 3);
+        break;
+      }
+      case 'butaca':
+      case 'asiento_terminal':
+      case 'grada': {
+        const color = id === 'butaca' ? '#6f2f32' : id === 'grada' ? '#687178' : '#455c67';
+        ctx.fillStyle = color; ctx.fillRect(cx - 10, cy - 10, 20, 13);
+        ctx.fillStyle = shadeHex(color, 0.72); ctx.fillRect(cx - 10, cy + 3, 20, 6);
+        ctx.fillRect(cx - 9, cy + 9, 3, 4); ctx.fillRect(cx + 6, cy + 9, 3, 4);
+        break;
+      }
+      case 'banco':
+        ctx.fillStyle = '#6a5137'; ctx.fillRect(cx - 17, cy - 5, 34, 7);
+        ctx.fillStyle = '#4c3927'; ctx.fillRect(cx - 14, cy + 2, 4, 10); ctx.fillRect(cx + 10, cy + 2, 4, 10);
+        break;
+      case 'altar': {
+        const f = mueble(ctx, cx, cy + 10, 28, 25, '#a9a493');
+        ctx.fillStyle = '#d5d0bd'; ctx.fillRect(f.x - 2, f.y - 4, f.w + 4, 5);
+        ctx.fillStyle = '#746a55'; ctx.fillRect(cx - 1, f.y + 4, 2, 12); ctx.fillRect(cx - 5, f.y + 8, 10, 2);
+        break;
+      }
+      case 'vitrina': {
+        const f = mueble(ctx, cx, cy + 10, 22, 25, '#4c4a45');
+        ctx.fillStyle = 'rgba(170,220,224,0.45)'; ctx.fillRect(f.x + 2, f.y - 12, f.w - 4, 14);
+        ctx.strokeStyle = '#c2dde0'; ctx.strokeRect(f.x + 2.5, f.y - 11.5, f.w - 5, 13);
+        break;
+      }
+      case 'palet':
+        ctx.fillStyle = '#876845';
+        for (let i = -1; i <= 1; i++) ctx.fillRect(cx - 15, cy + i * 5, 30, 3);
+        ctx.fillStyle = '#57432e'; ctx.fillRect(cx - 12, cy + 8, 5, 4); ctx.fillRect(cx + 7, cy + 8, 5, 4);
+        break;
       case 'seta':
         ctx.fillStyle = '#e8e0d0';
         ctx.fillRect(cx - 2, cy, 4, 9);

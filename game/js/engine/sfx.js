@@ -142,6 +142,9 @@
     },
     puerta() { ruido(0.4, 320, 0.36, 'lowpass', 90); tono(70, 0.35, 0.32, 'sine', 45); setTimeout(() => ctx && ruido(0.1, 1800, 0.1, 'bandpass'), 300); },
     registrar() { ruido(0.32, 1800, 0.26, 'bandpass', 500); tono(210, 0.14, 0.18, 'square', 190); },
+    papeles() { ruido(0.24, 2300, 0.15, 'bandpass', 650); },
+    estatica_pc() { ruido(0.7, 3200, 0.13, 'highpass', 700); tono(120, 0.7, 0.05, 'sine'); },
+    apagado() { ruido(0.09, 2600, 0.2, 'bandpass', 420); tono(68, 0.35, 0.09, 'square', 38); },
     crujido() { // versión suave: la expansión del nivel infinito
       tono(46, 0.7, 0.22, 'sine', 30);
       for (let i = 0; i < 3; i++)
@@ -332,6 +335,17 @@
         o.connect(og).connect(g); o.start(); nodes.push(o);
       }
     },
+    biblioteca_silenciosa(g, nodes) {
+      // Casi silencio: únicamente el tono remoto de un fluorescente y, muy de
+      // vez en cuando, la estática breve de un ordenador antiguo.
+      const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = 120;
+      const og = ctx.createGain(); og.gain.value = 0.025;
+      o.connect(og).connect(g); o.start(); nodes.push(o);
+      const estatica = setInterval(() => {
+        if (ctx && !muted && Math.random() < 0.28) ruido(0.16, 900, 0.018, 'bandpass', 320);
+      }, 9000 + Math.random() * 5000);
+      nodes.push({ stop: () => clearInterval(estatica) });
+    },
     futurista(g, nodes) {
       RECETAS.hum_suave(g, nodes);
       const beep = setInterval(() => {
@@ -476,7 +490,7 @@
 
   const RECETA_BIOMA = {
     pasillos: 'hum_clasico', garaje: 'hum_suave', tuneles: 'goteo_tuberias',
-    hospital: 'hum_suave', oficinas: 'hum_suave', exterior: 'viento',
+    hospital: 'hum_suave', oficinas: 'hum_suave', biblioteca: 'biblioteca_silenciosa', recreativo: 'futurista', cementerio: 'viento', exterior: 'viento',
     bosque: 'viento', ciudad: 'ciudad_noche', torres: 'viento', invernadero: 'invernadero',
     acuatico: 'piscina', oceano: 'piscina', desierto: 'viento', nevado: 'viento_nieve',
     espacial: 'estatica_nave', cielo: 'viento', hotel: 'crujidos', centro_comercial: 'hum_suave',

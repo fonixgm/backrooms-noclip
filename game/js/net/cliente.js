@@ -261,7 +261,11 @@
         w.itemsVersion = (w.itemsVersion || 0) + 1;
         break;
       }
-      case 'muere':
+      case 'muere': {
+        // El efecto recibe la representación YA existente del jugador. No se
+        // crea otro personaje ni un cadáver separado en el censo/render.
+        const muerto = m.id === miId ? w.player : posDe(m.id)?.[2];
+        if (window.Effects && muerto) Effects.death(muerto);
         if (m.id === miId) {
           w.log(`La oscuridad te traga (${m.causa}).`, 'danger');
           if (window.Effects) Effects.doShake(9, 400);
@@ -271,6 +275,7 @@
           if (p && cerca(w, p[0], p[1], 12)) w.log(`${nombreDe(m.id)} cae al suelo…`, 'danger');
         }
         break;
+      }
       case 'botinReset':
         try { localStorage.removeItem('mmo-cajas::' + m.semilla); } catch (e) {}
         break;
@@ -410,16 +415,15 @@
     w.map = MapGen.generate(defOnline, RNG.create(m.semilla));
     w.tiles = Tiles.build(def, RNG.create(m.semilla + '::tiles'));
     w.map.caminatas = []; // la caminata online (M3) es personal
-    // puerta personal de RETORNO (v23): solo existe en TU cliente — el
-    // servidor la vigila con el índice especial 'R'
+    // Retorno personal fiel al acceso de entrada. Una caminata sigue siendo
+    // caminata (sin objeto visual); puertas, ventanas y otros accesos físicos
+    // conservan su mecánica y ubicación enviadas por el servidor.
     if (m.retorno) {
-      w.map.exits.push({
-        x: m.retorno.x, y: m.retorno.y,
-        def: {
-          texto: 'El camino por el que llegaste sigue abierto.',
-          destino: m.retorno.destino, tipo: 'retorno',
-        },
-      });
+      const defRetorno = { ...m.retorno };
+      delete defRetorno.x;
+      delete defRetorno.y;
+      if (defRetorno._mec === 'caminata') w.map.caminatas.push(defRetorno);
+      else w.map.exits.push({ x: m.retorno.x, y: m.retorno.y, def: defRetorno });
     }
     for (const i of m.abiertas || []) if (w.map.exits[i]) w.map.exits[i].def._abierta = true;
     // v25: botín INDIVIDUAL — las cajas que TÚ ya registraste en esta sala

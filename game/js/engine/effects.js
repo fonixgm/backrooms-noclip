@@ -22,6 +22,16 @@
     list.push({ type: 'part', wx, wy, color, pieces, t0: now(), dur: 550 });
   }
 
+  // Efecto de muerte ligado al personaje que ya existe. `ref` es el mismo
+  // objeto usado por el render (jugador local u Otro remoto), así que el
+  // efecto se compone encima de su sprite sin crear un cadáver/actor nuevo.
+  function death(ref) {
+    if (!ref) return;
+    // Un mismo paquete repetido refresca el efecto; no lo duplica.
+    list = list.filter((e) => e.type !== 'death' || e.ref !== ref);
+    list.push({ type: 'death', ref, t0: now(), dur: 2200 });
+  }
+
   // destello circular (recogidas, curas)
   function flash(wx, wy, color) {
     list.push({ type: 'flash', wx, wy, color, t0: now(), dur: 400 });
@@ -87,6 +97,33 @@
         ctx.restore();
         continue;
       }
+      if (e.type === 'death') {
+        // Aura sobre el cuerpo y calavera flotante. Dura menos que el respawn
+        // online (2,5 s), por lo que nunca acompaña al jugador ya revivido.
+        const entrada = Math.min(1, k * 8);
+        const salida = Math.min(1, (1 - k) * 5);
+        const alpha = Math.max(0, Math.min(entrada, salida));
+        const pulso = 1 + Math.sin(k * Math.PI * 8) * 0.08;
+        const grad = ctx.createRadialGradient(sx, sy - 10, 3, sx, sy - 10, 31 * pulso);
+        grad.addColorStop(0, `rgba(190,20,24,${0.38 * alpha})`);
+        grad.addColorStop(0.55, `rgba(70,0,4,${0.24 * alpha})`);
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(sx, sy - 10, 31 * pulso, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = alpha;
+        ctx.font = 'bold 25px "Courier New", monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#160204';
+        ctx.fillText('☠', sx + 1, sy - 49 - k * 9 + 1);
+        ctx.fillStyle = '#e8d8c0';
+        ctx.fillText('☠', sx, sy - 49 - k * 9);
+        ctx.restore();
+        continue;
+      }
       if (e.type === 'num') {
         ctx.globalAlpha = 1 - k * k;
         ctx.font = 'bold 15px "Courier New", monospace';
@@ -139,5 +176,5 @@
     }
   }
 
-  window.Effects = { number, particles, flash, proyectil, bubble, doShake, shakeOffset, draw, clear() { list = []; } };
+  window.Effects = { number, particles, death, flash, proyectil, bubble, doShake, shakeOffset, draw, clear() { list = []; } };
 })();

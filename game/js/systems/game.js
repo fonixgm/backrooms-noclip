@@ -381,6 +381,7 @@
   // ---------- transición de nivel ----------
   // salidas de las que físicamente NO se puede volver (caídas, vacío, desplomes)
   function esSinRetorno(def) {
+    if (def._mec === 'noclip') return true;
     if (def.sinRetorno) return true;
     if (def.tipo === 'void') return true;
     return /agujero|caes |caer |caída|desplom|abismo|pozo|trampilla|no.?clip|desmay|despiert/i.test(def.texto || '');
@@ -765,6 +766,12 @@
       world._ignoraExit = null;
     const ex = world.map.exits.find((e) => e.x === world.player.x && e.y === world.player.y);
     if (ex && !world._ignoraExit) {
+      // El no-clip sucede al atravesar la anomalía: no hay puerta, pregunta ni
+      // confirmación intermedia.
+      if (ex.def._mec === 'noclip') {
+        crossExit(ex.def);
+        return;
+      }
       // pared agrietada (v20): primero hay que ABRIRLA (ESPACIO)
       if ((ex.def._mec === 'romper' || ex.def._mec === 'romper_suelo') && !ex.def._abierta) {
         if (!ex._avisado) {
@@ -928,7 +935,7 @@
       const nx = world.player.x + dx, ny = world.player.y + dy;
       const g = world.map.grid;
       const v = (nx < 0 || ny < 0 || nx >= g.w || ny >= g.h) ? T.PARED : g.t[ny * g.w + nx];
-      if (v === T.PARED) { if (i === 0) return; else break; }
+      if (v === T.PARED || v === T.ESTANTERIA || v === T.OBSTACULO) { if (i === 0) return; else break; }
       if (v === T.VACIO) {
         world.log('El abismo se abre a tus pies. Retrocedes con el corazón desbocado.', 'danger');
         world.sanity(-2);
@@ -1046,6 +1053,7 @@
     if (world.escondido) { toggleEsconder(null); return; }
     const ex = world.map.exits.find((e) => e.x === world.player.x && e.y === world.player.y);
     if (ex) {
+      if (ex.def._mec === 'noclip') { crossExit(ex.def); return; }
       if (ex.def._mec === 'romper' && !ex.def._abierta) { intentarRomper(ex); return; }
       if (ex.def._mec === 'romper_suelo' && !ex.def._abierta) { intentarRomperSuelo(ex); return; }
       world.ui.showExitModal(ex.def);
@@ -1061,9 +1069,37 @@
       (p) => ESCONDITES.has(p.id) && p.registrado && p.x === world.player.x && p.y === world.player.y
     );
     if (esc) { toggleEsconder(esc); return; }
+    // Ordenadores antiguos de The End: casi todos están muertos. Los pocos que
+    // responden muestran el nombre del nivel y se apagan para siempre.
+    const ordenador = (world.map.props || []).find((p) => p.id === 'ordenador' &&
+      Math.abs(p.x - world.player.x) + Math.abs(p.y - world.player.y) <= 1);
+    if (ordenador) {
+      if (ordenador.usado) {
+        world.log('La pantalla permanece negra. No vuelve a responder.', 'event');
+        return;
+      }
+      ordenador.usado = true;
+      world.log('El monitor despierta con estática. Durante un segundo solo muestra: «THE END». Después muere.', 'event');
+      world.hacerRuido(ordenador.x, ordenador.y, 5);
+      world.sanity(-1);
+      if (window.Sfx) Sfx.play('estatica_pc');
+      worldStep();
+      return;
+    }
+    const salidaFalsa = (world.map.props || []).find((p) => p.id === 'salida_falsa' &&
+      Math.abs(p.x - world.player.x) + Math.abs(p.y - world.player.y) <= 1);
+    if (salidaFalsa) {
+      salidaFalsa.usado = true;
+      world.log('Empujas la puerta marcada como salida. Detrás solo hay pared húmeda y otro zumbido idéntico.', 'danger');
+      world.sanity(-3);
+      world.hacerRuido(salidaFalsa.x, salidaFalsa.y, 4);
+      if (window.Sfx) Sfx.play('puerta');
+      worldStep();
+      return;
+    }
     // agua adyacente: TÚ decides si bebes (el lore decide las consecuencias)
     const hayAgua = [[0, -1], [0, 1], [-1, 0], [1, 0]].some(
-      ([ax, ay]) => MapGen.at(world.map.grid, world.player.x + ax, world.player.y + ay) === T.AGUA
+      ([ax, ay]) => [T.AGUA, T.CHARCO].includes(MapGen.at(world.map.grid, world.player.x + ax, world.player.y + ay))
     );
     if (hayAgua) { beberAgua(); return; }
     world.log('No hay nada con lo que interactuar aquí.', 'event');
@@ -1643,6 +1679,7 @@
   // ---------- cruzar salidas ----------
   function crossExit(def) {
     const tipo = def.tipo;
+    const esNoclip = def._mec === 'noclip';
 
     if (def.destino && !def.destino.startsWith('*') && !world.data.levels[def.destino]) {
       world.log('La ruta ya no coincide con el catalogo actual.', 'event');
@@ -1668,8 +1705,9 @@
     const go = () => {
       const caminata = def._mec === 'caminata';
       const manila = def._mec === 'manila';
+      const noclip = esNoclip;
       const continua = (caminata || manila) && world.level.id === 'level-0';
-      if (window.Sfx && !caminata && !manila) Sfx.play('puerta');
+      if (window.Sfx && !caminata && !manila && !noclip) Sfx.play('puerta');
       let destino = def.destino;
       if (destino === '*aleatoria') {
         const ids = Object.keys(world.data.levels).filter((i) => i !== world.level.id).sort();
@@ -1690,13 +1728,25 @@
       if (!destino) return;
       def._destinoResuelto = destino; // para reconocer esta salida al volver
       world.prevStack.push(world.level.id);
-      enterLevel(destino, def.texto, {
-        sinRetorno: caminata || manila || esSinRetorno(def),
-        sinTarjeta: continua,
+      enterLevel(destino, noclip ? null : def.texto, {
+        sinRetorno: noclip || caminata || manila || esSinRetorno(def),
+        sinTarjeta: continua || noclip,
       });
     };
 
     if (tipo === 'arriesgada' && def.riesgoVoid > 0) {
+      // Dos rutas no-clip documentadas pueden arrojar al Vacío. Conservan el
+      // riesgo, pero la tirada ocurre detrás de escena: atravesar la anomalía
+      // jamás abre un dado/modal ni pide permiso.
+      if (esNoclip) {
+        world.dadosN = (world.dadosN || 0) + 1;
+        let d = RNG.create(`${world.runSeed}::dado::${world.dadosN}`).int(1, 20);
+        if (world.hasItem('trebol')) d = Math.min(20, d + 2);
+        if (d <= Math.round(def.riesgoVoid * 20))
+          die('Caíste al Vacío. El Vacío no devuelve nada.');
+        else go();
+        return;
+      }
       world.rollDice('El camino es inestable. Tira el dado…', (d) => {
         const umbral = Math.round(def.riesgoVoid * 20);
         if (d <= umbral) {

@@ -242,6 +242,22 @@
           ctx.globalAlpha = 1;
         }
         break;
+      case 'libreria_comercial': // The End: antiguo Borders de las fotos originales
+        ctx.fillStyle = '#ded7bf';
+        ctx.fillRect(0, 0, w, FH);
+        ctx.fillStyle = '#c7a24b';               // franja mostaza corporativa
+        ctx.fillRect(0, 8, w, 5);
+        ctx.fillStyle = '#eee8d5';               // panel inferior crema
+        ctx.fillRect(0, 13, w, FH - 13);
+        ctx.strokeStyle = 'rgba(105,88,55,0.18)';
+        for (let x = 12; x < w; x += 24) {
+          ctx.beginPath(); ctx.moveTo(x + 0.5, 13); ctx.lineTo(x + 0.5, FH); ctx.stroke();
+        }
+        ctx.fillStyle = '#8a6742';               // zócalo de madera
+        ctx.fillRect(0, FH - 5, w, 5);
+        ctx.fillStyle = '#b78c52';
+        ctx.fillRect(0, FH - 6, w, 1.5);
+        break;
       case 'madera': // Woodrooms: tablones verticales con vetas y nudos
         for (let x = 0; x < w; x += 9) {
           ctx.fillStyle = shade(pal.pared, 0.9 + ((x / 9) % 3) * 0.09);

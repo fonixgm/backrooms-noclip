@@ -13,7 +13,7 @@ const DailySeed = require('../game/js/engine/daily-seed');
 
 const {
   Sala, salas, asignar, todas, totalJugadores,
-  prepararSala, cambiarDeSala, esSinRetorno, moverEspectador,
+  prepararSala, cambiarDeSala, esSinRetorno, estiloRetornoDe, defRetornoDe, moverEspectador,
   metricas, SALA_PUBLICA, GRACIA_SALA_VACIA,
 } = compartido;
 
@@ -155,6 +155,6 @@ setInterval(() => {
 
 module.exports = {
   Sala, asignar, tickTodas, estado, totalJugadores, observa, chatReciente, todas,
-  prepararSala, cambiarDeSala, esSinRetorno, moverEspectador,
+  prepararSala, cambiarDeSala, esSinRetorno, estiloRetornoDe, defRetornoDe, moverEspectador,
   SALA_PUBLICA, GRACIA_SALA_VACIA,
 };

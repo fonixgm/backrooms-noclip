@@ -19,6 +19,7 @@ window.ASSETS_MANIFEST = {
     "mascara_side": "assets/sprites/mascara_side.png",
     "mascara_up": "assets/sprites/mascara_up.png",
     "player_down": "assets/sprites/player_down.png",
+    "player_down212": "assets/sprites/player_down212.png",
     "player_side": "assets/sprites/player_side.png",
     "player_up": "assets/sprites/player_up.png",
     "smiler": "assets/sprites/smiler.png",

@@ -1,0 +1,1342 @@
+{
+  "total": 732,
+  "reviewedFromWiki": 17,
+  "unsupported": 0,
+  "inferredOnly": 118,
+  "topologyCount": {
+    "laberinto_no_euclidiano": 1,
+    "garaje_infinito": 1,
+    "tuneles_anchos": 14,
+    "terreno_abierto": 89,
+    "planta_hotel": 19,
+    "oceano_abierto": 47,
+    "cuevas": 20,
+    "barrio_transitable": 21,
+    "biblioteca_abierta": 8,
+    "ciudad_transitable": 51,
+    "laberinto_salas": 145,
+    "almacen": 6,
+    "galerias_comerciales": 21,
+    "instalacion_inundada": 28,
+    "geometria_surreal": 25,
+    "andenes": 8,
+    "alas_escolares": 6,
+    "hotel_atrio": 4,
+    "museo": 5,
+    "vagones": 4,
+    "carretera": 14,
+    "planta_oficinas": 14,
+    "viviendas_conectadas": 29,
+    "bosque_claros": 38,
+    "vacio_cosmico": 4,
+    "teatro": 10,
+    "garaje_abierto": 3,
+    "alas_hospitalarias": 4,
+    "vertical": 10,
+    "sala_columnada": 1,
+    "restaurante": 7,
+    "aguas_someras": 1,
+    "alas_laboratorio": 1,
+    "invernadero": 3,
+    "parque_recreativo": 13,
+    "recinto_deportivo": 5,
+    "cementerio": 4,
+    "prision": 3,
+    "plataformas": 6,
+    "aeropuerto": 2,
+    "sala_unica": 3,
+    "templo": 4,
+    "nave_industrial": 9,
+    "castillo": 2,
+    "corredor_longitudinal": 4,
+    "planta_estudio": 3,
+    "estadio": 1,
+    "aeronave": 1,
+    "bunker": 4,
+    "banos_publicos": 2,
+    "estacion_espacial": 1,
+    "zoologico": 1,
+    "sotanos_conectados": 1,
+    "laberinto_longitudinal": 1
+  },
+  "biomeCount": {
+    "pasillos": 198,
+    "garaje": 5,
+    "tuneles": 19,
+    "exterior": 55,
+    "hotel": 21,
+    "oceano": 47,
+    "biblioteca": 5,
+    "ciudad": 21,
+    "oficinas": 18,
+    "industrial": 22,
+    "centro_comercial": 19,
+    "acuatico": 33,
+    "surreal": 21,
+    "estacion": 13,
+    "escuela": 9,
+    "desierto": 18,
+    "nevado": 47,
+    "carretera": 17,
+    "residencial": 53,
+    "bosque": 18,
+    "espacial": 14,
+    "ruinas": 5,
+    "pantano": 2,
+    "invernadero": 5,
+    "hospital": 5,
+    "torres": 7,
+    "laboratorio": 2,
+    "granja": 4,
+    "recreativo": 14,
+    "cementerio": 2,
+    "tren": 3,
+    "fabrica": 2,
+    "parque": 6,
+    "cielo": 1,
+    "alcantarillas": 1
+  },
+  "pending": [
+    {
+      "id": "level-312",
+      "wikiTitle": "Level 312",
+      "bioma": "estacion",
+      "topologia": "andenes",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_312"
+    },
+    {
+      "id": "null",
+      "wikiTitle": "Null",
+      "bioma": "estacion",
+      "topologia": "andenes",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "ordenadores"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/Null"
+    },
+    {
+      "id": "level-808",
+      "wikiTitle": "Level 808",
+      "bioma": "residencial",
+      "topologia": "barrio_transitable",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "coches"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/Level_808"
+    },
+    {
+      "id": "level-131",
+      "wikiTitle": "Level 131",
+      "bioma": "bosque",
+      "topologia": "bosque_claros",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_131"
+    },
+    {
+      "id": "level-982",
+      "wikiTitle": "Level 982",
+      "bioma": "bosque",
+      "topologia": "bosque_claros",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_982"
+    },
+    {
+      "id": "level-497",
+      "wikiTitle": "Level 497",
+      "bioma": "carretera",
+      "topologia": "carretera",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_497"
+    },
+    {
+      "id": "level-pi",
+      "wikiTitle": "Level Pi",
+      "bioma": "carretera",
+      "topologia": "carretera",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_Pi"
+    },
+    {
+      "id": "level-270-good-morning-sunshine",
+      "wikiTitle": "Level 270/Good Morning Sunshine",
+      "bioma": "ciudad",
+      "topologia": "ciudad_transitable",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_270%2FGood_Morning_Sunshine"
+    },
+    {
+      "id": "level-62",
+      "wikiTitle": "Level 62",
+      "bioma": "ruinas",
+      "topologia": "ciudad_transitable",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_62"
+    },
+    {
+      "id": "level-333",
+      "wikiTitle": "Level 333",
+      "bioma": "centro_comercial",
+      "topologia": "galerias_comerciales",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "comercios"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/Level_333"
+    },
+    {
+      "id": "fragmentation",
+      "wikiTitle": "Fragmentation",
+      "bioma": "surreal",
+      "topologia": "geometria_surreal",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Fragmentation"
+    },
+    {
+      "id": "level-233",
+      "wikiTitle": "Level 233",
+      "bioma": "surreal",
+      "topologia": "geometria_surreal",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_233"
+    },
+    {
+      "id": "level-514",
+      "wikiTitle": "Level 514",
+      "bioma": "surreal",
+      "topologia": "geometria_surreal",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_514"
+    },
+    {
+      "id": "level-818",
+      "wikiTitle": "Level 818",
+      "bioma": "surreal",
+      "topologia": "geometria_surreal",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_818"
+    },
+    {
+      "id": "a-lesser-heaven",
+      "wikiTitle": "A Lesser Heaven",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/A_Lesser_Heaven"
+    },
+    {
+      "id": "a-new-beginning",
+      "wikiTitle": "A New Beginning",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/A_New_Beginning"
+    },
+    {
+      "id": "agglomeration",
+      "wikiTitle": "Agglomeration",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Agglomeration"
+    },
+    {
+      "id": "beyond-the-absolute-limit",
+      "wikiTitle": "Beyond the Absolute Limit",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Beyond_the_Absolute_Limit"
+    },
+    {
+      "id": "eternal-happiness-lost-truth",
+      "wikiTitle": "Eternal Happiness, Lost Truth",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "ordenadores",
+        "comercios"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/Eternal_Happiness%2C_Lost_Truth"
+    },
+    {
+      "id": "ex-1",
+      "wikiTitle": "EX-1",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "luces_inestables"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/EX-1"
+    },
+    {
+      "id": "home",
+      "wikiTitle": "Home",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Home"
+    },
+    {
+      "id": "level",
+      "wikiTitle": "Level !",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_!"
+    },
+    {
+      "id": "level-1-5",
+      "wikiTitle": "Level 1.5",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_1.5"
+    },
+    {
+      "id": "level-10-5",
+      "wikiTitle": "Level 10.5",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_10.5"
+    },
+    {
+      "id": "level-1000",
+      "wikiTitle": "Level 1000",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "comercios"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/Level_1000"
+    },
+    {
+      "id": "level-108",
+      "wikiTitle": "Level 108",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_108"
+    },
+    {
+      "id": "level-113",
+      "wikiTitle": "Level 113",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_113"
+    },
+    {
+      "id": "level-114",
+      "wikiTitle": "Level 114",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "comercios"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/Level_114"
+    },
+    {
+      "id": "level-12",
+      "wikiTitle": "Level 12",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_12"
+    },
+    {
+      "id": "level-122",
+      "wikiTitle": "Level 122",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_122"
+    },
+    {
+      "id": "level-124",
+      "wikiTitle": "Level 124",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_124"
+    },
+    {
+      "id": "level-127",
+      "wikiTitle": "Level 127",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_127"
+    },
+    {
+      "id": "level-133",
+      "wikiTitle": "Level 133",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_133"
+    },
+    {
+      "id": "level-134",
+      "wikiTitle": "Level 134",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_134"
+    },
+    {
+      "id": "level-145",
+      "wikiTitle": "Level 145",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_145"
+    },
+    {
+      "id": "level-149",
+      "wikiTitle": "Level 149",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_149"
+    },
+    {
+      "id": "level-150",
+      "wikiTitle": "Level 150",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_150"
+    },
+    {
+      "id": "level-18-1",
+      "wikiTitle": "Level 18.1",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "comercios"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/Level_18.1"
+    },
+    {
+      "id": "level-2-1",
+      "wikiTitle": "Level 2.1",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_2.1"
+    },
+    {
+      "id": "level-208",
+      "wikiTitle": "Level 208",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_208"
+    },
+    {
+      "id": "level-237",
+      "wikiTitle": "Level 237",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_237"
+    },
+    {
+      "id": "level-239",
+      "wikiTitle": "Level 239",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_239"
+    },
+    {
+      "id": "level-250",
+      "wikiTitle": "Level 250",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_250"
+    },
+    {
+      "id": "level-267",
+      "wikiTitle": "Level 267",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_267"
+    },
+    {
+      "id": "level-271",
+      "wikiTitle": "Level 271",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_271"
+    },
+    {
+      "id": "level-278",
+      "wikiTitle": "Level 278",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_278"
+    },
+    {
+      "id": "level-352",
+      "wikiTitle": "Level 352",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_352"
+    },
+    {
+      "id": "level-421",
+      "wikiTitle": "Level 421",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_421"
+    },
+    {
+      "id": "level-434",
+      "wikiTitle": "Level 434",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "objetos_caidos"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/Level_434"
+    },
+    {
+      "id": "level-434-offset-1",
+      "wikiTitle": "Level 434/offset 1",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_434%2Foffset_1"
+    },
+    {
+      "id": "level-443",
+      "wikiTitle": "Level 443",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_443"
+    },
+    {
+      "id": "level-450-1",
+      "wikiTitle": "Level 450.1",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_450.1"
+    },
+    {
+      "id": "level-460",
+      "wikiTitle": "Level 460",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "objetos_caidos"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/Level_460"
+    },
+    {
+      "id": "level-492",
+      "wikiTitle": "Level 492",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_492"
+    },
+    {
+      "id": "level-502",
+      "wikiTitle": "Level 502",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_502"
+    },
+    {
+      "id": "level-505",
+      "wikiTitle": "Level 505",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "coches",
+        "columnas"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/Level_505"
+    },
+    {
+      "id": "level-541",
+      "wikiTitle": "Level 541",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_541"
+    },
+    {
+      "id": "level-543",
+      "wikiTitle": "Level 543",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "comercios"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/Level_543"
+    },
+    {
+      "id": "level-555",
+      "wikiTitle": "Level 555",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_555"
+    },
+    {
+      "id": "level-599",
+      "wikiTitle": "Level 599",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "coches",
+        "luces_inestables"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/Level_599"
+    },
+    {
+      "id": "level-6-5",
+      "wikiTitle": "Level 6.5",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_6.5"
+    },
+    {
+      "id": "level-60",
+      "wikiTitle": "Level 60",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_60"
+    },
+    {
+      "id": "level-601-exit",
+      "wikiTitle": "Level 601/Exit",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_601%2FExit"
+    },
+    {
+      "id": "level-629",
+      "wikiTitle": "Level 629",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_629"
+    },
+    {
+      "id": "level-650",
+      "wikiTitle": "Level 650",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_650"
+    },
+    {
+      "id": "level-665",
+      "wikiTitle": "Level 665",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_665"
+    },
+    {
+      "id": "level-666",
+      "wikiTitle": "Level 666",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_666"
+    },
+    {
+      "id": "level-695",
+      "wikiTitle": "Level 695",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_695"
+    },
+    {
+      "id": "level-7-5",
+      "wikiTitle": "Level 7.5",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_7.5"
+    },
+    {
+      "id": "level-707",
+      "wikiTitle": "Level 707",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_707"
+    },
+    {
+      "id": "level-741",
+      "wikiTitle": "Level 741",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_741"
+    },
+    {
+      "id": "level-747",
+      "wikiTitle": "Level 747",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_747"
+    },
+    {
+      "id": "level-77",
+      "wikiTitle": "Level 77",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_77"
+    },
+    {
+      "id": "level-777",
+      "wikiTitle": "Level 777",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_777"
+    },
+    {
+      "id": "level-789",
+      "wikiTitle": "Level 789",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_789"
+    },
+    {
+      "id": "level-798",
+      "wikiTitle": "Level 798",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_798"
+    },
+    {
+      "id": "level-802",
+      "wikiTitle": "Level 802",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "comercios"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/Level_802"
+    },
+    {
+      "id": "level-82",
+      "wikiTitle": "Level 82",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_82"
+    },
+    {
+      "id": "level-829",
+      "wikiTitle": "Level 829",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_829"
+    },
+    {
+      "id": "level-86",
+      "wikiTitle": "Level 86",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "coches"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/Level_86"
+    },
+    {
+      "id": "level-89",
+      "wikiTitle": "Level 89",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_89"
+    },
+    {
+      "id": "level-900",
+      "wikiTitle": "Level 900",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_900"
+    },
+    {
+      "id": "level-912",
+      "wikiTitle": "Level 912",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_912"
+    },
+    {
+      "id": "level-922",
+      "wikiTitle": "Level 922",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_922"
+    },
+    {
+      "id": "level-922-33",
+      "wikiTitle": "Level 922.33",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "comercios",
+        "columnas"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/Level_922.33"
+    },
+    {
+      "id": "level-929",
+      "wikiTitle": "Level 929",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_929"
+    },
+    {
+      "id": "level-968",
+      "wikiTitle": "Level 968",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_968"
+    },
+    {
+      "id": "level-993",
+      "wikiTitle": "Level 993",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_993"
+    },
+    {
+      "id": "level-994",
+      "wikiTitle": "Level 994",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_994"
+    },
+    {
+      "id": "level-data-lost",
+      "wikiTitle": "Level DATA LOST",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_DATA_LOST"
+    },
+    {
+      "id": "level-placeholder",
+      "wikiTitle": "Level Placeholder",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_Placeholder"
+    },
+    {
+      "id": "opus-oblitum",
+      "wikiTitle": "Opus Oblitum",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "coches"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/Opus_Oblitum"
+    },
+    {
+      "id": "see-no-evil",
+      "wikiTitle": "See No Evil",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/See_No_Evil"
+    },
+    {
+      "id": "the-blue-space",
+      "wikiTitle": "The Blue Space",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/The_Blue_Space"
+    },
+    {
+      "id": "the-firewall",
+      "wikiTitle": "The Firewall",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/The_Firewall"
+    },
+    {
+      "id": "the-game",
+      "wikiTitle": "The Game",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/The_Game"
+    },
+    {
+      "id": "the-parallel",
+      "wikiTitle": "The Parallel",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "comercios"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/The_Parallel"
+    },
+    {
+      "id": "the-red-mist",
+      "wikiTitle": "The Red Mist",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "niebla"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/The_Red_Mist"
+    },
+    {
+      "id": "the-trials",
+      "wikiTitle": "The Trials",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "niebla",
+        "calor"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/The_Trials"
+    },
+    {
+      "id": "the-worst-fate",
+      "wikiTitle": "The Worst Fate",
+      "bioma": "pasillos",
+      "topologia": "laberinto_salas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/The_Worst_Fate"
+    },
+    {
+      "id": "level-909",
+      "wikiTitle": "Level 909",
+      "bioma": "oceano",
+      "topologia": "oceano_abierto",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_909"
+    },
+    {
+      "id": "level-140",
+      "wikiTitle": "Level 140",
+      "bioma": "oficinas",
+      "topologia": "planta_oficinas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_140"
+    },
+    {
+      "id": "level-203",
+      "wikiTitle": "Level 203",
+      "bioma": "oficinas",
+      "topologia": "planta_oficinas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_203"
+    },
+    {
+      "id": "level-80",
+      "wikiTitle": "Level 80",
+      "bioma": "oficinas",
+      "topologia": "planta_oficinas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_80"
+    },
+    {
+      "id": "level-833",
+      "wikiTitle": "Level 833",
+      "bioma": "oficinas",
+      "topologia": "planta_oficinas",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "ordenadores"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/Level_833"
+    },
+    {
+      "id": "gloomful-island",
+      "wikiTitle": "Gloomful Island",
+      "bioma": "exterior",
+      "topologia": "terreno_abierto",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "niebla"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/Gloomful_Island"
+    },
+    {
+      "id": "level-132",
+      "wikiTitle": "Level 132",
+      "bioma": "nevado",
+      "topologia": "terreno_abierto",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_132"
+    },
+    {
+      "id": "level-151",
+      "wikiTitle": "Level 151",
+      "bioma": "nevado",
+      "topologia": "terreno_abierto",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "deterioro",
+        "comercios"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/Level_151"
+    },
+    {
+      "id": "level-222",
+      "wikiTitle": "Level 222",
+      "bioma": "nevado",
+      "topologia": "terreno_abierto",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_222"
+    },
+    {
+      "id": "level-44-above-the-ice",
+      "wikiTitle": "Level 44/Above the Ice",
+      "bioma": "nevado",
+      "topologia": "terreno_abierto",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_44%2FAbove_the_Ice"
+    },
+    {
+      "id": "level-525",
+      "wikiTitle": "Level 525",
+      "bioma": "nevado",
+      "topologia": "terreno_abierto",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "coches"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/Level_525"
+    },
+    {
+      "id": "level-634",
+      "wikiTitle": "Level 634",
+      "bioma": "nevado",
+      "topologia": "terreno_abierto",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_634"
+    },
+    {
+      "id": "level-888",
+      "wikiTitle": "Level 888",
+      "bioma": "nevado",
+      "topologia": "terreno_abierto",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_888"
+    },
+    {
+      "id": "level-91",
+      "wikiTitle": "Level 91",
+      "bioma": "desierto",
+      "topologia": "terreno_abierto",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/Level_91"
+    },
+    {
+      "id": "level-996",
+      "wikiTitle": "Level 996",
+      "bioma": "exterior",
+      "topologia": "terreno_abierto",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "coches"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/Level_996"
+    },
+    {
+      "id": "ad-memento",
+      "wikiTitle": "Ad Memento",
+      "bioma": "torres",
+      "topologia": "vertical",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "deterioro"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/Ad_Memento"
+    },
+    {
+      "id": "one-state",
+      "wikiTitle": "One State",
+      "bioma": "espacial",
+      "topologia": "vertical",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [],
+      "url": "https://backrooms.fandom.com/wiki/One_State"
+    },
+    {
+      "id": "vacuum-cycle",
+      "wikiTitle": "Vacuum Cycle",
+      "bioma": "espacial",
+      "topologia": "vertical",
+      "fuente": "bioma_inferido",
+      "soportada": true,
+      "rasgos": [
+        "libros_sueltos",
+        "coches"
+      ],
+      "url": "https://backrooms.fandom.com/wiki/Vacuum_Cycle"
+    }
+  ]
+}

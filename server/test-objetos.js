@@ -44,7 +44,16 @@ global.Image = class {
 };
 require('../game/js/engine/sprites.js');
 
-const PARSED = require('../data/parsed/objects.json');
+const PARSED_OBJECTS = require('../data/parsed/objects.json');
+const PARSED_ENTITIES = require('../data/parsed/entities.json');
+// La wiki clasifica Backshrooms como Object 10, pero el índice API actual lo
+// devuelve dentro de Entities. El catálogo de objetos debe cubrir ambas
+// fuentes sin duplicar las páginas que ya están en objects.json.
+const PARSED = {
+  ...PARSED_OBJECTS,
+  ...Object.fromEntries(Object.entries(PARSED_ENTITIES).filter(([title, rec]) =>
+    !PARSED_OBJECTS[title] && rec.wikiCategories?.includes('Objects'))),
+};
 const DATA = require('../data/game/objects.es.json');
 const BUNDLE = global.window.GAME_DATA.objects;
 

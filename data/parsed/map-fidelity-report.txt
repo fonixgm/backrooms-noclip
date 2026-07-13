@@ -1,0 +1,63 @@
+AUDITORÍA DE FIDELIDAD DE MAPAS
+Niveles: 732
+Contratos wiki prioritarios: 17
+Topologías detectadas sin generador propio: 0
+Fichas que aún dependen solo del bioma: 118
+
+TOPOLOGÍAS
+ 145  laberinto_salas
+  89  terreno_abierto
+  51  ciudad_transitable
+  47  oceano_abierto
+  38  bosque_claros
+  29  viviendas_conectadas
+  28  instalacion_inundada
+  25  geometria_surreal
+  21  barrio_transitable
+  21  galerias_comerciales
+  20  cuevas
+  19  planta_hotel
+  14  tuneles_anchos
+  14  carretera
+  14  planta_oficinas
+  13  parque_recreativo
+  10  teatro
+  10  vertical
+   9  nave_industrial
+   8  biblioteca_abierta
+   8  andenes
+   7  restaurante
+   6  almacen
+   6  alas_escolares
+   6  plataformas
+   5  museo
+   5  recinto_deportivo
+   4  hotel_atrio
+   4  vagones
+   4  vacio_cosmico
+   4  alas_hospitalarias
+   4  cementerio
+   4  templo
+   4  corredor_longitudinal
+   4  bunker
+   3  garaje_abierto
+   3  invernadero
+   3  prision
+   3  sala_unica
+   3  planta_estudio
+   2  aeropuerto
+   2  castillo
+   2  banos_publicos
+   1  laberinto_no_euclidiano
+   1  garaje_infinito
+   1  sala_columnada
+   1  aguas_someras
+   1  alas_laboratorio
+   1  estadio
+   1  aeronave
+   1  estacion_espacial
+   1  zoologico
+   1  sotanos_conectados
+   1  laberinto_longitudinal
+
+PENDIENTES SIN GENERADOR PROPIO

@@ -204,7 +204,7 @@ no necesitas hacer nada para que suene. Para silenciar: botón del menú de ajus
 Las "fichas" del juego son archivos de texto editables en `data/game/`:
 
 - `levels.curated.es.json` — las fichas artesanales que sobrescriben la generación automática.
-- `levels.es.json` — el catálogo generado de 731 niveles; no se edita directamente.
+- `levels.es.json` — el catálogo generado de 732 niveles; no se edita directamente.
 - `entities.es.json` — las entidades: daño, velocidad, comportamiento, cómo evitarlas…
 - `objects.es.json` — los objetos: qué curan, descripción…
 
@@ -213,6 +213,7 @@ ejecuta SIEMPRE** (en una terminal, dentro de la carpeta del proyecto):
 
 ```
 node pipeline/build-levels.js
+node pipeline/map-audit.js
 node pipeline/build-data.js
 node pipeline/make-map.js
 node pipeline/make-catalog-map.js
@@ -229,11 +230,15 @@ Sin esos pasos el juego y el mapa no ven los cambios. Luego F5 en el navegador.
 ## 7. Añadir un nivel nuevo de la wiki
 
 La copia local contiene 752 páginas de niveles; las 21 marcadas como Joke se descartan y
-las 731 restantes se compilan como salas jugables. Para mejorar una con arte, reglas o textos específicos, añade su override a
+las 731 restantes se compilan como salas jugables y se añade Level 0.01 desde la wiki vigente. Para mejorar una con arte, reglas o textos específicos, añade su override a
 `levels.curated.es.json` y vuelve a ejecutar el pipeline.
 
+Cada ficha generada incluye `mapa.topologia`, `mapa.apertura`, `mapa.rasgos` y la procedencia
+de la decisión. `map-audit.js` escribe `data/parsed/map-fidelity-report.*`: una ficha marcada
+como `bioma_inferido` sigue pendiente de revisión aunque ya sea jugable.
+
 Si quieres hacerlo tú: copia una ficha similar en `levels.curated.es.json`, cámbiale `id`, textos,
-`bioma` (consulta las 32 claves admitidas en `pipeline/biomes.js`), paleta y salidas
+`bioma` (consulta las 34 claves admitidas en `pipeline/biomes.js`), paleta y salidas
 (los `destino` deben ser ids que existan), y ejecuta `build-data.js`.
 
 ## 7b. Menú de debug (probar niveles rápido) — ahora con contraseña
@@ -257,7 +262,7 @@ juego (abajo a la derecha), útil para saber qué build estás enseñando en dir
 
 `data/game/mapa.html` — explorador INTERACTIVO del catálogo completo (ábrelo con doble clic):
 
-- **Directorio** con buscador y filtros de peligro y bioma para los 731 niveles jugables.
+- **Directorio** con buscador y filtros de peligro y bioma para los 732 niveles jugables.
 - **Grafo local** legible: entradas a la izquierda, nivel actual al centro y salidas a la derecha.
 - **Expediente** con descripción, clase, bioma, todas las rutas y enlace a la ficha de Fandom.
 - **Semilla diaria visible** y destinos variables resueltos para el día actual.
