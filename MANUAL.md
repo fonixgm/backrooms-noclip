@@ -9,6 +9,17 @@ Guía de todo lo que puedes hacer/modificar tú mismo, sin programar.
 
 **Doble clic en `game/index.html`.** Nada que instalar. Funciona sin internet.
 
+**Modo sin conexión = el MISMO juego que el online.** El botón pequeño «jugar sin
+conexión (modo solo)» de la portada arranca una partida en solitario con un
+**servidor local dentro de tu navegador**: mismas reglas, mismo movimiento libre,
+misma cámara, mismas entidades — literalmente el mismo código que usa el servidor
+real. Extras del modo local: los comandos de guardián `/tp <nivel>` y `/give <objeto>`
+funcionan con cualquier clave (es tu mundo), y la **remodelación no euclidiana**
+de los niveles está activa (online sigue apagada). Cada carga de página es una run
+nueva (como reconectar online); el Códice sí conserva tus descubrimientos.
+Por URL: `?local=1` (y `?nivel=level-N` para saltar a un nivel). El antiguo modo
+por turnos queda aparcado en `?autostart=1` como referencia.
+
 El juego se renderiza en **3D real en TERCERA PERSONA** (motor Three.js incluido): la cámara
 va pegada a la espalda del errante, los niveles interiores tienen **techo real con
 fluorescentes**, bloom cinematográfico y polvo en suspensión. Alternativas por URL:
@@ -352,6 +363,34 @@ El servidor arranca solo al encender y se reinicia si se cae.
 - Ver los registros: `journalctl -u backrooms-mmo -f`
 - Probado con **500 jugadores simultáneos** en un equipo modesto (130-190 MB de RAM):
   un VPS básico va sobrado.
+
+## 12b. Sala de Control y modo espectador (v30) — para tus directos
+
+La sala de monitoreo del streamer: `https://tudominio.com/observatorio/mapa`
+(o el botón **🗺 SALA DE CONTROL** dentro de `/observatorio`). Pide la misma
+clave de guardián.
+
+**Qué hace:**
+- **Mapa vivo** del grafo de niveles (como el mapa del piloto, pero en tiempo
+  real): cada nivel muestra un badge ámbar con cuántos jugadores hay dentro y
+  sus nombres. Pasar el ratón ilumina las conexiones.
+- **Clic en un nivel** → panel con sus jugadores (salud/sed/cordura, tiempo
+  dentro, flags) y botones **👁 Espectar** / kick / ban.
+- **Ticker de eventos** (franja inferior): quién entra, quién cruza de nivel,
+  quién muere y ⭐ quién ESCAPA — perfecto para el reto de «el primero que
+  encuentre la salida gana».
+- **📢 Anunciar**: escribe el reto (o el ganador) y lo ven TODOS los jugadores.
+
+**Modo espectador (👁):** para que funcione tienes que estar DENTRO del juego
+con la clave 🔑 validada en Ajustes. Al pulsar 👁 sobre un jugador:
+- Tu personaje se teletransporta junto a él, **invisible**: ni los jugadores
+  ni las entidades te ven, y no puedes tocar nada (eres un fantasma).
+- La cámara pasa a **cenital** (vista desde arriba, sin techo); la **rueda del
+  ratón** sube/baja la altura.
+- La cámara **sigue sola a tu objetivo**, incluso cuando cruza de nivel o
+  muere y reaparece en Level 0.
+- **←/→** cambian de objetivo entre los jugadores de la sala; **ESC** (o el
+  botón «✕ salir» de la barra) te devuelve al mundo, visible otra vez.
 
 ## 13. Si algo falla
 

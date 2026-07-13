@@ -4,7 +4,7 @@
 // tanda de cambios (junto con VERSION_JUEGO en main.js).
 (function () {
   const CHANGELOG = [
-    { v: 'v28.9-mapas', cambios: [
+    { v: 'v30.5', cambios: [
       'Level 1 usa el bitmap solo en paredes y recupera la franja horizontal dibujada por el motor.',
       'Level 0 usa la nueva textura de pared personalizada sin alterar la moqueta.',
       'Los niveles acuáticos tienen océanos navegables, oxígeno, ahogo y respiraderos de burbujas.',
@@ -18,6 +18,34 @@
       'El catálogo completo de niveles ya está conectado mediante entradas, salidas y relaciones de subniveles.',
       'Las puertas de regreso aparecen detrás del jugador en vez de quedar ocultas bajo sus pies.',
       'La iluminación ahora respeta mejor la oscuridad y la penumbra de cada nivel.',
+    ] },
+    { v: 'v30.4', cambios: [
+      'El modo SIN CONEXIÓN es ahora el mismo juego que el online: movimiento libre, cámara, entidades y todas las mecánicas, con un servidor local corriendo dentro de tu navegador. (El antiguo modo por turnos queda aparcado.)',
+      'La remodelación no euclidiana de los niveles vuelve en el modo sin conexión: los pasillos pueden dejar de llevar al mismo sitio.',
+      'En el modo sin conexión, la fila 🐞 Debug de Ajustes funciona con cualquier clave: es tu propio mundo.',
+      'La pantalla de título estrena fondo panorámico animado y una distribución nueva que cabe entera en cualquier pantalla, sin barras de scroll. (andresaavelasquez-ctrl)',
+      'Los avisos y atajos muestran los botones de TU mando (iconos Xbox/PlayStation) y el HUD indica el dispositivo activo; en el mapa tu posición es una flecha orientada y tus marcas sobreviven a recargas. (treblalbert)',
+      'Arreglado: importar un expediente incompleto o dañado podía dejar el juego con un error en cada carga; ahora se recupera lo válido y se rechaza lo irrecuperable sin tocar tu perfil. (juanlotito)',
+    ] },
+    { v: 'v30.3', cambios: [
+      'Los árboles de los niveles de bosque (Level 45, 186, 626 y 6.1) ahora son 3D de verdad: troncos y ramas nudosas con volumen, en vez de recortes planos que giraban contigo. Cada árbol es único y siempre el mismo en cada semilla.',
+    ] },
+    { v: 'v30.2', cambios: [
+      'Arreglada la iluminación de los niveles claros (poolrooms, nieve, hospitales…): un resplandor desbocado los dejaba en blanco puro y no se veía nada. El brillo vuelve a ser el de diseño: solo relucen los fluorescentes, los boquetes y el rótulo EXIT.',
+      'Los niveles muy blancos ahora ajustan solos su luz y exposición: siguen siendo cegadores de tema, pero se ve por dónde caminas.',
+    ] },
+    { v: 'v30.1', cambios: [
+      'Arreglado de raíz: la música del menú podía seguir sonando dentro de la partida (pasaba sobre todo si tu primer clic al cargar la página era directamente DESPERTAR).',
+    ] },
+    { v: 'v30', cambios: [
+      'El guardián estrena Sala de Control: un mapa en vivo de todos los niveles para los directos, con retos y anuncios. Si notas que alguien te observa… probablemente sea él.',
+    ] },
+    { v: 'v28.10', cambios: [
+      'La portada ahora muestra cuántos errantes están conectados en este momento. (josealmon)',
+      'Arreglado (multijugador): cerrar el códice o el changelog con ESC o su tecla podía dejar la cámara sin responder al clic. (Gartixr)',
+      'Arreglado (multijugador): el sprite del personaje parpadeaba entre dos poses al andar en diagonal, y elegía mal el lado con la cámara girada. (Gartixr y carlosdiezm)',
+      'Arreglado (multijugador): los nombres y bocadillos de jugadores situados detrás de la cámara ya no se dibujan delante. (Gartixr)',
+      'Los pasos suenan a un ritmo creíble y proporcional a lo que avanzas (antes sonaban a metralleta), con ligera variación de tono entre zancadas. (Gartixr)',
     ] },
     { v: 'v28.9', cambios: [
       'Nuevo comando de guardián /reiniciar: reinicia el servidor desde el chat — avisa a todos y el mundo vuelve solo en unos segundos (las fichas de jugador se conservan).',

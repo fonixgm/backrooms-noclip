@@ -1,22 +1,21 @@
 // Arranque: input, bucle de animación y pantalla de título.
 (function () {
   // versión visible del juego (Ajustes); súbela con cada tanda de cambios
-  window.VERSION_JUEGO = 'v28.9';
+  window.VERSION_JUEGO = 'v30.5';
   const world = Game.world;
   world.data = window.GAME_DATA;
 
   window.addEventListener('textureassetload', (event) => {
-    // Una textura opcional (pared/suelo/techo/agua…) terminó de cargar: si
-    // afecta al nivel actual, reconstruimos sus tiles para cambiar el procedural
-    // por el bitmap. TextureAssets.afecta filtra los ficheros de otros niveles.
+    // Una textura opcional terminó de cargar: reconstruye los tiles del nivel
+    // actual y sustituye el procedural por el bitmap correspondiente.
     if (!world.level || !window.TextureAssets?.afecta(event.detail, world.level.id)) return;
     world.tiles = Tiles.build(world.level, RNG.create(`${world.runSeed}::${world.level.id}::bitmap`));
     if (window.Render3D) Render3D.invalidateTextures();
     world.mapaVersion = (world.mapaVersion || 0) + 1;
   });
 
-  // En local, una expedición con semilla diaria también rota si permanece
-  // abierta durante la medianoche. Las semillas manuales nunca se alteran.
+  // Las expediciones diarias abiertas durante la medianoche rotan junto con
+  // el catálogo; una semilla manual nunca se modifica.
   let diaSemilla = window.DailySeed ? DailySeed.dayKey() : null;
   setInterval(() => {
     if (!window.DailySeed) return;
@@ -26,6 +25,30 @@
     if (world.level && !world.online && world.runSeed?.startsWith('backrooms-diaria::'))
       Game.startRun(DailySeed.seed());
   }, 30000);
+
+  // Censo discreto de la portada: una petición pequeña al arrancar y cada 30 s.
+  const census = document.getElementById('backrooms-census');
+  const censusText = document.getElementById('backrooms-census-text');
+  async function actualizarCenso() {
+    const title = document.getElementById('screen-title');
+    if (!census || !censusText || document.hidden || title.style.display === 'none') return;
+    try {
+      const res = await fetch('censo', { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const datos = await res.json();
+      const total = Number.isInteger(datos.total) && datos.total >= 0 ? datos.total : 0;
+      censusText.textContent = total === 0
+        ? 'No se detectan errantes al otro lado'
+        : `${total} ${total === 1 ? 'errante vaga' : 'errantes vagan'} ahora por las Backrooms`;
+      census.classList.remove('census-offline');
+    } catch (e) {
+      censusText.textContent = 'Las paredes no devuelven ninguna señal';
+      census.classList.add('census-offline');
+    }
+  }
+  actualizarCenso();
+  setInterval(actualizarCenso, 30000);
+  document.addEventListener('visibilitychange', actualizarCenso);
 
   const canvas = document.getElementById('game-canvas');
   Render.init(canvas);
@@ -82,7 +105,7 @@
     if (changelogPanel && changelogPanel.style.display !== 'none') {
       ev.preventDefault();
       ev.stopPropagation();
-      if (window.world && world.ui && typeof world.ui.toggleChangelog === 'function') {
+      if (world.ui && typeof world.ui.toggleChangelog === 'function') {
         world.ui.toggleChangelog(false);
       } else {
         changelogPanel.style.display = 'none';
@@ -95,7 +118,7 @@
     if (codexPanel && codexPanel.style.display !== 'none') {
       ev.preventDefault();
       ev.stopPropagation();
-      if (window.world && world.ui && typeof world.ui.toggleCodex === 'function') {
+      if (world.ui && typeof world.ui.toggleCodex === 'function') {
         world.ui.toggleCodex(false);
       } else {
         codexPanel.style.display = 'none';
@@ -140,7 +163,7 @@
         ) {
           ev.preventDefault();
           ev.stopPropagation();
-          if (window.world && world.ui && typeof world.ui.toggleCodex === 'function') {
+          if (world.ui && typeof world.ui.toggleCodex === 'function') {
             world.ui.toggleCodex(true);
           }
           return;
@@ -632,6 +655,45 @@
       };
     }
   }
+  // ---------- modo espectador (v30): barra, HUD fuera y cámara cenital ----------
+  // Se entra desde la Sala de Control (/observatorio/mapa, botón 👁) o
+  // programáticamente con Net.espectar(id); ←/→ cambian de objetivo, ESC sale.
+  function cambiarObjetivoEsp(dir) {
+    if (!world.espectador || !window.Net || !Net.activo) return;
+    const lista = (world.otros || []).slice().sort((a, b) => a.id - b.id);
+    if (!lista.length) return;
+    const i = lista.findIndex((o) => o.id === world.espectador.objetivo);
+    const sig = lista[((i < 0 ? 0 : i) + dir + lista.length) % lista.length];
+    if (sig && sig.id !== world.espectador.objetivo) Net.espectar(sig.id);
+  }
+  window.onEspectarCambia = (si, info) => {
+    document.body.classList.toggle('espectando', !!si);
+    const bar = document.getElementById('espectador-bar');
+    if (bar) bar.style.display = si ? 'flex' : 'none';
+    const nom = document.getElementById('esp-nombre');
+    if (nom) nom.textContent = si && info ? info.nombre : '';
+    if (si) {
+      // la vista pasa a ser del nivel, no del guardián: fuera paneles y movimiento
+      if (Minimap.visible) Minimap.toggleBig(false);
+      world.ui.toggleBackpack(false);
+      cerrarSndMenu();
+      if (document.pointerLockElement) document.exitPointerLock();
+      world.log(`Observas a ${info ? info.nombre : '???'} desde fuera de la realidad.`, 'event');
+    }
+    // (al salir, el aviso «Vuelves a pisar la moqueta» ya lo manda el servidor)
+  };
+  {
+    const b = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
+    b('esp-prev', () => cambiarObjetivoEsp(-1));
+    b('esp-next', () => cambiarObjetivoEsp(1));
+    b('esp-salir', () => { if (window.Net && Net.activo) Net.espectar(null); });
+    // rueda del ratón: altura de la cámara cenital
+    document.addEventListener('wheel', (ev) => {
+      if (world.espectador && use3D && window.Render3D)
+        Render3D.espAlt += Math.sign(ev.deltaY) * 1.5;
+    }, { passive: true });
+  }
+
   // mochila (v15): botón del HUD y cierre del panel
   const btnMochila = document.getElementById('btn-mochila');
   if (btnMochila) {
@@ -732,7 +794,21 @@
       const btn = document.createElement('button');
       btn.className = 'btn-small';
       btn.style.marginTop = '0';
-      btn.textContent = 'Botón ' + OPTS.gamepadMap[action.id];
+      btn.style.display = 'flex';
+      btn.style.alignItems = 'center';
+      btn.style.gap = '6px';
+      if (window.Controllers) {
+        // v28 — glifo del botón según el mando conectado (Xbox / PlayStation)
+        const idx = OPTS.gamepadMap[action.id];
+        const gl = Controllers.buttonGlyph(idx, 18, Controllers.activeGamepadType());
+        gl.style.marginTop = '-1px';
+        btn.appendChild(gl);
+        const lbl = document.createElement('span');
+        lbl.textContent = Controllers.buttonName(idx);
+        btn.appendChild(lbl);
+      } else {
+        btn.textContent = 'Botón ' + OPTS.gamepadMap[action.id];
+      }
       
       btn.onclick = () => {
         if (isWaitingForButton) return;
@@ -764,9 +840,21 @@
   // v22: conjunto de teclas de movimiento PULSADAS (keydown/keyup); el vector
   // de input se calcula en cada frame del bucle — movimiento libre y suave
   const teclas = new Set();
-  document.addEventListener('keyup', (ev) => teclas.delete(ev.code));
+  // pila de teclas de movimiento sostenidas SOLO para el paso offline por
+  // turnos (teclado PC): si hay dos direcciones pulsadas a la vez, el
+  // auto-repeat del SO dispara keydown de AMBAS de forma entrelazada y el
+  // sprite/paso alternaba entre las dos sin parar; con esta pila el paso
+  // repetido solo obedece a la última tecla pulsada que sigue sostenida
+  // (no toca el D-pad táctil ni el mando, que no pasan por aquí)
+  const heldOffline = [];
+  document.addEventListener('keyup', (ev) => {
+    teclas.delete(ev.code);
+    const i = heldOffline.indexOf(ev.code);
+    if (i !== -1) heldOffline.splice(i, 1);
+  });
   window.addEventListener('blur', () => {
     teclas.clear();
+    heldOffline.length = 0;
     window.joyDx = 0; window.joyDy = 0;
     if (world.online && window.Net) Net.parar();
   });
@@ -806,6 +894,15 @@
     // ---------- modo online (BACKROOMS MMO v22): movimiento LIBRE ----------
     // las teclas de movimiento solo se apuntan; el vector se calcula por frame
     if (world.online) {
+      // ---------- modo espectador (v30): solo mirar, cambiar de ojo y salir ----------
+      if (world.espectador) {
+        if (ev.code === 'ArrowLeft' || ev.code === 'KeyA') { ev.preventDefault(); cambiarObjetivoEsp(-1); }
+        else if (ev.code === 'ArrowRight' || ev.code === 'KeyD') { ev.preventDefault(); cambiarObjetivoEsp(1); }
+        else if (ev.code === 'Escape') { if (!ev.repeat && window.Net) Net.espectar(null); }
+        else if (ev.code === 'KeyL') world.ui.toggleLog();
+        else if (ev.code === 'KeyM' || ev.code === 'KeyN') Minimap.toggleBig();
+        return;
+      }
       if (KEYS[ev.code]) {
         ev.preventDefault();
         teclas.add(ev.code);
@@ -837,8 +934,15 @@
     }
     if (KEYS[ev.code]) {
       ev.preventDefault();
+      if (!ev.repeat) {
+        const i = heldOffline.indexOf(ev.code);
+        if (i !== -1) heldOffline.splice(i, 1);
+        heldOffline.push(ev.code); // la más reciente manda
+      } else if (ev.code !== heldOffline[heldOffline.length - 1]) {
+        return; // otra tecla pulsada después sigue sostenida: ignora este auto-repeat
+      }
       const [sdx, sdy] = KEYS[ev.code]; // dirección de PANTALLA pulsada
-      // el auto-repeat del teclado dispara ráfagas: 
+      // el auto-repeat del teclado dispara ráfagas:
       if (tercera) {
         if (
           ev.repeat &&
@@ -894,6 +998,25 @@
     const ang = Math.round(Math.atan2(y, x) / paso) * paso;
     const r = (v) => Math.round(v * 1000) / 1000;
     return [r(Math.cos(ang)), r(Math.sin(ang))];
+  }
+
+  // última tecla de movimiento del TECLADO que sigue sostenida (Set conserva
+  // el orden de inserción: el último elemento es la más reciente que no se
+  // ha soltado). El SPRITE online (PC) se guía por ella en vez del vector
+  // combinado: con dos direcciones a la vez el vector mezclado caía justo en
+  // el borde entre dos encuadres del sprite y parpadeaba cada frame por
+  // ruido de coma flotante. El movimiento real (Net.setInput/setRot/p.rot)
+  // sigue usando el vector combinado sin tocar — esto es solo visual, y no
+  // afecta al mando ni al joystick táctil (no pasan por `teclas`).
+  function rotaPantalla(x, y) {
+    if (!(use3D && Render3D.rot)) return [x, y];
+    const th = -Render3D.rot * Math.PI / 2;
+    return [Math.cos(th) * x - Math.sin(th) * y, Math.sin(th) * x + Math.cos(th) * y];
+  }
+  function ultimaTeclaMov() {
+    let last = null;
+    for (const c of teclas) last = c;
+    return last;
   }
 
   // (la velocidad de giro online vive en Fisica.GIRO_JUGADOR: cliente y
@@ -952,6 +1075,7 @@
   let wasUIOpen = false;
   const hideGamepadCursor = () => { 
     usingGamepad = false; 
+    if (window.Controllers) Controllers.setDevice('keyboard');
     if (vCursor) vCursor.style.display = 'none'; 
     const st = document.getElementById('no-cursor-style');
     if (st) st.remove();
@@ -959,6 +1083,25 @@
   document.addEventListener('mousemove', hideGamepadCursor);
   document.addEventListener('mousedown', hideGamepadCursor);
   document.addEventListener('wheel', hideGamepadCursor);
+  // v28 — cualquier tecla cuenta como entrada de teclado/ratón
+  window.addEventListener('keydown', () => { if (window.Controllers) Controllers.setDevice('keyboard'); });
+  // si se desconecta el mando, volvemos a teclado/ratón
+  window.addEventListener('gamepaddisconnected', () => { if (window.Controllers) Controllers.clearGamepad(); });
+
+  // v28 — indicador HUD del dispositivo de entrada activo (teclado/Xbox/PS)
+  function updateDeviceIndicator() {
+    const el = document.getElementById('device-indicator');
+    if (!el || !window.Controllers) return;
+    el.innerHTML = '';
+    el.appendChild(Controllers.deviceGlyphImg(16));
+    const txt = document.createElement('span');
+    txt.textContent = ' ' + Controllers.deviceName();
+    el.appendChild(txt);
+  }
+  if (window.Controllers) {
+    Controllers.onChange(updateDeviceIndicator);
+    updateDeviceIndicator();
+  }
 
   window.gamepadDx = 0;
   window.gamepadDy = 0;
@@ -1025,6 +1168,7 @@
         }
       }
       usingGamepad = true;
+      if (window.Controllers) Controllers.setGamepad(gp);
     }
 
     if (uiOpen && !wasUIOpen) {
@@ -1209,7 +1353,10 @@
     p.inputY = 0;
 
     // ---------- v22: vector de movimiento por frame (movimiento libre) ----------
-    if (world.online && window.Net && Net.activo &&
+    if (world.online && world.espectador && window.Net && Net.activo) {
+      // modo espectador (v30): sin input — Net.frame pega la cámara al objetivo
+      Net.frame(dtNet);
+    } else if (world.online && window.Net && Net.activo &&
         !(Net.chatAbierto && Net.chatAbierto()) &&
         document.getElementById('screen-card').style.display === 'none') {
       // suma de las teclas pulsadas en coordenadas de PANTALLA
@@ -1223,6 +1370,7 @@
       p.inputX = sx;
       p.inputY = sy;
       const tercera = use3D && Render3D.modo === 'tercera';
+      const lastCode = ultimaTeclaMov();
       if (tercera) {
         // v25 — estilo Roblox: WASD mueve RELATIVO A LA CÁMARA (adelante/
         // atrás/izquierda/derecha); la cámara solo la mueve el ratón.
@@ -1232,26 +1380,23 @@
         const dx = Lx * -sy + Rx * sx;
         const dy = Lz * -sy + Rz * sx;
         Net.setInput(dx, dy);
-        if (dx || dy) {
-          p.rot = Math.atan2(dx, -dy); // el personaje ENCARA hacia donde anda
-          if (Math.abs(dy) >= Math.abs(dx)) p.dir = dy > 0 ? 'down' : 'up';
-          else { p.dir = 'side'; p.flip = dx < 0; }
-        }
+        if (dx || dy) p.rot = Math.atan2(dx, -dy); // rumbo real (movimiento/ataques): vector combinado
+        // sprite: solo la última tecla sostenida (sin teclado —mando/joystick—, el vector real)
+        const kv = lastCode ? KEYS[lastCode] : [sx, sy];
+        const kdx = Lx * -kv[1] + Rx * kv[0];
+        const kdy = Lz * -kv[1] + Rz * kv[0];
+        if (kdx || kdy) p.rotSprite = Math.atan2(kdx, -kdy);
       } else {
         // 2D / cámara alta: 8 direcciones relativas a la pantalla
-        let dx = sx, dy = sy;
-        if (use3D && Render3D.rot) {
-          const th = -Render3D.rot * Math.PI / 2;
-          const rx2 = Math.cos(th) * sx - Math.sin(th) * sy;
-          const ry2 = Math.sin(th) * sx + Math.cos(th) * sy;
-          dx = rx2; dy = ry2;
-        }
+        const [dx, dy] = rotaPantalla(sx, sy);
         Net.setInput(dx, dy);
-        if (dx || dy) {
-          // el facing sigue al movimiento (sprite 2D + acciones por ángulo)
-          if (Math.abs(dy) >= Math.abs(dx)) p.dir = dy > 0 ? 'down' : 'up';
-          else { p.dir = 'side'; p.flip = dx < 0; }
-          Net.setRot(Math.atan2(dx, -dy));
+        if (dx || dy) Net.setRot(Math.atan2(dx, -dy)); // rumbo real: vector combinado
+        // sprite: solo la última tecla sostenida
+        const kv = lastCode ? KEYS[lastCode] : [sx, sy];
+        const [sdx, sdy] = rotaPantalla(kv[0], kv[1]);
+        if (sdx || sdy) {
+          if (Math.abs(sdy) >= Math.abs(sdx)) p.dir = sdy > 0 ? 'down' : 'up';
+          else { p.dir = 'side'; p.flip = sdx < 0; }
         }
       }
       Net.frame(dtNet); // predicción local con la misma física del servidor
@@ -1305,10 +1450,12 @@
   if (params.get('nofx')) window.NOFX = true;
   if (params.get('debug3d')) window.DEBUG3D_ON = true;
   if (params.get('netdebug')) window.NETDEBUG = true; // consola: derivas de red y rtt
-  if ((params.get('autostart') || params.get('selftest') || params.get('online')) && !Game.Profiles.activeName())
+  if ((params.get('autostart') || params.get('selftest') || params.get('online') || params.get('local')) && !Game.Profiles.activeName())
     Game.Profiles.create(params.get('nombre') || 'Errante');
   // ---------- BACKROOMS MMO: ?online=1 conecta al mundo compartido ----------
-  if (params.get('online')) {
+  // ?local=1 = MISMO juego con el servidor local de la pestaña (modo offline)
+  if (params.get('online') || params.get('local')) {
+    if (params.get('local')) window.MODO_LOCAL = true;
     Net.iniciar(params.get('nombre') || Game.Profiles.activeName() || 'Errante');
     // la tarjeta del nivel aparece al recibir la bienvenida; se entra sola
     const esperaCard = setInterval(() => {
@@ -1346,8 +1493,124 @@
   }
   window.DEBUG_GAME = Game; // consola de depuración
 
-  // ---------- autoprueba: ?selftest=200 juega N acciones aleatorias ----------
-  if (params.get('selftest')) {
+  // ---------- autoprueba del modo LOCAL/ONLINE: ?local=1&selftest=300 ----------
+  // bot de movimiento LIBRE: camina hacia la salida más cercana con Net.setInput,
+  // entra a las tarjetas y responde las ofertas de cruce (70% CRUZAR)
+  if (params.get('selftest') && (params.get('local') || params.get('online'))) {
+    const errores = [];
+    window.onerror = (msg, src, line) => { errores.push(`${msg} @${(src || '').split('/').pop()}:${line}`); };
+    const N = parseInt(params.get('selftest'), 10) || 300;
+    let ticks = 0;
+    const visitados = new Set();
+    let rumbo = null; // { nivel, dist } — dmap BFS hacia la salida elegida
+    let huyeHasta = -1;      // hasta este tick: vagar lejos (anti-atasco)
+    let huidaDir = null;
+    let ultimaPos = '', quieto = 0;
+    const iv2 = setInterval(() => {
+      try {
+        if (!Net.activo || !world.level || !world.map) return;
+        visitados.add(world.level.id);
+        if (ticks >= N) {
+          clearInterval(iv2);
+          window.joyDx = 0; window.joyDy = 0;
+          Net.parar();
+          const div = document.createElement('div');
+          div.id = 'selftest-result';
+          div.textContent = JSON.stringify({
+            ticks,
+            nivel: world.level?.id,
+            visitados: [...visitados],
+            posicion: [world.player?.x, world.player?.y],
+            mapa: world.map ? [world.map.grid.w, world.map.grid.h] : null,
+            salud: world.player?.salud,
+            sed: world.player?.sed,
+            cordura: world.player?.cordura,
+            inv: world.player?.inv,
+            entidadesVivas: world.entities.filter((e) => e.viva).length,
+            errores,
+            erroresRender: window.__renderErrors || [],
+            // verdad del lado sala (solo en modo local): barras y rechazos
+            local: window.MODO_LOCAL && window.Local && Local.jugador ? {
+              sed: Local.jugador.sed, salud: Local.jugador.salud,
+              cordura: Local.jugador.cordura,
+              posSala: [Math.round(Local.jugador.x * 10) / 10, Math.round(Local.jugador.y * 10) / 10],
+              caminado: Math.round(Local.jugador._sedAcum || 0),
+              rechazos: Local.jugador.rechazos, stats: Local.stats,
+            } : null,
+          });
+          document.body.appendChild(div);
+          document.title = errores.length ? 'SELFTEST-ERRORES' : 'SELFTEST-OK';
+          return;
+        }
+        ticks++;
+        // tarjeta de nivel a la vista: entrar
+        const card = document.getElementById('screen-card');
+        if (card.style.display !== 'none') { document.getElementById('btn-enter').click(); return; }
+        // oferta de salida (showChoice): CRUZAR al 70%; tras un «Aún no» hay
+        // que ALEJARSE — si no, el bot se queda empujando la puerta: sin
+        // desplazamiento no hay informes de posición ni re-oferta (atasco)
+        const choice = document.getElementById('choice-modal');
+        if (choice && choice.style.display !== 'none') {
+          const btns = document.querySelectorAll('#choice-btns button');
+          if (btns.length) {
+            const cruza = Math.random() < 0.7;
+            (cruza ? btns[0] : btns[btns.length - 1]).click();
+            if (!cruza) huyeHasta = ticks + 25;
+          }
+          return;
+        }
+        // anti-atasco: ~2 s sin desplazarse (empujando pared/puerta) → vagar
+        const posK = Math.round(world.player.x * 4) + ',' + Math.round(world.player.y * 4);
+        if (posK === ultimaPos) {
+          if (++quieto > 20 && huyeHasta < ticks) { huyeHasta = ticks + 15; quieto = 0; }
+        } else { quieto = 0; ultimaPos = posK; }
+        // rumbo: dmap BFS desde la salida más cercana (cache por nivel)
+        const g = world.map.grid;
+        const px = Math.round(world.player.x), py = Math.round(world.player.y);
+        if ((!rumbo || rumbo.nivel !== world.level.id) && world.map.exits.length) {
+          let best = null, bestD = Infinity;
+          for (const ex of world.map.exits) {
+            const dist = MapGen.bfsDist(g, ex.x, ex.y);
+            const v = dist[py * g.w + px];
+            if (v >= 0 && v < bestD) { bestD = v; best = dist; }
+          }
+          if (best) rumbo = { nivel: world.level.id, dist: best };
+        }
+        let dx = 0, dy = 0;
+        if (ticks < huyeHasta) {
+          if (!huidaDir || Math.random() < 0.1) {
+            const a = Math.random() * Math.PI * 2;
+            huidaDir = [Math.cos(a), Math.sin(a)];
+          }
+          dx = huidaDir[0]; dy = huidaDir[1];
+        } else if (rumbo && rumbo.nivel === world.level.id && Math.random() < 0.85) {
+          const actual = rumbo.dist[py * g.w + px];
+          for (const [mx, my] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) {
+            const nx = px + mx, ny = py + my;
+            if (nx < 0 || ny < 0 || nx >= g.w || ny >= g.h) continue;
+            const v = rumbo.dist[ny * g.w + nx];
+            if (v >= 0 && (actual < 0 || v < actual)) { dx = mx; dy = my; break; }
+          }
+        }
+        if (!dx && !dy) {
+          const a = Math.random() * Math.PI * 2;
+          dx = Math.cos(a); dy = Math.sin(a);
+        }
+        // el bot «mueve el joystick táctil»: el bucle de frames suma joyDx/
+        // joyDy al vector de input (llamar a Net.setInput directamente no
+        // sirve — el bucle lo recalcula y pisa en cada frame)
+        const n = Math.hypot(dx, dy) || 1;
+        window.joyDx = dx / n;
+        window.joyDy = dy / n;
+      } catch (e) {
+        errores.push(String(e && e.message || e));
+        ticks++;
+      }
+    }, 100);
+  }
+
+  // ---------- autoprueba clásica (modo por turnos): ?selftest=200 ----------
+  if (params.get('selftest') && !params.get('local') && !params.get('online')) {
     const errores = [];
     window.onerror = (msg, src, line) => { errores.push(`${msg} @${(src || '').split('/').pop()}:${line}`); };
     const N = parseInt(params.get('selftest'), 10) || 100;
@@ -1575,6 +1838,12 @@
 
   function playMenuMusic() {
     if (document.getElementById('screen-title').style.display === 'none') return;
+    // con la conexión en curso («CRUZANDO LA REALIDAD…») el título sigue
+    // visible, pero arrancar música aquí la dejaría sonando dentro de la
+    // partida: es el caso del PRIMER clic de la sesión directo en DESPERTAR —
+    // el listener {once:true} de desbloqueo de audio burbujea DESPUÉS del
+    // onclick del botón (y de su stopMenu) y reactivaba la pista (v30.1)
+    if (document.getElementById('btn-start').disabled) return;
     let trackId = OPTS.menuMusica || 'menu1';
     const track = CANCIONES_MENU.find(t => t.id === trackId) || CANCIONES_MENU[0];
     if (track && track.archivo && window.Sfx) {
@@ -1712,6 +1981,14 @@
 
   $id('btn-start').onclick = () => {
     conectarAlServidor($id('btn-start'));
+  };
+  // modo offline (partida en solitario, sin servidor): el MISMO juego online
+  // con el servidor LOCAL de la pestaña (net/local.js) — mismas reglas,
+  // mismo movimiento libre, misma cámara. El modo por turnos clásico queda
+  // aparcado tras ?autostart=1 (referencia y selftest).
+  $id('btn-offline').onclick = () => {
+    window.MODO_LOCAL = true;
+    conectarAlServidor($id('btn-offline'));
   };
   $id('btn-again').onclick = () => {
     refreshTitle();
