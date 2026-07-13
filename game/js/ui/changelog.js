@@ -4,6 +4,10 @@
 // tanda de cambios (junto con VERSION_JUEGO en main.js).
 (function () {
   const CHANGELOG = [
+    { v: 'v28.5', cambios: [
+      'Arreglado: la música del menú a veces seguía sonando después de empezar la partida.',
+      'Los campos de contraseña ya no se rellenan solos con datos guardados del navegador.',
+    ] },
     { v: 'v28.4', cambios: [
       'Más retoques en el sprite del jugador.',
     ] },

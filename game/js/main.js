@@ -1,7 +1,7 @@
 // Arranque: input, bucle de animación y pantalla de título.
 (function () {
   // versión visible del juego (Ajustes); súbela con cada tanda de cambios
-  window.VERSION_JUEGO = 'v28.4';
+  window.VERSION_JUEGO = 'v28.5';
   const world = Game.world;
   world.data = window.GAME_DATA;
 
@@ -1501,9 +1501,13 @@
   }
 
   function conectarAlServidor(btnOrigen) {
-    if (window.Sfx) Sfx.stopMenu();
     if (!P.activeName()) P.create($id('profile-name').value.trim() || 'Errante');
     refreshTitle();
+    // DESPUÉS de refreshTitle: esta llama a playMenuMusic() al final (para
+    // los demás usos legítimos, como cambiar de perfil), y como la pantalla
+    // de título sigue visible durante "CRUZANDO LA REALIDAD…" eso reactivaba
+    // la música justo después de pararla — aquí queda la última palabra.
+    if (window.Sfx) Sfx.stopMenu();
     const salaPrivada = salaPrivadaTitulo();
     if (!validarSalaPrivada(salaPrivada)) return;
     const btnStart = $id('btn-start');
