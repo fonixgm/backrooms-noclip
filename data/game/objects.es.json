@@ -680,7 +680,7 @@
   "llave_nivel": {
     "id": "llave_nivel",
     "nombre": "Llave de Nivel",
-    "descripcion": "Llave anomala ligada a niveles concretos. Abre rutas selladas de The Hub cuando la llevas encima.",
+    "descripcion": "Llave anomala ligada a niveles concretos. Abre las puertas de acero de The Hub cuando la llevas encima.",
     "efecto": {
       "pasivo": "llave"
     },

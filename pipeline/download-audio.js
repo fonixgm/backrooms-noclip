@@ -1,5 +1,5 @@
 // v4 — Descarga los audios ambientales adjuntos a las páginas de la wiki de los
-// niveles del piloto y genera el manifiesto que el juego usa para reproducirlos.
+// niveles catalogados y genera el manifiesto que el juego usa para reproducirlos.
 //   game/assets/sounds/niveles/<level-id>.<ext>  +  game/js/audio-manifest.js
 // Uso: node pipeline/download-audio.js   (re-ejecutable; se salta lo descargado)
 

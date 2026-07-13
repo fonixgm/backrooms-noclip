@@ -185,14 +185,31 @@
       turno(world, rng) {
         if (world.equipado('botas_reforzadas')) return; // pisada firme
         const g = world.map.grid, p = world.player;
-        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-          const v = MapGen.at(g, p.x + dx, p.y + dy);
-          if (v === 3 && rng.chance(0.25)) {
-            world.hurt(8, 'un charco sirena', true);
-            world.log('El agua tira de ti. Escapas empapado y magullado.', 'danger');
-            break;
-          }
+        if (MapGen.at(g, Math.round(p.x), Math.round(p.y)) === MapGen.T.AGUA && rng.chance(0.08)) {
+          world.hurt(4, 'una corriente anómala', true);
+          world.log('La corriente tira de ti y te golpea contra el fondo.', 'danger');
         }
+      },
+    },
+    respiracion_acuatica: {
+      nombre: 'Inmersión',
+      icono: '◌',
+      desc: 'El oxígeno baja mientras nadas. Sal a una zona seca o alcanza un respiradero de burbujas.',
+      entrar(world) {
+        world.player.oxigeno = 100;
+      },
+      turno(world) {
+        const p = world.player, g = world.map.grid;
+        const enAgua = MapGen.at(g, Math.round(p.x), Math.round(p.y)) === MapGen.T.AGUA;
+        const respiradero = (world.map.airPockets || []).some((air) =>
+          Math.hypot(air.x - p.x, air.y - p.y) <= 1.25);
+        const anterior = p.oxigeno ?? 100;
+        if (!enAgua || respiradero) p.oxigeno = Math.min(100, anterior + (respiradero ? 28 : 18));
+        else p.oxigeno = Math.max(0, anterior - 4);
+        if (respiradero && anterior < 70 && p.oxigeno >= 70)
+          world.log('El respiradero llena tus pulmones de aire.', 'good');
+        if (p.oxigeno === 20 && anterior > 20) world.log('Te queda muy poco oxígeno.', 'danger');
+        if (p.oxigeno === 0 && world.turn % 2 === 0) world.hurt(8, 'el ahogamiento', true);
       },
     },
     vigilado: {

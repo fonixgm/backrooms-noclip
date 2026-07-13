@@ -125,8 +125,12 @@ class Cliente {
     ok(!natural, 'the-hub NO tiene puerta natural hacia level-1 (el caso que buscamos)');
     ok(!!niv.retorno, 'llega la puerta PERSONAL de retorno');
     if (niv.retorno) {
-      ok(Math.hypot(niv.retorno.x - niv.x, niv.retorno.y - niv.y) <= 2,
-        'la puerta personal está donde apareces');
+      const distanciaPuerta = Math.hypot(niv.retorno.x - niv.x, niv.retorno.y - niv.y);
+      ok(distanciaPuerta >= 0.9 && distanciaPuerta <= 2,
+        'apareces junto a la puerta personal, no encima de ella');
+      const frenteX = Math.sin(niv.rot), frenteY = -Math.cos(niv.rot);
+      const alejamiento = ((niv.x - niv.retorno.x) * frenteX + (niv.y - niv.retorno.y) * frenteY) / distanciaPuerta;
+      ok(alejamiento > 0.8, 'la puerta personal queda detrás del jugador');
       // alejarse (histéresis: >1 tile de TODA salida, alcanzable) y volver
       const g = c.map.grid;
       const dist2 = MapGen.bfsDist(g, Fisica.tileDe(c.x), Fisica.tileDe(c.y));

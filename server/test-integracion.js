@@ -267,7 +267,7 @@ const espera = (ms) => new Promise((r) => setTimeout(r, ms));
       const puertaVuelta = mapaDest.exits.find((e) => e.def.destino === nivelId);
       if (puertaVuelta) {
         const d = Math.hypot(puertaVuelta.x - niv.x, puertaVuelta.y - niv.y);
-        ok(d <= 8, `apareces JUNTO a la puerta que vuelve a ${nivelId} (a ${d.toFixed(1)} tiles)`);
+        ok(d >= 0.9 && d <= 8, `apareces JUNTO a la puerta que vuelve a ${nivelId}, no encima (a ${d.toFixed(1)} tiles)`);
         ok(!niv.retorno, 'no hace falta puerta personal: el nivel ya tenía la suya');
       } else {
         ok(!!niv.retorno, 'sin puerta natural: llega puerta personal de retorno');

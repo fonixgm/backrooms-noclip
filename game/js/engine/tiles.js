@@ -24,6 +24,44 @@
     return c;
   }
 
+  // Vuelca una imagen 1:1 en un tile (sin recortes ni gradientes). Base de todos
+  // los overrides de textura: el render la repite con UV de mundo
+  // (RepeatWrapping), como el suelo continuo, así el patrón no se estira ni se ve
+  // "duplicado" por tile. La textura de origen debe ser tileable.
+  function bitmapTile(image) {
+    const c = canvas(TILE, TILE), ctx = c.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight, 0, 0, TILE, TILE);
+    return c;
+  }
+
+  function bitmapWallTiles(image, pal, options = {}) {
+    return [0, 1, 2].map((variant) => {
+      const c = canvas(TILE, TILE), ctx = c.getContext('2d');
+      ctx.fillStyle = shade(pal.pared, 1.08);
+      ctx.fillRect(0, 0, TILE, RF);
+      const iw = image.naturalWidth, ih = image.naturalHeight;
+      const sourceHeight = options.topFraction ? Math.floor(ih * options.topFraction) : ih;
+      const crop = Math.min(iw, sourceHeight);
+      const maxX = Math.max(0, iw - crop);
+      const sx = Math.round(maxX * ((variant % 3) / 2));
+      const sy = options.topFraction ? 0 : Math.max(0, Math.floor((ih - crop) / 2));
+      ctx.drawImage(image, sx, sy, crop, crop, 0, RF, TILE, FH);
+      if (options.bar) {
+        ctx.fillStyle = shade(pal.detalle, 1.35);
+        ctx.fillRect(0, TILE - 11, TILE, 4);
+        ctx.fillStyle = 'rgba(0,0,0,0.28)';
+        ctx.fillRect(0, TILE - 7, TILE, 2);
+      }
+      const grad = ctx.createLinearGradient(0, RF, 0, TILE);
+      grad.addColorStop(0, 'rgba(255,255,255,0.06)');
+      grad.addColorStop(1, 'rgba(0,0,0,0.24)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, RF, TILE, FH);
+      return c;
+    });
+  }
+
   function speckle(ctx, rng, color, n, x0, y0, w, h, size = 1) {
     ctx.fillStyle = color;
     for (let i = 0; i < n; i++) {
@@ -880,6 +918,37 @@
         arbol: wallStyle === 'arbol' ? arbolTile(pal, rng) : null,
         roca: wallStyle === 'roca' ? rocaTile(pal, rng) : null,
       };
+      // --- Overrides de textura por nivel (convención <slot>-<id>.png, ver
+      // texture-assets.js). Si el bitmap no existe/no ha cargado aún, se conserva
+      // el tile procedural de arriba. Todos los slots son tileables (RepeatWrapping
+      // con UV de mundo en el render 3D). ---
+      const TA = window.TextureAssets;
+      if (TA) {
+        const id = levelDef.id;
+        // Muro y suelo admiten VARIANTES por casilla (<slot>-<id>-N.png); el
+        // render las reparte con hash de posición. Con una sola imagen se
+        // comportan como antes.
+        const paredVars = TA.getVariants('pared', id);
+        if (paredVars) {
+          out.wallVars = paredVars.map(bitmapTile);      // 3D por casilla (seamless)
+          out.wallSeam = out.wallVars[0];                // ruta de una sola textura
+          out.caraFull = paredVars.map((img) => bitmapWallTiles(img, pal)[1]); // 2D
+        }
+        const sueloVars = TA.getVariants('suelo', id);
+        if (sueloVars) {
+          out.sueloVars = sueloVars.map(bitmapTile);
+          out.suelo = out.sueloVars;         // 2D usa suelo[hash % len]
+          out.sueloSeam = out.sueloVars[0];  // ruta de una sola textura
+          out.sueloEsc = 1;                  // 1 tile por textura (macro procedural = 0.5)
+        }
+        const techoImg = TA.get('techo', id);
+        if (techoImg) {
+          out.techo = bitmapTile(techoImg);     // tapas de muro
+          out.techoSeam = out.techo;            // plafón del techo real (render3d)
+        }
+        const aguaImg = TA.get('agua', id);     // genérico con override por nivel
+        if (aguaImg) out.agua = bitmapTile(aguaImg);
+      }
       return out;
     },
     darken,

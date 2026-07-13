@@ -379,10 +379,20 @@ function classifyPage(page, parsed, collections) {
 
 function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
-  const files = fs.readdirSync(RAW_DIR).filter((f) => /^\d+\.json$/.test(f));
+  const indexPath = path.join(RAW_DIR, '_index.json');
+  const activeIndex = fs.existsSync(indexPath)
+    ? JSON.parse(fs.readFileSync(indexPath, 'utf8'))
+    : null;
+  const files = activeIndex
+    ? Object.keys(activeIndex).filter((id) => fs.existsSync(path.join(RAW_DIR, `${id}.json`))).map((id) => `${id}.json`)
+    : fs.readdirSync(RAW_DIR).filter((f) => /^\d+\.json$/.test(f));
   const levels = {}, entities = {}, objects = {}, others = {};
   const collections = { levels, entities, objects, others };
-  const pages = files.map((f) => JSON.parse(fs.readFileSync(path.join(RAW_DIR, f), 'utf8')));
+  const pages = files.map((f) => {
+    const page = JSON.parse(fs.readFileSync(path.join(RAW_DIR, f), 'utf8'));
+    if (activeIndex?.[page.pageid]) page.categories = activeIndex[page.pageid].categories;
+    return page;
+  });
   const resolver = buildTitleResolver(pages);
 
   for (const page of pages)

@@ -373,10 +373,10 @@
 
   // ---------- inicio de partida ----------
   function startRun(seed) {
-    world.runSeed = seed || RNG.randomSeed();
+    world.runSeed = seed || (window.DailySeed ? DailySeed.seed() : RNG.randomSeed());
     world.player = {
       x: 0, y: 0, rx: 0, ry: 0, dir: 'down', flip: false, rot: 2,
-      salud: 100, cordura: 100, sed: 100, hambre: 100,
+      salud: 100, cordura: 100, sed: 100, hambre: 100, oxigeno: 100,
       sintonia: 0, instintos: [], umbrales: [],
       inv: [], manos: [null, null], equipo: { cara: null, cuerpo: null, pies: null },
       luz: false, viva: true,
@@ -417,6 +417,31 @@
           if (MapGen.walkable(MapGen.at(g, cx + dx, cy + dy))) return [cx + dx, cy + dy];
         }
     return [cx, cy];
+  }
+
+  function casillaPisableJunto(g, cx, cy) {
+    for (let r = 1; r < 20; r++)
+      for (let dy = -r; dy <= r; dy++)
+        for (let dx = -r; dx <= r; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+          const x = cx + dx, y = cy + dy;
+          if (!MapGen.walkable(MapGen.at(g, x, y))) continue;
+          if (world.map.exits.some((exit) => exit.x === x && exit.y === y)) continue;
+          if (world.entities.some((entity) => entity.viva && entity.x === x && entity.y === y)) continue;
+          return [x, y];
+        }
+    return casillaPisableCerca(g, cx, cy);
+  }
+
+  function mirarAlejandoseDe(puertaX, puertaY) {
+    const dx = world.player.x - puertaX, dy = world.player.y - puertaY;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      world.player.rot = dx > 0 ? 1 : 3;
+      world.player.dir = 'side'; world.player.flip = dx < 0;
+    } else if (dy) {
+      world.player.rot = dy > 0 ? 2 : 0;
+      world.player.dir = dy > 0 ? 'down' : 'up'; world.player.flip = false;
+    }
   }
 
   function enterLevel(id, via, entrada) {
@@ -474,7 +499,11 @@
         const exVuelta = world.map.exits.find(
           (e) => e.def.destino === desdeId || e.def._destinoResuelto === desdeId
         );
-        if (exVuelta) pos = [exVuelta.x, exVuelta.y];
+        if (exVuelta) {
+          pos = casillaPisableJunto(world.map.grid, exVuelta.x, exVuelta.y);
+          world.player.x = pos[0]; world.player.y = pos[1];
+          mirarAlejandoseDe(exVuelta.x, exVuelta.y);
+        }
       }
       if (!pos) pos = world.map.spawn;
       // nunca aparezcas dentro de una pared ni sobre el abismo
@@ -498,19 +527,26 @@
       world.player.x = world.map.spawn[0];
       world.player.y = world.map.spawn[1];
 
+      const sinSalidaMaterializada = !world.map.exits.some((exit) => exit.def?.destino) &&
+        !(world.map.caminatas || []).some((route) => route.destino);
+
       // salida de RETORNO donde apareces: la única manera de volver atrás es la
       // puerta que ya usaste — salvo que hayas CAÍDO (físicamente imposible).
       // retornoA la pasa continueRun: al recargar no hay nivel anterior
       // (desdeId es null) pero la puerta guardada debe seguir existiendo
       const vueltaA = desdeId || (entrada && entrada.retornoA) || null;
-      if (vueltaA && (!entrada || !entrada.sinRetorno)) {
+      if (vueltaA && (sinSalidaMaterializada || !entrada || !entrada.sinRetorno)) {
+        const puertaX = world.player.x, puertaY = world.player.y;
         world.map.exits.push({
-          x: world.player.x, y: world.player.y,
+          x: puertaX, y: puertaY,
           def: {
             texto: 'El camino por el que llegaste sigue abierto.',
             destino: vueltaA, tipo: 'retorno',
           },
         });
+        const junto = casillaPisableJunto(g, puertaX, puertaY);
+        world.player.x = junto[0]; world.player.y = junto[1];
+        mirarAlejandoseDe(puertaX, puertaY);
       }
     }
     world.player.rx = world.player.x;
@@ -1264,7 +1300,7 @@
   }
 
   function salidaObjeto(def) {
-    const salida = (world.map.exits || []).find((e) => e.def?.destino && e.def.tipo !== 'sellada')?.def;
+    const salida = (world.map.exits || []).find((e) => e.def?.destino && world.data.levels[e.def.destino])?.def;
     if (salida) { crossExit(salida); return true; }
     const ids = Object.keys(world.data.levels).filter((i) => i !== world.level.id);
     if (!ids.length) return false;
@@ -1640,9 +1676,8 @@
   function crossExit(def) {
     const tipo = def.tipo;
 
-    if (tipo === 'sellada') {
-      world.log('El camino se difumina: ese nivel aún no está cartografiado en el piloto.', 'event');
-      world.sanity(-2);
+    if (def.destino && !def.destino.startsWith('*') && !world.data.levels[def.destino]) {
+      world.log('La ruta ya no coincide con el catalogo actual.', 'event');
       return;
     }
     if (tipo === 'escape') {
@@ -1682,11 +1717,17 @@
       if (window.Sfx && !caminata) Sfx.play('puerta');
       let destino = def.destino;
       if (destino === '*aleatoria') {
-        const ids = Object.keys(world.data.levels).filter((i) => i !== world.level.id);
-        destino = world.rng.pick(ids);
+        const ids = Object.keys(world.data.levels).filter((i) => i !== world.level.id).sort();
+        destino = window.RouteSeed
+          ? RouteSeed.pick(world.runSeed, world.level.id, def, ids)
+          : world.rng.pick(ids);
       } else if (destino === '*visitada') {
-        destino = world.rng.pick(world.visited);
+        const visitados = world.visited.filter((id) => id !== world.level.id).sort();
+        destino = window.RouteSeed
+          ? RouteSeed.pick(world.runSeed, world.level.id, def, visitados)
+          : world.rng.pick(visitados);
       }
+      if (!destino) return;
       def._destinoResuelto = destino; // para reconocer esta salida al volver
       // cruzar por donde nadie debería te sintoniza con el lugar
       if (tipo === 'void' || tipo === 'arriesgada') world.tune(5);
@@ -1752,7 +1793,7 @@
         levelId: world.level.id,
         player: {
           salud: world.player.salud, cordura: world.player.cordura,
-          sed: world.player.sed, hambre: world.player.hambre,
+          sed: world.player.sed, hambre: world.player.hambre, oxigeno: world.player.oxigeno,
           inv: world.player.inv, manos: world.player.manos,
           equipo: world.player.equipo,
           sintonia: world.player.sintonia, instintos: world.player.instintos,
@@ -1775,7 +1816,14 @@
   }
 
   function loadSave() {
-    try { return JSON.parse(localStorage.getItem(saveKey())); }
+    try {
+      const saved = JSON.parse(localStorage.getItem(saveKey()));
+      if (saved?.runSeed?.startsWith('backrooms-diaria::') && window.DailySeed && saved.runSeed !== DailySeed.seed()) {
+        localStorage.removeItem(saveKey());
+        return null;
+      }
+      return saved;
+    }
     catch (e) { return null; }
   }
 
@@ -1784,7 +1832,7 @@
     world.player = {
       x: 0, y: 0, rx: 0, ry: 0, dir: 'down', flip: false, rot: 2,
       salud: s.player.salud, cordura: s.player.cordura,
-      sed: s.player.sed, hambre: s.player.hambre,
+      sed: s.player.sed, hambre: s.player.hambre, oxigeno: s.player.oxigeno ?? 100,
       sintonia: s.player.sintonia || 0, instintos: s.player.instintos || [],
       umbrales: s.player.umbrales || [],
       inv: s.player.inv, manos: s.player.manos || [null, null],

@@ -231,6 +231,7 @@
         w.player.salud = m.salud ?? w.player.salud;
         w.player.sed = m.sed ?? w.player.sed;
         w.player.cordura = m.cordura ?? w.player.cordura;
+        w.player.oxigeno = m.oxigeno ?? w.player.oxigeno ?? 100;
         w.ui.updateHUD();
         break;
       case 'inv':
@@ -422,6 +423,7 @@
     w.player.salud = m.salud ?? 100;
     w.player.sed = m.sed ?? 100;
     w.player.cordura = m.cordura ?? 100;
+    w.player.oxigeno = m.oxigeno ?? 100;
     w.player.inv = m.inv || [];
     w.player.manos = m.manos || [null, null];
     w.player.equipo = m.equipo || { cara: null, cuerpo: null, pies: null };

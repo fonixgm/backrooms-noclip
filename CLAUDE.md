@@ -15,8 +15,8 @@ No hay tests ni linter. Los scripts del pipeline usan solo la stdlib de Node (re
 ```
 node pipeline/download.js      # Fase 0: descarga la wiki → data/raw/<pageid>.json (re-ejecutable, salta lo ya descargado)
 node pipeline/parse.js         # Fase 1: wikitext → data/parsed/{levels,entities,objects,others}.json + report.txt
-node pipeline/select-pilot.js  # Fase 2a: elige los ~30 niveles del piloto (BFS desde Level 0 + camino de escape) → data/game/pilot-titles.json
-node pipeline/make-map.js      # Fase 2b: regenera data/game/mapa-piloto.html (diagrama SVG del grafo) desde levels.es.json
+node pipeline/build-levels.js  # catálogo parseado + overrides artesanales → levels.es.json
+node pipeline/make-map.js      # regenera data/game/mapa.html (explorador del grafo completo)
 node pipeline/build-data.js    # empaqueta data/game/*.es.json → game/js/data.js  ← RE-EJECUTAR tras editar cualquier ficha
 ```
 
@@ -30,7 +30,7 @@ wiki fandom → data/raw/ (crudo, 1100+ archivos, NO editar) → data/parsed/ (g
    → game/js/data.js (GENERADO por build-data.js — no editar a mano)
 ```
 
-- `data/game/levels.es.json`, `entities.es.json`, `objects.es.json`: fichas del juego, editables. Los digests (`pilot-digest.json`, `entity-digest.json`) son resúmenes intermedios en inglés que sirvieron para redactarlas.
+- `data/game/levels.es.json`: catálogo generado; no editar directamente. Los overrides artesanales están en `levels.curated.es.json`. `entities.es.json` y `objects.es.json` contienen las demás fichas editables.
 - Evita búsquedas amplias (grep/glob) dentro de `data/raw/` — son más de mil JSON grandes.
 
 ## Arquitectura del juego
@@ -179,7 +179,7 @@ nunca conectaba). X = bocadillo de espera. Códice: icono-interrogante → wiki 
 descubiertas. FIX: el checkbox del dado era invisible (los estilos de slider de .sound-row
 pisaban todo input → ahora `input[type=range]`). El selftest responde choice-modal
 (60% primera opción) — sin él se atascaba en la caminata del L0. **v20.2**: fila 🐞 Debug
-en Ajustes (solo en partida): desplegable con los 30 niveles ordenados por número +
+en Ajustes (solo en partida): desplegable con el catálogo completo ordenado por número +
 `Game.debugTeleport(id)` (enterLevel con `sinRetorno:true` — sin puerta de vuelta).
 
 **Era comunitaria (2026-07-06, PRs #1-#4 aceptados)**: repo público con webhook de Discord
@@ -209,7 +209,7 @@ los archivos generados (data.js byte a byte) y correr tests/auditoría tras el m
 `server.js` (estáticos + WebSocket `/ws` + comandos `/admin /anuncio /kick /mute /ban /tp` +
 `cambiarDeSala`), `sala.js` (una sala = instancia de nivel, cap 60; tick 10 Hz vía
 `tickTodas`), `sim/mundo.js` (puente Node↔motor: requiere data/rng/mapgen/fov del juego —
-por la red NUNCA viaja un mapa, solo la semilla `mmo::<nivel>::<inst>`), `sim/entidades.js`
+por la red NUNCA viaja un mapa, solo la semilla `mmo::<día>::<nivel>::<inst>`), `sim/entidades.js`
 (IA continua), `protocolo.js` (validación + P.VERSION — súbela al cambiar mensajes; el
 cliente manda `v` en `hola` y bots.js también), `bots.js` (carga), `db.js`, `filtro.js`.
 Cliente en `game/js/net/`: `cliente.js` (conexión, predicción con `sim/fisica.js` —
@@ -218,6 +218,16 @@ jugadores remotos + capa social). Arrancar local: `node server/server.js` →
 http://localhost:8080. `MMO_DEV=1` habilita `?nivel=`; `MMO_ADMIN` fija la clave de admin.
 Movimiento LIBRE (input vectorial, θ continuo en `player.rot` online); el modo solo por
 turnos sigue con `?autostart=1` (sin `?online`).
+
+**v27.5 — retorno de emergencia y rutas diarias**: `RouteSeed.pick()` resuelve destinos
+variables de forma idéntica en mapa, local y servidor. `mapa.html` muestra el ciclo de Madrid
+y sus conexiones resueltas. Si una geometría no materializa ninguna salida, la puerta personal
+de llegada prevalece incluso sobre una entrada normalmente marcada sin retorno.
+
+**v27.6 — contratos ambientales**: `build-levels.js` fuerza categorías wiki `Darkness` y
+`Aquatic` incluso sobre overrides antiguos. `oceano` usa `genOceano` con agua dominante,
+estructuras secas y `map.airPockets`; `respiracion_acuatica` controla oxígeno/ahogo local y
+online. `ciudad`/`residencial` generan edificios transitables y props `portico` en accesos.
 
 **v23 — red suave, retorno online y Ajustes de guardián**: interpolación por INSTANTÁNEAS
 (`Otros.pushSnap/muestrear`, retardo 200 ms) para jugadores remotos Y entidades (main.js
@@ -322,7 +332,7 @@ en `effects.js`, props/contenedores registrables en `mapgen.js`/`game.js`.)
 
 Decisiones de diseño clave:
 
-- **Determinismo**: toda aleatoriedad de partida pasa por `RNG.create(seed)` (mulberry32); las partidas son reproducibles por semilla. No usar `Math.random()` en lógica de juego.
-- **Mapas procedurales por bioma**: `MapGen.generate(levelDef, rng)` elige el arquetipo según `levelDef.bioma` (claves de `GENS` en `mapgen.js`: pasillos, garaje, tuneles, hospital, oficinas, exterior, bosque, ciudad, torres). Tiles: 0 suelo, 1 pared, 2 vacío, 3 agua, 4 suelo decorado. Todo mapa pasa por `keepLargest` (un solo componente conexo) y coloca salidas lejos del spawn vía BFS.
+- **Determinismo**: toda aleatoriedad de partida pasa por `RNG.create(seed)` (mulberry32). Sin semilla explícita se usa `DailySeed.seed()`, que rota a las 00:00 de `Europe/Madrid`; el servidor migra salas activas al ciclo nuevo. No usar `Math.random()` en lógica de juego.
+- **Mapas procedurales por bioma**: `MapGen.generate(levelDef, rng)` elige uno de los arquetipos declarados en `pipeline/biomes.js` y `GENS` de `mapgen.js` (32 admitidos, 31 activos actualmente). Tiles: 0 suelo, 1 pared, 2 vacío, 3 agua, 4 suelo decorado. Todo mapa pasa por `keepLargest` y coloca salidas lejos del spawn vía BFS.
 - **Esquema de ficha de nivel** (`levels.es.json`): `id`, `wikiTitle`, `nombre`, `clase`, `peligro` (0-5), `bioma` (debe existir en `GENS`), `tam [w,h]`, `paleta`, `vision`, `oscuridad`, `descripcion`, `cita`, `reglas[]`, `entidades [{id,n:[min,max],prob}]`, `objetos [{id,n}]`, `salidas [{texto,destino,tipo,riesgoVoid?}]`, `esEscape`, `url`, y desde v5: `estilo {pared,suelo}` (claves de los switch de `tiles.js`), `particulas` (polvo|nieve|lluvia|glitch|ojos|esporas|vapor|estrellas|null) y `sonido` (receta de `RECETAS` en sfx.js, o null si el nivel tiene audio en assets/sounds/niveles/). Tipos de salida: `normal`, `rara`, `arriesgada`, `llave`, `void`. Los `destino` referencian ids de nivel; `id` de entidades/objetos referencian sus fichas.
 - **Fidelidad a la wiki**: las conexiones entre niveles, entidades por nivel y citas provienen de las páginas reales de la wiki; cada ficha conserva su `url`. Al inventar contenido nuevo, mantener coherencia con la ficha parseada correspondiente.

@@ -1,0 +1,101 @@
+TEXTURAS DE NIVEL (suelo / pared / techo / agua)
+================================================
+
+Coloca aqui archivos PNG para sustituir las texturas de un nivel sin tocar codigo.
+Si el PNG existe se usa; si no, el juego dibuja su textura procedural de siempre.
+
+Esta carpeta es SOLO para los tiles de nivel (suelo, pared, techo, agua). Los
+sprites de jugador/entidades/objetos y los props van en assets/sprites/ (ver su
+LEEME.txt).
+
+
+CONVENCION DE NOMBRES
+---------------------
+ <slot>-<idNivel>-N.png  VARIANTES por casilla (solo suelo y pared). N desde 1 y
+                         contiguo: -1, -2, -3... (ej.: suelo-level-0-1.png)
+ <slot>-<idNivel>.png    textura ESPECIFICA de un nivel   (ej.: pared-level-0.png)
+ <slot>.png              textura GENERICA para cualquier nivel (ej.: agua.png)
+
+Resolucion de cada slot, en orden:
+ 1) <slot>-<idNivel>-1..N.png  (variantes; se reparten por casilla)
+ 2) <slot>-<idNivel>.png       (una sola textura para ese nivel)
+ 3) <slot>.png                 (la generica, si no hay especifica)
+ 4) procedural                 (si no hay ningun PNG -> el tile integrado)
+
+VARIANTES POR CASILLA (suelo y pared)
+-------------------------------------
+Si pones suelo-level-0-1.png, suelo-level-0-2.png, suelo-level-0-3.png... el
+juego reparte esas variantes por las casillas del mapa segun la SEMILLA de la
+partida: es estable dentro de una misma run (siempre la misma casilla = la misma
+variante) pero cambia entre semillas/dias. Asi "segun el mapa" cada casilla
+muestra una u otra (limpia, sucia, humeda, rota...). Deben ser TODAS tileables.
+Hasta 6 variantes. La secuencia debe empezar en 1 y no saltarse numeros (para en
+el primer hueco). Techo y agua no usan variantes: una sola textura.
+
+Si un nivel NO tiene variantes, no pasa nada: pon una sola (pared-level-0.png) o
+ninguna (usa el procedural). Solo los ficheros que añadas deciden que se usa.
+
+
+SLOTS DISPONIBLES
+-----------------
+ pared   Muros del nivel. DEBE ser tileable (seamless): se repite en rejilla y
+         se estira en altura del muro sin costuras.
+ suelo   Suelo del nivel. Tileable. Se repite por casilla como suelo continuo.
+ techo   Techo real (placas del plafon) y tapas de muro. Tileable.
+ agua    Agua / humedad / charcos. Tileable. Suele usarse GENERICA (agua.png)
+         pero admite override por nivel (agua-level-x.png).
+
+Ejemplos de nombre de archivo:
+ pared-level-0.png   suelo-level-0.png   techo-level-0.png   agua-level-6.png
+ agua.png (generica)
+
+
+IDS DE NIVEL
+------------
+El <idNivel> es el identificador de la ficha, no el titulo. Casi todos son
+"level-N" (level-0, level-1, level-2, level-6...) y algunos con nombre
+(the-end, the-hub...). Hay 731 niveles.
+
+Donde ver el id de un nivel:
+ - Explorador del grafo: abre data/game/mapa.html y pincha un nivel.
+ - En partida: Ajustes (ESC) -> fila Debug -> catalogo por numero.
+ - Fuente: data/game/levels.es.json (campo "id" de cada ficha).
+
+
+TAMANOS
+-------
+Base del juego: TODOS los tiles son 48x48 px. El motor escala la imagen a 48x48
+(sin suavizado, pixel-art nitido), asi que trabaja directamente a 48x48.
+Estilo: pixel-art legible, poca resolucion, sin exceso de detalle. Debe verse
+bien tanto en 3D como en la vista tipo mapa.
+
+ Suelo:  48x48 px, tileable. Variantes -N: limpio, sucio, humedo, roto, mancha, grieta.
+ Pared:  48x48 px, tileable. Variantes -N: normal, manchada, rota, papel levantado, humedad.
+ Techo:  48x48 px, tileable. (una sola)
+ Agua:   48x48 px, tileable. (una sola)
+
+Nota: suelo y pared admiten 1-6 variantes por casilla (ver arriba). Cada
+variante debe ser tileable por si misma; entre casillas de distinta variante se
+nota el cambio (es lo esperado). Techo y agua usan una unica textura.
+
+
+GUIA DE TAMANOS PARA EL RESTO DE ARTE (referencia; va en assets/sprites/)
+-------------------------------------------------------------------------
+Regla practica por espacio que ocupa el objeto:
+ - Ocupa una casilla:        48x48
+ - Ocupa media casilla:      24x24 o 32x32
+ - Ocupa dos casillas alto:  48x96
+ - Objeto grande de sala:    96x96
+
+Detalle por tipo:
+ Decoraciones pequenas: 24x24 o 32x32   (papeles, basura, manchas, rejillas)
+ Props medianos:        48x48            (cajas, cubos, senales, plantas peq.)
+ Props grandes:         48x96 / 96x48 / 96x96  (neveras, taquillas, maquinas)
+ Plantas pequenas:      24x32 o 32x32
+ Plantas medianas:      48x48
+ Plantas grandes:       48x96 o 96x96
+ Puerta normal:         48x96
+ Ventana pequena:       32x32 o 48x48
+ Ventana grande/salida: 48x96
+
+Fondo transparente en todo lo que no sea un tile de suelo/pared/techo lleno.

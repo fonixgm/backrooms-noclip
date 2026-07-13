@@ -8,7 +8,7 @@
   }
   const at = (g, x, y) => (x < 0 || y < 0 || x >= g.w || y >= g.h ? T.PARED : g.t[y * g.w + x]);
   const set = (g, x, y, v) => { if (x >= 0 && y >= 0 && x < g.w && y < g.h) g.t[y * g.w + x] = v; };
-  const walkable = (v) => v === T.SUELO || v === T.DECOR;
+  const walkable = (v) => v === T.SUELO || v === T.AGUA || v === T.DECOR;
 
   // ---------- arquetipos ----------
 
@@ -320,25 +320,39 @@
     return g;
   }
 
-  // Ciudad: manzanas sólidas y calles (Level 306, 995)
-  function genCiudad(w, h, rng) {
+  // Ciudad y barrios: edificios transitables con fachada, puerta e interior.
+  function genCiudad(w, h, rng, opts = {}) {
     const g = grid(w, h, T.SUELO);
     for (let x = 0; x < w; x++) { set(g, x, 0, T.PARED); set(g, x, h - 1, T.PARED); }
     for (let y = 0; y < h; y++) { set(g, 0, y, T.PARED); set(g, w - 1, y, T.PARED); }
     let y = 3;
     while (y < h - 6) {
       let x = 3;
-      const bh = rng.int(4, 7);
+      const bh = rng.int(opts.residencial ? 7 : 8, opts.residencial ? 11 : 14);
       while (x < w - 6) {
-        const bw = rng.int(4, 8);
-        if (rng.chance(0.85))
-          for (let yy = y; yy < Math.min(y + bh, h - 3); yy++)
-            for (let xx = x; xx < Math.min(x + bw, w - 3); xx++) set(g, xx, yy, T.PARED);
-        x += bw + rng.int(2, 3);
+        const bw = rng.int(opts.residencial ? 8 : 9, opts.residencial ? 13 : 16);
+        const x2 = Math.min(x + bw, w - 3), y2 = Math.min(y + bh, h - 3);
+        if (x2 - x >= 6 && y2 - y >= 6 && rng.chance(0.9)) {
+          for (let xx = x; xx <= x2; xx++) { set(g, xx, y, T.PARED); set(g, xx, y2, T.PARED); }
+          for (let yy = y; yy <= y2; yy++) { set(g, x, yy, T.PARED); set(g, x2, yy, T.PARED); }
+          const puerta = rng.int(x + 2, x2 - 2);
+          set(g, puerta, y2, T.SUELO);
+          if (x2 - x >= 10) {
+            const tabique = rng.int(x + 4, x2 - 4);
+            for (let yy = y + 1; yy < y2; yy++) set(g, tabique, yy, T.PARED);
+            set(g, tabique, rng.int(y + 2, y2 - 2), T.SUELO);
+          }
+          if (!opts.residencial && y2 - y >= 10) {
+            const tabique = rng.int(y + 4, y2 - 4);
+            for (let xx = x + 1; xx < x2; xx++) if (at(g, xx, tabique) !== T.PARED) set(g, xx, tabique, T.PARED);
+            set(g, rng.int(x + 2, x2 - 2), tabique, T.SUELO);
+          }
+        }
+        x += bw + rng.int(3, 5);
       }
-      y += bh + rng.int(2, 3);
+      y += bh + rng.int(4, 6);
     }
-    for (let i = 0; i < 24; i++) {
+    for (let i = 0; i < 32; i++) {
       const x = rng.int(2, w - 3), yy = rng.int(2, h - 3);
       if (at(g, x, yy) === T.SUELO) set(g, x, yy, T.DECOR);
     }
@@ -363,6 +377,80 @@
       const x2 = Math.floor(b.x + b.w / 2), y2 = Math.floor(b.y + b.h / 2);
       while (x1 !== x2) { if (at(g, x1, y1) === T.VACIO) set(g, x1, y1, T.DECOR); x1 += Math.sign(x2 - x1); }
       while (y1 !== y2) { if (at(g, x1, y1) === T.VACIO) set(g, x1, y1, T.DECOR); y1 += Math.sign(y2 - y1); }
+    }
+    return g;
+  }
+
+  // Complejo inundado: islas de suelo conectadas entre grandes bolsas de agua.
+  function genAcuatico(w, h, rng, opts = {}) {
+    const g = genExterior(w, h, rng, { density: opts.density ?? 0.32 });
+    const lagos = opts.lagos ?? 12;
+    for (let i = 0; i < lagos; i++) {
+      const cx = rng.int(5, w - 6), cy = rng.int(5, h - 6);
+      const rx = rng.int(2, 6), ry = rng.int(2, 5);
+      for (let y = cy - ry; y <= cy + ry; y++)
+        for (let x = cx - rx; x <= cx + rx; x++)
+          if (((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1 && at(g, x, y) === T.SUELO)
+            set(g, x, y, T.AGUA);
+    }
+    return g;
+  }
+
+  // Océano real: el agua domina y las zonas secas son búnkeres o plataformas
+  // dispersas. El agua es transitable porque aquí el jugador está nadando.
+  function genOceano(w, h, rng) {
+    const g = grid(w, h, T.AGUA);
+    for (let x = 0; x < w; x++) { set(g, x, 0, T.PARED); set(g, x, h - 1, T.PARED); }
+    for (let y = 0; y < h; y++) { set(g, 0, y, T.PARED); set(g, w - 1, y, T.PARED); }
+    const estructuras = [{ x: Math.floor(w / 2) - 7, y: Math.floor(h / 2) - 5, w: 14, h: 10 }];
+    for (let i = 0; i < 7; i++) estructuras.push({
+      x: rng.int(3, w - 11), y: rng.int(3, h - 9), w: rng.int(5, 9), h: rng.int(4, 7),
+    });
+    for (const r of estructuras) {
+      const x2 = Math.min(w - 2, r.x + r.w), y2 = Math.min(h - 2, r.y + r.h);
+      for (let yy = r.y; yy <= y2; yy++) for (let xx = r.x; xx <= x2; xx++) set(g, xx, yy, T.SUELO);
+      if (r === estructuras[0]) {
+        for (let xx = r.x; xx <= x2; xx++) { set(g, xx, r.y, T.PARED); set(g, xx, y2, T.PARED); }
+        for (let yy = r.y; yy <= y2; yy++) { set(g, r.x, yy, T.PARED); set(g, x2, yy, T.PARED); }
+        set(g, Math.floor((r.x + x2) / 2), y2, T.SUELO);
+      }
+    }
+    for (let i = 0; i < Math.floor(w * h * 0.012); i++) {
+      const x = rng.int(2, w - 3), y = rng.int(2, h - 3);
+      if (at(g, x, y) === T.AGUA && rng.chance(0.35)) set(g, x, y, T.PARED);
+    }
+    return g;
+  }
+
+  // Carretera anómala con arcenes, cruces y áreas de servicio.
+  function genCarretera(w, h, rng) {
+    const g = grid(w, h, T.PARED);
+    const midY = Math.floor(h / 2);
+    for (let y = midY - 3; y <= midY + 3; y++)
+      for (let x = 1; x < w - 1; x++) set(g, x, y, y === midY ? T.DECOR : T.SUELO);
+    for (let branch = 0; branch < 5; branch++) {
+      const bx = rng.int(8, w - 9);
+      const up = rng.chance(0.5);
+      const end = up ? rng.int(3, midY - 7) : rng.int(midY + 7, h - 4);
+      const y0 = Math.min(midY, end), y1 = Math.max(midY, end);
+      for (let y = y0; y <= y1; y++) for (let dx = -1; dx <= 1; dx++) set(g, bx + dx, y, T.SUELO);
+      const sy = up ? end - 2 : end;
+      for (let y = sy; y < sy + 5; y++) for (let x = bx - 5; x <= bx + 5; x++) set(g, x, y, T.SUELO);
+    }
+    return g;
+  }
+
+  // Vagones encadenados por un corredor ferroviario estrecho.
+  function genTren(w, h, rng) {
+    const g = grid(w, h, T.PARED);
+    const cy = Math.floor(h / 2);
+    for (let x = 1; x < w - 1; x++) for (let y = cy - 2; y <= cy + 2; y++) set(g, x, y, T.SUELO);
+    for (let x = 4; x < w - 10; x += rng.int(10, 15)) {
+      const arriba = rng.chance(0.5);
+      const y0 = arriba ? cy - 8 : cy + 3;
+      for (let y = y0; y < y0 + 6; y++) for (let xx = x; xx < Math.min(w - 2, x + 8); xx++) set(g, xx, y, T.SUELO);
+      const puertaY = arriba ? cy - 3 : cy + 3;
+      set(g, x + 4, puertaY, T.SUELO);
     }
     return g;
   }
@@ -446,6 +534,28 @@
     ciudad: (w, h, rng) => genCiudad(w, h, rng),
     torres: (w, h, rng) => genTorres(w, h, rng),
     invernadero: (w, h, rng) => genInvernadero(w, h, rng),
+    acuatico: (w, h, rng) => genAcuatico(w, h, rng, { lagos: 10 }),
+    oceano: (w, h, rng) => genOceano(w, h, rng),
+    desierto: (w, h, rng) => genExterior(w, h, rng, { density: 0.25 }),
+    nevado: (w, h, rng) => genExterior(w, h, rng, { density: 0.3 }),
+    espacial: (w, h, rng) => genTorres(w, h, rng),
+    cielo: (w, h, rng) => genTorres(w, h, rng),
+    hotel: (w, h, rng) => genOficinas(w, h, rng),
+    centro_comercial: (w, h, rng) => genGaraje(w, h, rng),
+    residencial: (w, h, rng) => genCiudad(w, h, rng, { residencial: true }),
+    escuela: (w, h, rng) => genHospital(w, h, rng),
+    industrial: (w, h, rng) => genGaraje(w, h, rng),
+    fabrica: (w, h, rng) => genGaraje(w, h, rng),
+    laboratorio: (w, h, rng) => genHospital(w, h, rng),
+    alcantarillas: (w, h, rng) => genTuneles(w, h, rng, { walkers: 7 }),
+    estacion: (w, h, rng) => genGaraje(w, h, rng),
+    tren: (w, h, rng) => genTren(w, h, rng),
+    carretera: (w, h, rng) => genCarretera(w, h, rng),
+    parque: (w, h, rng) => genBosque(w, h, rng, { lagos: 1 }),
+    granja: (w, h, rng) => genExterior(w, h, rng, { density: 0.28 }),
+    pantano: (w, h, rng) => genBosque(w, h, rng, { lagos: 7 }),
+    ruinas: (w, h, rng) => genCiudad(w, h, rng),
+    surreal: (w, h, rng) => genPasillos(w, h, rng, { salas: 14, irregulares: true, atajos: Math.floor(w * 1.5) }),
   };
 
   // mecánicas de salida derivadas del texto de la wiki (v20): las salidas no
@@ -491,7 +601,16 @@
       floors = collectFloors(g);
     }
 
-    const spawn = rng.pick(floors);
+    const requiereAire = (levelDef.reglas || []).includes('respiracion_acuatica');
+    const sueloSeco = floors.filter(([x, y]) => at(g, x, y) !== T.AGUA);
+    const urbano = ['ciudad', 'residencial'].includes(levelDef.bioma);
+    const accesosUrbanos = urbano ? floors.filter(([x, y]) =>
+      (at(g, x - 1, y) === T.PARED && at(g, x + 1, y) === T.PARED) ||
+      (at(g, x, y - 1) === T.PARED && at(g, x, y + 1) === T.PARED)) : [];
+    const juntoAcceso = urbano ? floors.filter(([x, y]) => accesosUrbanos.some(([ax, ay]) =>
+      Math.abs(ax - x) + Math.abs(ay - y) === 1)) : [];
+    const spawnPool = requiereAire && sueloSeco.length ? sueloSeco : juntoAcceso.length ? juntoAcceso : floors;
+    const spawn = rng.pick(spawnPool);
     const dist = bfsDist(g, spawn[0], spawn[1]);
     const reach = floors.filter(([x, y]) => dist[y * g.w + x] > 0);
     const far = reach.slice().sort((a, b) => dist[b[1] * g.w + b[0]] - dist[a[1] * g.w + a[0]]);
@@ -566,11 +685,26 @@
       hospital: ['camilla', 'silla'], oficinas: ['silla', 'caja'],
       bosque: ['seta', 'roca_p'], exterior: ['roca_p'], ciudad: ['farola'], torres: ['caja'],
       invernadero: ['silla', 'caja'],
+      acuatico: ['roca_p', 'bidon'], oceano: ['roca_p', 'caja'],
+      desierto: ['roca_p', 'bidon'], nevado: ['roca_p', 'caja'],
+      espacial: ['cable', 'caja'], cielo: ['roca_p', 'caja'],
+      hotel: ['silla', 'caja'], centro_comercial: ['silla', 'caja'],
+      residencial: ['silla', 'caja'], escuela: ['silla', 'caja'],
+      industrial: ['bidon', 'cable'], fabrica: ['bidon', 'cable'], laboratorio: ['camilla', 'cable'],
+      alcantarillas: ['bidon', 'cable'], estacion: ['silla', 'caja'], tren: ['silla', 'caja'],
+      carretera: ['cono', 'bidon'], parque: ['seta', 'roca_p'], granja: ['caja', 'roca_p'],
+      pantano: ['seta', 'roca_p'], ruinas: ['roca_p', 'cable'], surreal: ['silla', 'cable'],
     };
     const CONT_BIOMA = {
       pasillos: 'taquilla', garaje: 'taquilla', tuneles: 'cofre', hospital: 'nevera',
       oficinas: 'archivador', bosque: 'cofre', exterior: 'cofre', ciudad: 'cofre', torres: 'cofre',
       invernadero: 'cofre',
+      acuatico: 'cofre', oceano: 'cofre', desierto: 'cofre', nevado: 'cofre',
+      espacial: 'cofre', cielo: 'cofre', hotel: 'nevera', centro_comercial: 'archivador',
+      residencial: 'nevera', escuela: 'archivador', industrial: 'taquilla', fabrica: 'taquilla',
+      laboratorio: 'nevera', alcantarillas: 'cofre', estacion: 'taquilla', tren: 'taquilla',
+      carretera: 'cofre', parque: 'cofre', granja: 'cofre', pantano: 'cofre',
+      ruinas: 'cofre', surreal: 'cofre',
     };
     const props = [];
     // los muebles "de pared" van físicamente pegados a un muro (pared al norte)
@@ -581,6 +715,14 @@
       return elegirLibre(pool);
     };
     const decorativos = PROPS_BIOMA[levelDef.bioma] ?? [];
+    if (urbano) {
+      const elegidos = rng.shuffle(accesosUrbanos).slice(0, 18);
+      for (const p of elegidos) {
+        if (!libre(p)) continue;
+        reservar(p);
+        props.push({ x: p[0], y: p[1], id: 'portico', contenedor: false });
+      }
+    }
     if (decorativos.length) {
       const n = rng.int(7, 13);
       for (let i = 0; i < n; i++) {
@@ -612,6 +754,23 @@
       }
     }
 
+    // Respiraderos visibles dentro del agua. Permiten recuperar oxígeno sin
+    // regresar obligatoriamente a tierra y siempre se generan alcanzables.
+    const airPockets = [];
+    if (requiereAire) {
+      const aguaAlcanzable = reach.filter(([x, y]) => at(g, x, y) === T.AGUA && libre([x, y]));
+      const candidatos = rng.shuffle(aguaAlcanzable);
+      const cantidad = Math.max(6, Math.min(24, Math.floor(aguaAlcanzable.length / 350)));
+      for (const p of candidatos) {
+        if (airPockets.length >= cantidad) break;
+        if (airPockets.some((q) => Math.abs(q.x - p[0]) + Math.abs(q.y - p[1]) < 10)) continue;
+        reservar(p);
+        const pocket = { x: p[0], y: p[1] };
+        airPockets.push(pocket);
+        props.push({ ...pocket, id: 'burbuja_aire', contenedor: false });
+      }
+    }
+
     // spawns de entidades (fieles a la ficha del nivel), lejos del jugador
     const entitySpawns = [];
     const midPool = reach.filter(([x, y]) => dist[y * g.w + x] >= 8);
@@ -624,7 +783,7 @@
       }
     }
 
-    return { w, h, grid: g, spawn, exits, items, entitySpawns, props, dist, caminatas };
+    return { w, h, grid: g, spawn, exits, items, entitySpawns, props, airPockets, dist, caminatas };
   }
 
   window.MapGen = { T, generate, walkable, at, bfsDist, mecanicaDe, walkingGoal };

@@ -9,6 +9,8 @@ const Entidades = require('./sim/entidades');
 const Fisica = require('../game/js/sim/fisica');
 const P = require('./protocolo');
 const db = require('./db');
+const DailySeed = require('../game/js/engine/daily-seed');
+const RouteSeed = require('../game/js/engine/route-seed');
 
 let siguienteId = 1;
 const ESCONDITES = new Set(['taquilla', 'nevera', 'archivador']);
@@ -28,9 +30,9 @@ function grupoSala(raw) {
   return s && RE_GRUPO_PRIVADO.test(s) ? s : SALA_PUBLICA;
 }
 
-function claveInterna(nivelId, inst, grupo) {
+function claveInterna(nivelId, inst, grupo, dia = DailySeed.dayKey()) {
   grupo = grupoSala(grupo);
-  return `${grupo}::${nivelId}::${inst}`;
+  return `${grupo}::${dia}::${nivelId}::${inst}`;
 }
 
 // ¿Se puede ir de A a B sin cruzar nada sólido? Muestreo cada ~0.2 tiles con
@@ -48,7 +50,7 @@ function caminoLegal(grid, x0, y0, x1, y1) {
 }
 
 function destinoDisponible(def) {
-  return def && def.destino && DATA.levels[def.destino];
+  return def && def.destino && (DATA.levels[def.destino] || def.destino === '*aleatoria' || def.destino === '*visitada');
 }
 
 class Sala {
@@ -56,12 +58,13 @@ class Sala {
     this.nivelId = nivelId;
     this.inst = inst;
     this.grupo = grupoSala(grupo);
+    this.dia = DailySeed.dayKey();
     this.privada = this.grupo !== SALA_PUBLICA;
     this.clave = this.privada ? `${nivelId}::privada::${inst}` : `${nivelId}::${inst}`;
     // La semilla es el contrato con el cliente: mismo string → mismo mapa.
     this.semilla = this.privada
-      ? `mmo::privada::${this.grupo}::${nivelId}::${inst}`
-      : `mmo::${nivelId}::${inst}`;
+      ? `mmo::${this.dia}::privada::${this.grupo}::${nivelId}::${inst}`
+      : `mmo::${this.dia}::${nivelId}::${inst}`;
     const { def, map } = generarMapa(nivelId, this.semilla);
     this.def = def;
     this.map = map;
@@ -95,6 +98,19 @@ class Sala {
     return [sx, sy];
   }
 
+  // Busca una casilla libre junto a una puerta, sin colocar al jugador encima.
+  buscarSpawnJunto(cx, cy) {
+    for (let r = 1; r < 20; r++)
+      for (let dy = -r; dy <= r; dy++)
+        for (let dx = -r; dx <= r; dx++) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+          const x = cx + dx, y = cy + dy;
+          if (esTransitable(this.map, x, y) && !this.ocupada(x, y) &&
+              !this.map.exits.some((exit) => exit.x === x && exit.y === y)) return [x, y];
+        }
+    return this.buscarSpawn(cx, cy);
+  }
+
   censo() {
     return [...this.jugadores.values()].map((j) => ({
       id: j.id, nombre: j.nombre, x: j.x, y: j.y, rot: j.rot,
@@ -119,21 +135,23 @@ class Sala {
     const jug = {
       id, ws, nombre, token, x, y, rot: Math.PI, // θ continuo (π = mirando al sur)
       distSala: 0,
-      salud: 100, sed: 100, cordura: 100, luz: false, escondido: null, muerto: false,
+      salud: 100, sed: 100, cordura: 100, oxigeno: 100, luz: false, escondido: null, muerto: false,
       inv: [], manos: [null, null], equipo: { cara: null, cuerpo: null, pies: null },
       esAdmin: false, muteadoHasta: 0,
       ultMov: 0, ultChat: 0, canal: null, ofertaEn: null,
       retorno: null, // puerta personal de vuelta (v23; la pone cambiarDeSala)
+      visitados: new Set([this.nivelId]),
       // v24 — autoridad del cliente con validación:
       sec: 0,            // nº de teleport: descarta informes en vuelo tras un salto
       _posT: Date.now(), // hora del último informe (presupuesto de velocidad)
+      _oxigenoEn: Date.now() + 1000,
       _margen: 0.8,      // cubeta de distancia disponible (anti-speedhack)
     };
     this.prepararCaminata(jug);
     this.enviar(ws, {
       t: 'bienvenida', id, nivel: this.nivelId, inst: this.inst,
       semilla: this.semilla, privada: this.privada, x, y, rot: jug.rot, sec: 0,
-      salud: jug.salud, sed: jug.sed, cordura: jug.cordura, inv: jug.inv, manos: jug.manos, equipo: jug.equipo,
+      salud: jug.salud, sed: jug.sed, cordura: jug.cordura, oxigeno: jug.oxigeno, inv: jug.inv, manos: jug.manos, equipo: jug.equipo,
       caminata: jug.caminataObjetivo ? { pasos: 0, objetivo: jug.caminataObjetivo } : null,
       jugadores: this.censo(), ...this.estadoDinamico(),
     });
@@ -154,6 +172,18 @@ class Sala {
       : 0;
   }
 
+  resolverDestino(jug, def) {
+    if (!def || !def.destino) return null;
+    if (DATA.levels[def.destino]) return def;
+    let candidatos;
+    if (def.destino === '*visitada')
+      candidatos = [...(jug.visitados || [])].filter((id) => DATA.levels[id] && id !== this.nivelId).sort();
+    else if (def.destino === '*aleatoria')
+      candidatos = Object.keys(DATA.levels).filter((id) => id !== this.nivelId).sort();
+    if (!candidatos?.length) return null;
+    return { ...def, destino: RouteSeed.pick(DailySeed.seed(), this.nivelId, def, candidatos) };
+  }
+
   enviarInv(jug) {
     this.enviar(jug.ws, {
       t: 'inv', inv: jug.inv, manos: jug.manos, equipo: jug.equipo,
@@ -161,7 +191,7 @@ class Sala {
   }
 
   enviarEstado(jug) {
-    this.enviar(jug.ws, { t: 'estado', salud: jug.salud, sed: jug.sed, cordura: jug.cordura });
+    this.enviar(jug.ws, { t: 'estado', salud: jug.salud, sed: jug.sed, cordura: jug.cordura, oxigeno: jug.oxigeno });
   }
 
   herir(jug, cantidad, causa) {
@@ -211,8 +241,8 @@ class Sala {
     // anulan el arrastre cuando el jugador pisa una casilla de agua.
     const tx = Fisica.tileDe(jug.x), ty = Fisica.tileDe(jug.y);
     if (!jug.muerto && reglas.includes('agua_traicionera') && !botas &&
-        this.map.grid.t[ty * this.map.grid.w + tx] === 3)
-      this.herir(jug, pasos * 2, 'un charco sirena');
+        this.map.grid.t[ty * this.map.grid.w + tx] === 3 && this.rng.chance(0.12))
+      this.herir(jug, 3, 'una corriente anómala');
     if (!jug.muerto && jug.sed === 0) this.herir(jug, pasos, 'la deshidratación');
     if (!jug.muerto && jug.cordura === 0) this.morir(jug, 'perdiste la cordura');
     if (!jug.muerto) this.enviarEstado(jug);
@@ -269,10 +299,10 @@ class Sala {
       if (pasos % 20 === 0 || pasos >= jug.caminataObjetivo)
         this.enviar(jug.ws, { t: 'caminata', pasos, objetivo: jug.caminataObjetivo });
       if (pasos >= jug.caminataObjetivo) {
-        const defC = (this.map.caminatas || []).find(destinoDisponible);
+        const defC = this.resolverDestino(jug, (this.map.caminatas || []).find(destinoDisponible));
         if (!defC) {
           jug.caminataObjetivo = 0;
-          this.enviar(jug.ws, { t: 'aviso', txt: 'Ese camino no lleva a ninguna parte (nivel fuera del piloto).' });
+          this.enviar(jug.ws, { t: 'aviso', txt: 'La ruta ya no coincide con el catalogo actual.' });
           return;
         }
         if (this.alCruzar) this.alCruzar(jug, this, defC, { sinTarjeta: true });
@@ -429,10 +459,14 @@ class Sala {
     if (!si) { jug.ofertaEn = null; return; }
     const s = this.salidaCerca(jug, 1.0);
     if (!s || jug.muerto) return;
-    const def = s.ex.def;
+    const def = this.resolverDestino(jug, s.ex.def);
+    if (!def) {
+      this.enviar(jug.ws, { t: 'aviso', txt: 'La ruta no encuentra un destino disponible.' });
+      return;
+    }
     if ((def._mec === 'romper' || def._mec === 'romper_suelo') && !def._abierta) return;
     if (!DATA.levels[def.destino]) {
-      this.enviar(jug.ws, { t: 'aviso', txt: 'Ese camino no lleva a ninguna parte (nivel fuera del piloto).' });
+      this.enviar(jug.ws, { t: 'aviso', txt: 'La ruta ya no coincide con el catalogo actual.' });
       return;
     }
     if (this.alCruzar) this.alCruzar(jug, this, def);
@@ -523,7 +557,7 @@ class Sala {
         for (const e of this.entidadesEnRadio(jug, radio)) e.huyendoHasta = Date.now() + 5000;
         return true;
       case 'salida': {
-        const salidas = this.def.salidas.filter((s) => s.destino && DATA.levels[s.destino] && s.tipo !== 'sellada');
+        const salidas = this.def.salidas.filter((s) => s.destino && DATA.levels[s.destino]);
         const salida = salidas.length ? this.rng.pick(salidas) : null;
         if (!salida || !this.alCruzar) {
           this.enviar(jug.ws, { t: 'aviso', txt: `${def.nombre} vibra, pero no encuentra ruta estable.` });
@@ -735,7 +769,7 @@ class Sala {
     this.difundir({ t: 'muere', id: jug.id, causa });
     setTimeout(() => {
       if (!this.jugadores.has(jug.id)) return;
-      jug.salud = 100; jug.sed = 100; jug.cordura = 100;
+      jug.salud = 100; jug.sed = 100; jug.cordura = 100; jug.oxigeno = 100;
       jug.muerto = false;
       jug.inv = []; jug.manos = [null, null];
       // lo VESTIDO también se queda atrás (paridad con startRun del modo solo;
@@ -816,6 +850,24 @@ class Sala {
     this._movidosExtra = [];
     for (const jug of this.jugadores.values())
       if (jug.canal && ahora >= jug.canal.hasta) this.resolverCanal(jug);
+    if ((this.def.reglas || []).includes('respiracion_acuatica')) {
+      for (const jug of this.jugadores.values()) {
+        if (jug.muerto || ahora < (jug._oxigenoEn || 0)) continue;
+        jug._oxigenoEn = ahora + 1000;
+        const tx = Fisica.tileDe(jug.x), ty = Fisica.tileDe(jug.y);
+        const enAgua = this.map.grid.t[ty * this.map.grid.w + tx] === 3;
+        const respiradero = (this.map.airPockets || []).some((air) =>
+          Math.hypot(air.x - jug.x, air.y - jug.y) <= 1.25);
+        const antes = jug.oxigeno ?? 100;
+        jug.oxigeno = !enAgua || respiradero
+          ? Math.min(100, antes + (respiradero ? 28 : 18))
+          : Math.max(0, antes - 4);
+        if (jug.oxigeno === 20 && antes > 20)
+          this.enviar(jug.ws, { t: 'aviso', txt: 'Te queda muy poco oxígeno.' });
+        if (jug.oxigeno === 0) this.herir(jug, 8, 'el ahogamiento');
+        if (!jug.muerto) this.enviarEstado(jug);
+      }
+    }
     Entidades.tick(this, ahora, dt);
     // difusión BATCHED de posiciones: un solo mensaje por tick con lo que se
     // movió (dedupe: un jugador puede venir del tramo parcial Y del tick)
@@ -890,7 +942,7 @@ const GRACIA_SALA_VACIA = 5 * 60 * 1000;
 
 function crearSala(nivelId, inst, grupo) {
   const sala = new Sala(nivelId, inst, grupo);
-  salas.set(claveInterna(nivelId, inst, grupo), sala);
+  salas.set(claveInterna(nivelId, inst, grupo, sala.dia), sala);
   console.log(`[sala] abierta ${sala.clave} (${sala.map.grid.w}×${sala.map.grid.h}, ${sala.entidades.length} entidades)`);
   return sala;
 }
@@ -913,6 +965,15 @@ const metricas = { ultMs: 0, maxMs: 0, medias: [], bytes: 0, bytesT: Date.now(),
 function tickTodas(ahora) {
   const t0 = process.hrtime.bigint();
   for (const [clave, s] of salas) {
+    const diaActual = DailySeed.dayKey(new Date(ahora));
+    if (s.dia !== diaActual && s.jugadores.size && s.alCruzar) {
+      for (const jug of [...s.jugadores.values()])
+        s.alCruzar(jug, s, {
+          destino: s.nivelId,
+          texto: 'Las Backrooms se reorganizan con el cambio de ciclo diario.',
+        }, { sinRetorno: true });
+      continue;
+    }
     if (!s.jugadores.size) {
       if (!s._vaciaDesde) s._vaciaDesde = ahora;
       else if (ahora - s._vaciaDesde >= GRACIA_SALA_VACIA) {
@@ -937,7 +998,7 @@ function estado() {
     ? metricas.medias.reduce((a, b) => a + b, 0) / metricas.medias.length : 0;
   return {
     salas: [...salas.values()].map((s) => ({
-      clave: s.clave, privada: s.privada, jugadores: s.jugadores.size,
+      clave: s.clave, dia: s.dia, privada: s.privada, jugadores: s.jugadores.size,
       entidades: s.entidades.filter((e) => e.viva).length,
     })),
     total: [...salas.values()].reduce((n, s) => n + s.jugadores.size, 0),

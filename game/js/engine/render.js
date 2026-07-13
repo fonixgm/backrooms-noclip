@@ -251,7 +251,7 @@
   function drawExit(ex, x, y, t, northWall) {
     const cx = x + 24;
     const pulse = 0.6 + Math.sin(t / 400) * 0.25;
-    const col = ex.def.tipo === 'escape' ? '#6ae86a' : ex.def.tipo === 'sellada' ? '#666666' : '#e8c95a';
+    const col = ex.def.tipo === 'escape' ? '#6ae86a' : '#e8c95a';
     if (ex.def.ritual) { drawRitual(ex, x, y, t, col, pulse); return; }
 
     // Suelo falso todavía cerrado: grietas sobre la moqueta, no un agujero ya abierto.
@@ -551,7 +551,7 @@
         let img;
         if (v === T.AGUA) img = world.tiles.agua;
         else if (v === T.DECOR) img = world.tiles.decor;
-        else img = world.tiles.suelo[(x * 7 + y * 13) % 3];
+        else img = world.tiles.suelo[(x * 7 + y * 13) % world.tiles.suelo.length];
         ctx.drawImage(img, sx, sy);
         // oclusión ambiental: sombra donde el suelo toca una pared
         if (v !== T.PARED) {
@@ -624,7 +624,7 @@
             // esquema HD-2D: cara frontal completa si el sur es transitable; techo si no
             const surPared = esWall(x, y + 1);
             if (!surPared && MapGen.at(g, x, y + 1) !== T.VACIO) {
-              ctx.drawImage(world.tiles.caraFull[(x * 7 + y * 13) % 3], sx, sy);
+              ctx.drawImage(world.tiles.caraFull[(x * 7 + y * 13) % world.tiles.caraFull.length], sx, sy);
               // sombra del muro proyectada sobre el suelo del sur
               const sg = ctx.createLinearGradient(0, sy + TILE, 0, sy + TILE + 9);
               sg.addColorStop(0, 'rgba(0,0,0,0.32)');
@@ -701,6 +701,12 @@
       ctx.drawImage(lc, 0, 0, lw, lh, x0 * TILE - cam.x, y0 * TILE - cam.y, lw * TILE, lh * TILE);
     }
 
+    if ((world.level.reglas || []).includes('respiracion_acuatica') &&
+        MapGen.at(g, Math.round(world.player.x), Math.round(world.player.y)) === T.AGUA) {
+      ctx.fillStyle = 'rgba(0,42,62,0.24)';
+      ctx.fillRect(0, 0, W, H);
+    }
+
     // partículas ambientales del nivel
     if (!window.NOFX) drawParticles(world, t);
 
@@ -709,7 +715,8 @@
       const pcx = world.player.rx * TILE - cam.x + TILE / 2;
       const pcy = world.player.ry * TILE - cam.y + TILE / 2;
       const halo = ctx.createRadialGradient(pcx, pcy, 12, pcx, pcy, TILE * (world.visionActual() * 0.75 + 1));
-      halo.addColorStop(0, `rgba(255,240,190,${0.09 * fl})`);
+      const haloBase = 0.04 + Math.max(0, Math.min(1, 1 - dark)) * 0.05;
+      halo.addColorStop(0, `rgba(255,240,190,${haloBase * fl})`);
       halo.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = halo;
       ctx.fillRect(0, 0, W, H);

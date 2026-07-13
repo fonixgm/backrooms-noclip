@@ -798,8 +798,13 @@
   function rutasOverride(id) {
     const dirs = ['assets/sprites', 'assets/objetos', 'assets'];
     const exts = ['webp', 'png', 'jpg', 'jpeg'];
+    // cache-bust por versión (como los <script ?v=>): al subir VERSION_JUEGO el
+    // navegador/edge recarga el arte nuevo en vez de servir el override viejo.
+    // Sin window.VERSION_JUEGO (test de Node) las rutas quedan limpias.
+    const v = (typeof window !== 'undefined' && window.VERSION_JUEGO)
+      ? `?v=${encodeURIComponent(window.VERSION_JUEGO)}` : '';
     const out = [];
-    for (const dir of dirs) for (const ext of exts) out.push(`${dir}/${id}.${ext}`);
+    for (const dir of dirs) for (const ext of exts) out.push(`${dir}/${id}.${ext}${v}`);
     return out;
   }
 
@@ -839,6 +844,26 @@
     ctx.fillStyle = 'rgba(0,0,0,0.28)';
     ctx.beginPath(); ctx.ellipse(cx, cy + 12, 11, 4, 0, 0, 7); ctx.fill();
     switch (id) {
+      case 'portico':
+        ctx.fillStyle = '#4b4540';
+        ctx.fillRect(cx - 13, cy - 18, 4, 30);
+        ctx.fillRect(cx + 9, cy - 18, 4, 30);
+        ctx.fillRect(cx - 13, cy - 18, 26, 5);
+        ctx.fillStyle = '#18191a';
+        ctx.fillRect(cx - 8, cy - 12, 16, 24);
+        ctx.fillStyle = '#b59b68';
+        ctx.fillRect(cx + 5, cy, 2, 2);
+        break;
+      case 'burbuja_aire': {
+        ctx.shadowColor = '#8fe8ff'; ctx.shadowBlur = 12;
+        ctx.strokeStyle = '#b9f3ff'; ctx.lineWidth = 2;
+        for (let i = 0; i < 5; i++) {
+          const fase = (t / 500 + i * 0.23) % 1;
+          const bx = cx + Math.sin(i * 2.1) * 7, by = cy + 11 - fase * 32;
+          ctx.beginPath(); ctx.arc(bx, by, 2 + (i % 2), 0, Math.PI * 2); ctx.stroke();
+        }
+        break;
+      }
       case 'cono':
         ctx.fillStyle = '#d86830';
         ctx.beginPath(); ctx.moveTo(cx, cy - 12); ctx.lineTo(cx + 8, cy + 10); ctx.lineTo(cx - 8, cy + 10); ctx.closePath(); ctx.fill();

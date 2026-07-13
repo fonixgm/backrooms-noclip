@@ -150,6 +150,8 @@
       'Bebe agua de almendras (o arriésgate con los charcos). A 0, la deshidratación te mata.'],
     ['pan', 'Hambre', (p) => p.hambre, [50, 30, 10], ['Hambriento', 'Famélico', 'Inanición'],
       'Registra contenedores en busca de comida. A 0, la inanición te consume.'],
+    ['gota', 'Oxígeno', (p) => p.oxigeno ?? 100, [70, 40, 15], ['Conteniendo el aire', 'Sin aliento', 'Ahogándote'],
+      'Sal del agua o alcanza un respiradero de burbujas. A 0, pierdes salud rápidamente.'],
   ];
   function renderMoodles() {
     const cont = $('moodles');
@@ -617,7 +619,6 @@
     if (def.tipo === 'retorno')
       warn.textContent = `↩ Volver por donde viniste → ${destinoNombre ?? '???'}`;
     else if (def.tipo === 'escape') warn.textContent = '⭐ Parece un camino de vuelta a la realidad.';
-    else if (def.tipo === 'sellada') warn.textContent = '⌀ El camino se pierde en niveles sin cartografiar.';
     else if (def.tipo === 'llave') warn.textContent = '🗝 Requiere una Llave de Nivel.';
     else if (def.tipo === 'arriesgada' && def.riesgoVoid > 0)
       warn.textContent = `⚠ Camino inestable (riesgo de caer al Vacío) → ${destinoNombre ?? '???'}`;

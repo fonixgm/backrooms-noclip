@@ -1,4 +1,336 @@
 {
+ "Backroom Colonists": {
+  "pageid": 13883,
+  "title": "Backroom Colonists",
+  "displayTitle": "Backroom Colonists",
+  "apiCategories": [
+   "Groups"
+  ],
+  "wikiCategories": [
+   "Groups",
+   "Backroom Colonists"
+  ],
+  "class": null,
+  "description": "The Backroom Colonists, formerly known as the Backroom Pioneers and sometimes referred to as the Backroom Explorers, is a colony initially comprised of various factions and smaller groups that ultimately unified under an elected minister. Despite setbacks, this faction still stands as the largest singular group within the known backrooms and ranks among the most powerful and influential groups, second only to the M.E.G and thriving across hundreds of levels.\n\nWhile being a united group, each member retains significant freedom and control over their own actions. This autonomy plays a pivotal role in the growth of the Backroom Colonists, as joining is straightforward, and the organization only exercises loose authority over its outposts. Although calculating the total population is quite challenging, given that members are dispersed across numerous outposts on different levels, with the loose affiliation fostering more individuals to constantly join and leave, estimates still put their overall numbers far above second and third place, that being the M.E.G and Aurielle. What sets them back however, is their loose organization, while allowing the group to be more appealing and welcoming, has drastically lowered their efficiency.\n\nIt is worth noting that the Backroom Colonists were once more formidable. However, conflicts and internal reforms led to the substantial weakening of the colony. Numerous outposts and bases were either scaled back, abandoned, or left for other groups to claim. Divisions broke away from the Backroom Colonists, vanishing into obscurity. Since those events, the Backroom Colonists have dispersed, engaged in various conflicts, and endured through multiple periods within the Backrooms.\n\nThe relationship between the M.E.G. and the Backroom Colonists is a complex tapestry of alliance, conflict, and eventual reconciliation. It began with a foundation of mutual interest, leading to the formation of the Allied Liminal Coalition—a powerful partnership that successfully defeated the common threat of the U.E.C. in the Great Wake War. However, as both groups expanded, trust eroded into suspicion and competition, resulting in active sabotage on both sides. This, along with various other factors, led both factions to become major participants in the protracted and bitter conflict known as the Bloodbath, from which the M.E.G. ultimately emerged victorious.\n\nThrough negotiations involving technology sharing and demilitarization, the Colonists were permitted to reform. However, their continued support for Aureille—a faction opposed by the M.E.G. during the Korthie Casiagen War—further strains relations. The aftermath resulted in a tense stalemate, but shared challenges—along with the existential crisis posed by the Flicker—compelled both groups to return to cooperation. From this necessity, a new, pragmatic partnership has developed. Today, the two groups maintain exceptionally close ties, characterized by joint holdings, integrated trade, and unprecedented technological collaboration, symbolizing a hard-won peace built upon their shared history.\n\n|-| K.R.O. =\n\nThe Kauer-Colonist Alliance was officially established in the Treaty of Fikes. This alliance is primarily pragmatic, creating a formal, albeit limited, framework for cooperation. While the core objectives of the two groups are largely disparate, they are prepared to support one another. Despite having few commonalities, the Colonists have provided protection, traded resources, and occasionally shared research. Both factions have also participated in documenting Level 24.\n\n|-| A.E.G. =\n\nOn the surface, the Colonists and the Anti-Entity Group (A.E.G.) appear to have a simple, neutral-to-friendly relationship, with the A.E.G. periodically commissioning the Colonists to conduct census counts, as their large population provides the necessary experience and infrastructure to carry out these tasks efficiently. However, any efforts to deepen their relationship are fundamentally hindered by a core philosophical divide: the A.E.G. is dedicated to the eradication of entities and believes in human superiority, while the Colonists maintain a very liberal and pro-entity-friendly perspective, a stance that leads some Colonists to view the A.E.G. as potential fascists and extremists.\n\n|-| E.R.C. =\n\nThe Colonists and the Entity Research Committee (E.R.C.) maintain a cooperative, though narrowly defined, relationship. Despite differing objectives, their shared presence on Level 5 has led to close collaboration within the level’s outposts, with the Colonist documenting the environmental aspects while the E.R.C. catalogs potential local entities—including the alleged previous abundance of Deathmoths and the speculated Beast of Level 5. Additionally, both groups have shared a variety of research documents, but interaction beyond this between the two groups remains limited. Lando Carlsen, the Colonists' head of diplomacy, however, has expressed interest in strengthening relationships, indicating the potential for a more substantial alliance in the future.\n\n|-| Aurielle =\n\nThe Backroom Colonists share a strong and enduring alliance with the Republic of Aurielle, a bond forged through shared history. The Colonists have acted to protect splinter Auriellen factions such as the Istauran Federation and provided critical humanitarian and material aid to Aurielle during the Korthie Casiagen War. This partnership culminated in the creation of the Geminia Divisional Group, an autonomous unit of Aurielle volunteers integrated into the Colonists. Today, the alliance remains strong, characterized by joint research, military exercises, and fast-tracked access between their respective holdings.\n\nIn stark contrast, the Colonists hold an openly hostile stance toward the Emporium of Agoreas—a criminal syndicate also known as the Agorean Mafia, which operates covertly within Aurielle’s ranks. The Colonists became aware of Agoreas through intercepted intelligence indicating their illicit drug shipments were being concealed within legitimate cargo, potentially compromising Colonist supply lines. While no formal diplomatic engagement exists, the prevailing sentiment is one of deep opposition, with many advocating for open warfare with the syndicate.\n\n|-| Backrooms Red Cross =\n\nThe Backroom Colonists maintain a formal and enduring humanitarian partnership with the Backrooms Red Cross, founded upon a shared commitment to aiding wanderers throughout the Backrooms. The Red Cross has consistently served as an integral medical backbone for the Colonists, providing critical care during crises and alleviating strain on the Department of Welfare. This cooperation deepened significantly during the widespread catastrophe of the Flicker, leading to the establishment of temporary joint medical facilities in holdings such as Base Blink. Recently, the alliance has expanded into collaborative medical research, with both organizations pooling knowledge and resources in pursuit of cures for entity-borne pathologies, most notably the Sanguine Festivus Virus.\n\n|-| Party Crashers =\n\nAlthough not the closest in diplomacy, Party Crashers and Backrooms Colonists maintain cordial, neutral, and mutually respectful relations, with both factions honoring established territorial boundaries. Relations were strengthened following the Colonists' recognized contributions during the Euphoric Wars, leading to further partnerships between the two groups. This cooperative dynamic has enabled crasher units to be stationed across seven different Backrooms Colonist bases.\n\n|-| Republic of 153 =\n\nThe Colonists and the Republic of Level 153 enjoy a strong and positive relationship. Since the establishment of Outpost Vintage, the Republic has actively participated in trade with the Colonists. During the events of the Flicker, the Colonists did their best to help the Republic avoid mass starvation. Additionally, the group recognizes Colonist Mina as an official and interchangeable currency.\n\n|-| R.E.U. =\n\nThe Backroom Colonists maintain friendly and constructive relations with the Royal Exploration Unit (R.E.U.). The two groups share significant historical and cultural affinities, which have fostered a generally friendly and cooperative dynamic. While the R.E.U.’s existing alliance with the M.E.G. initially complicated diplomacy, this tension resolved as Colonist–M.E.G. relations improved in the wake of the Flicker.\n\nThough the Colonists and the R.E.U. possess broadly similar exploratory and settlement-oriented goals, they operate under a clear understanding of non-interference, ensuring their activities remain complementary rather than competitive. This mutual respect has allowed for the establishment of beneficial trade agreements and resource exchanges, which have flourished over time and contributed to the prosperity and operational capacity of both organizations.",
+  "lead": "\"Even during the darkest of nights, stars permeate, and shine bright...\"\n\nTwo members of The Backroom Colonists exploring Level 10.",
+  "entityLinks": [],
+  "allLinks": [
+   "Level 10",
+   "M.E.G",
+   "Aurielle",
+   "M.E.G.",
+   "The Kauer Research Organization",
+   "Level 24",
+   "Level 5",
+   "Entity 4",
+   "Entity 18",
+   "Sanguine Festivus",
+   "Level 153",
+   "Phenomenon 12",
+   "Phenomenon 7",
+   "Object 1",
+   "Level 4",
+   "Phenomenon 13",
+   "The Delta Mall",
+   "Phenomenon 2",
+   "Level 37",
+   "Level 15",
+   "Level 94",
+   "Level 514",
+   "The Hive",
+   "Level 1",
+   "Level 4.3",
+   "Level 34",
+   "Level 154",
+   "Level 156",
+   "Level 157",
+   "Level 205",
+   "Level 331",
+   "Level 370",
+   "Level 427",
+   "Level 711",
+   "Level 810",
+   "Level 859",
+   "Level 913",
+   "Level 52",
+   "Level 130",
+   "Level 255"
+  ],
+  "entrances": [],
+  "exits": [],
+  "image": "Backroom colonist flag V2.png",
+  "url": "https://backrooms.fandom.com/wiki/Backroom_Colonists"
+ },
+ "Phenomenon 354": {
+  "pageid": 21485,
+  "title": "Phenomenon 354",
+  "displayTitle": "ㅤ",
+  "apiCategories": [
+   "Phenomena"
+  ],
+  "wikiCategories": [
+   "Phenomena",
+   "Locations",
+   "Tales",
+   "Format Screws",
+   "Dangerous"
+  ],
+  "class": null,
+  "description": "Threat Index: Class 0\n>> Safe\n>> Stable\n>> Home?",
+  "lead": "Threat Index: Class 0\n>> Safe\n>> Stable\n>> Home?",
+  "entityLinks": [],
+  "allLinks": [
+   "The Frontrooms",
+   "Entity 9",
+   "Entity 8",
+   "Entity 10",
+   "Entity 62",
+   "Entity 4",
+   "Level !"
+  ],
+  "entrances": [],
+  "exits": [],
+  "image": "354CustomClass1.png",
+  "url": "https://backrooms.fandom.com/wiki/Phenomenon_354"
+ },
+ "Recovered Data File": {
+  "pageid": 57102,
+  "title": "Recovered Data File",
+  "displayTitle": "Recovered Data File",
+  "apiCategories": [
+   "Entities",
+   "Groups"
+  ],
+  "wikiCategories": [
+   "Entities",
+   "Dangerous",
+   "Groups",
+   "Incursion Canon",
+   "Marauders",
+   "Sapient Entities"
+  ],
+  "class": null,
+  "description": "Marauders are an invasive and military group of humanoid entities that are known for raiding and conquering from various levels, be they safe or dangerous classes. Their goal remained unknown; however, witnesses who survived from these entities' assaults reported that some of the razed levels that they had once inhabited collapsed and were finally destroyed, which thus raises concerns among the wanderers.\n\nThey are distinguishable in their black and red tactical outfits and equipment and their distinct singular red eyes.\n\nGiven their hostile nature and their unexpected appearance, many wanderers and groups are hostile toward these entities; however, they are more hostile toward the Travelers, a group of reality-warping entities, suggesting the long history between the two rival groups.",
+  "lead": "Skip >>\n\nIntercepting lost transmission █\n\n\"They found us! Get to the escape route!\"\n\n\"No use, they're already over there! They're cornering us like rats!\"\n\n\"Are there anyone to help us?! Site Director? Anthony?!\"\n\n\"We- we're on own our own...\"\n\n\"You can't be serious... Shit! They really cut us off!\"\n\n\"They set us up! Those lying bastards, I'm gonna-\"\n\n\"They're getting closer! Get yourself armed and be ready!\"\n\n--- ###: Target site has been capture. Resistance have met and are neutralized. Survivors have been surrendered themselves.\n\n/// Attention: All active units in the enemy's sector / Supervisor █████ is on his way to your location.\n\n--- ###: Copy. All units stand down and extract their data. Remain on high alert. Guarding Supervisor █████ is our top priority.\n\n/// Attention: Supervisor █████ have arrived.\n\nMy, my, look what you have done to this place. But great work of disposing them as always. So...\n\nSpying on us, are you?\n\nI have watched you long enough, though I confess I was curious as to why your men hiding in the shadows and then decided to attack one of my premises. Do they tell you that it is rude to trespass and vandalizing on another’s privacy, Site Director?\n\nYou...\n\nYou're destroying it...\n\nDestroying? Oh, that? Hah! Fearful for something that small? I was merely sifting through the refuse of this fractured, decaying reality. What is it you call it... the \"Backrooms,\" yes? Quite an odd name, though fitting from natives like you.\n\n--- ###: Supervisor █████. They have extracted and confiscated of their data regarding their recent records. Recommendation for data purging?\n\nHmm, no... perhaps some of them. Archive it, and let them have it where it belongs.\n\n--- ###: Understood.\n\nIt is a shame, truly—that you mistook us for monsters, and lash at us out of fear. And for that, you have to face the consequences and cost their lives. A fair exchange, is it not? Well, Let me show you. You there. If you would?\n\nWait, please- No!\n\nYou bastard... what're you going to do with them?\n\nTouching.... Yet it was never your choice that sealed your people’s fate. No, that came from the rotten, unappreciated fools who deemed you expendable and cast you aside. It is truly a sad state of affairs, is it not?\n\nThey... I... Please, just let them go...\n\nHmm... Perhaps we make an arrangement, yes? If you would be so kind—attend to them.\n\n--- ###: Yes sir. Hold them down...\n\nDamn it! Just let them go, they have nothing to do with this!\n\nOh, you are mistaken, Site Director. I am keeping your word. For their own good, of course. Better they reside in the Butcher’s domain than fall into the hands of my... unruly Deacons then have them use like unwanted, broken dolls. And you would not want to know what happen if I let them have your people, would you?\n\nWhat?... You sick fuck!\n\n--- ###: All of them were converted and ready for transportation, sir. What should we do about him?\n\nLeave him. But rest assured, Site Director, she will handle them with the utmost care. Men, should the Deacons ever approach, thinking to interfere with these people, remind them... I see all that happens here. They will think twice before crossing me.\n\n--- ###: Yes sir, allocating them to Supervisor ██████'s sector.\n\nSee? I keep your word. And Site Director... you have to put trust in me. Now, send him to the main Nexus.\n\n--- ###: Stand up, now. Take him to the Overseer.\n\nAnd as for you, little machine.\n\nYou can keep this little research of theirs. I care less if you share that to someone. After all, what can they do to stop your masters' rampage?\n\n[Recovered Data File] █",
+  "entityLinks": [
+   "Entity 9"
+  ],
+  "allLinks": [
+   "Travelers of Stars",
+   "Golden Artifacts",
+   "M.E.G.",
+   "Backroom Colonists",
+   "Entity 9"
+  ],
+  "entrances": [],
+  "exits": [],
+  "image": "Pariah Vague.png",
+  "url": "https://backrooms.fandom.com/wiki/Recovered_Data_File"
+ },
+ "Entity Research Committee": {
+  "pageid": 72581,
+  "title": "Entity Research Committee",
+  "displayTitle": "Entity Research Committee",
+  "apiCategories": [
+   "Groups"
+  ],
+  "wikiCategories": [
+   "Groups",
+   "Entity Research Committee"
+  ],
+  "class": null,
+  "description": "🗕 🗗 ✖←  → ↻  ⌂🔓︎ backnet40://erc.bri/home\n\nHome    About    Contact    Jobs\n\nThe Entity Research Committee\n\nWho We Are\n\nThe Entity Research Committee, or ERC for short, is a Backrooms group instituted to analyze and research entities. The ERC is responsible for the discovery and documentation of numerous entities, as well as being a notable contributor to the M.E.G. database. The ERC has a number of outposts and laboratories stationed throughout the Backrooms. These outposts are not established within levels exhibiting entity infestations; instead, we reside in safer levels. This allows us to easily recruit new members and additionally aid wanderers in their travels. While levels aren't one of the group's priorities, the committee does occasionally study them.\n\nHierarchy\n\nSimilar to other Backrooms groups, the ERC comprises a unique hierarchy of designated roles. The hierarchy is as follows:\n\n• The Directors\n• Heads of Research\n• Heads of Security\n• Scientists\n• Field Researchers\n• Guards\n• Janitorial Positions/Positions of Lesser Importance.\n\nAlliances\n\nPresently, the Entity Research Committee is allied with a few Backrooms groups, which typically assist or trade with the ERC in exchange for things such as entity data. The ERC is currently allied with the following groups:\n\n• Major Explorers Group\n\nOutposts\n\nAs mentioned before, the ERC has many outposts stationed throughout the Backrooms. The current list of outposts is as follows:",
+  "lead": "🗕 🗗 ✖←  → ↻  ⌂🔓︎ backnet40://erc.bri/home\n\nHome    About    Contact    Jobs\n\nThe Entity Research Committee\n\nWho We Are\n\nThe Entity Research Committee, or ERC for short, is a Backrooms group instituted to analyze and research entities. The ERC is responsible for the discovery and documentation of numerous entities, as well as being a notable contributor to the M.E.G. database. The ERC has a number of outposts and laboratories stationed throughout the Backrooms. These outposts are not established within levels exhibiting entity infestations; instead, we reside in safer levels. This allows us to easily recruit new members and additionally aid wanderers in their travels. While levels aren't one of the group's priorities, the committee does occasionally study them.\n\nHierarchy\n\nSimilar to other Backrooms groups, the ERC comprises a unique hierarchy of designated roles. The hierarchy is as follows:\n\n• The Directors\n• Heads of Research\n• Heads of Security\n• Scientists\n• Field Researchers\n• Guards\n• Janitorial Positions/Positions of Lesser Importance.\n\nAlliances\n\nPresently, the Entity Research Committee is allied with a few Backrooms groups, which typically assist or trade with the ERC in exchange for things such as entity data. The ERC is currently allied with the following groups:\n\n• Major Explorers Group\n\nOutposts\n\nAs mentioned before, the ERC has many outposts stationed throughout the Backrooms. The current list of outposts is as follows:",
+  "entityLinks": [],
+  "allLinks": [
+   "Backrooms Wiki",
+   "M.E.G.",
+   "Backroom Colonists",
+   "Level 1",
+   "The Hub",
+   "Level 40",
+   "Level 36",
+   "Level 5",
+   "Level 865",
+   "Object 14"
+  ],
+  "entrances": [],
+  "exits": [],
+  "image": "ERCnewlogoagain.png",
+  "url": "https://backrooms.fandom.com/wiki/Entity_Research_Committee"
+ },
+ "They Who Seek": {
+  "pageid": 81593,
+  "title": "They Who Seek",
+  "displayTitle": "They Who Seek",
+  "apiCategories": [
+   "Groups"
+  ],
+  "wikiCategories": [
+   "Liminality",
+   "Groups",
+   "Empyreanverse"
+  ],
+  "class": null,
+  "description": "They Who Seek, also known as \"The Seekers\" or \"TWS\", is a cultist group that worships an Empyrean named “He Who Sees”. The group was founded in the mid-1900s in which the followers seek to He Who Sees, AKA \"The Seer\" or \"HWS\", for immortality and any other things that they were promised by him, thus their name.\n\nThough many join voluntarily, some wanderers are also threatened or manipulated into the cult, either by the group or HWS himself, who does so through minds of mortals, whether it’d be dreams, hallucinations, or any other conditions in which the victim is not mentally there. Those suffering from low sanity are advised to try to drink almond water and sleep as much as they can, as they are in higher risk of encountering these types of approaches from HWS than those who are well-rested and mentally stable.\n\nAs mentioned before, some wanderers are threatened or manipulated into the group, so members, especially ones in charge of a single division or team, may have ideologies that contradicts another’s ideas, as well as their demeanors. Because of this, when encountering a group from this cult, they may be neutral or outright hostile, so caution is advised.\n\nA artistic depiction from an amateur artist\n\nHe Who Sees, who mentioned before is called \"The Seer\" or \"HWS\", was one of the many Empyreans who suffered from the Dawn Wars, unbeknownst to everyone who isn't an Empyrean or any other mythical entity.\n\nHWS happened to die in the war, but for unknown reasons, was brought back to life not long after. Now blinded by rage and vengeance for what happened to him, he attempts to get anything he wants done through his cultists, by any means necessary.",
+  "lead": "",
+  "entityLinks": [],
+  "allLinks": [
+   "Children of the Empyrean Sea",
+   "M.E.G.",
+   "Level 94",
+   "Revelations"
+  ],
+  "entrances": [],
+  "exits": [],
+  "image": "TWSBackground2.gif",
+  "url": "https://backrooms.fandom.com/wiki/They_Who_Seek"
+ },
+ "Travelers of Stars": {
+  "pageid": 87015,
+  "title": "Travelers of Stars",
+  "displayTitle": "Travelers of Stars",
+  "apiCategories": [
+   "Entities",
+   "Groups"
+  ],
+  "wikiCategories": [
+   "Entities",
+   "Groups",
+   "Incursion Canon",
+   "Sapient Entities"
+  ],
+  "class": null,
+  "description": "Travelers are an advanced race of entities possessing powerful reality-bending properties. They are distinguishable by their lavish suits of armor.\n\nThey consider themselves part of the \"Outsiders,\" a group of beings originating from the aptly named \"Outside,\" in a sense, they do not belong to the Backrooms. Having recently arrived, they are actively exploring various levels and interacting with many wanderers along the way.\n\nUnlike any typical entities, they are considered as \"alien\" wanderers and are often welcomed due to their properties when fending off hostile entities and navigating dangerous levels for the wanderers.\n\nIt is believed that they are the architects of the Palace and the manufacturers of the Golden Artifacts. Though, those creations are attributed to their ancestors.\n\nThey are the enemies of the Marauders.",
+  "lead": "Skip >>\n\nSeries // Travelers █\n\nProceed >>",
+  "entityLinks": [],
+  "allLinks": [
+   "Travelers 01",
+   "The Palace in the Void",
+   "Golden Artifacts",
+   "Recovered Data File",
+   "Level 6",
+   "Level 11",
+   "M.E.G.",
+   "Backroom Colonists",
+   "Backrooms Red Cross",
+   "The Talking Box",
+   "Level 0",
+   "Level 1",
+   "Level -599",
+   "Level 37"
+  ],
+  "entrances": [],
+  "exits": [],
+  "image": "Traveler 1.png",
+  "url": "https://backrooms.fandom.com/wiki/Travelers_of_Stars"
+ },
+ "Party Crashers": {
+  "pageid": 94898,
+  "title": "Party Crashers",
+  "displayTitle": "Party Crashers",
+  "apiCategories": [
+   "Groups"
+  ],
+  "wikiCategories": [
+   "Groups",
+   "The Party Crashers"
+  ],
+  "class": null,
+  "description": "With origins as far back as the early 1880s, the Party Crashers' incentive is to stomp out Partygoer presence wherever it may take root; whilst also providing ample aid and welfare to communities ravaged by the ongoing conflict. Although generally friendly to most communities, militants tend to have a merciless attitude towards the SFV virus, with each and every unit being equipped with ample ammunition and equipment to properly squash threats.\n\nMembers of the Party Crashers are easily identifiable by their dark-blue masks: which not only protect them from exposure to SFV but also serve as a means of identification from a distance, although this identification can be a disadvantage on occasion. Along with this, units don grey hooded sweatshirts worn atop several layers of clothing, as well as padded cargo pants to limit exposure as much as possible. Certain crashers opt to take their protective gear several steps further, reinforcing their attire with duct tape, additional fabrics, and scrap metal, with many including rudimentary metal helmets in their apparel. Regardless of these variations in attire, all crashers are identifiable by cloth bands tied around their left arm; with colors and stripes used to identify awards, ranks, and battalion.\n\nA vast majority of Party Crasher units live in a nomadic lifestyle — with only a select few members persisting in small camps and settlements around populated levels as a form of chaos control. The member count of the Party Crashers is known to be extraordinarily high; as some estimates record their exact population to be somewhere in the tens of thousands. Gaining membership within the group is partly difficult, as a mandatory 15-day preventative quarantine is required, as well as extensive training on par with the United States Marines within: The Frontrooms.\n\nIn terms of weaponry, the Party Crashers flaunt an extensive arsenal which has yet to be replicated by any group as of yet — with their main form of arms being cheap, yet effective firearms, with their undisclosed base of operations having ample resources to arm each member with variations of the Sten gun, as well as basic long-ranged firearms. Along with this, crasher units are also trained to weaponize objects, with many opting to utilize both Greek Fire and Liquid Pain due to their volatile properties. Experimental weapons, such as hardened liquid pain in the form of explosive blow-darts and volatile Firesalt rounds have been demonstrated during the Euphoric wars with varying degrees of success.",
+  "lead": "The Backrooms is a treacherous place.\nWith omnipotent threats lurking around every facet of this living nightmare, it has become our incentive to destroy it, no matter the repercussions.\nBecause we persist, we adapt, and we defend.\nWe are the Party Crashers.\n\nGROUP OF INTEREST\n\nPRIMARY GROUP TYPE\nProtection\n\nInfluence: 6/10\n\nHostility: 3/10\n\nOrganization: 9/10\n\nThe Party Crashers are a human militia dedicated to containing and eradicating the Sanguine Festivus virus and its victims.",
+  "entityLinks": [],
+  "allLinks": [
+   "Sanguine Festivus",
+   "Caius Taggert",
+   "Level 399",
+   "The Frontrooms",
+   "Object 5",
+   "Object 12",
+   "Object 15",
+   "The First",
+   "M.E.G.",
+   "Level 1",
+   "Level 4",
+   "Level Fun",
+   "Phenomenon 12",
+   "Entity List",
+   "Republic of Aurielle",
+   "Architect Industries",
+   "Object 29",
+   "Backrooms Colonists",
+   "I.R.I.S."
+  ],
+  "entrances": [],
+  "exits": [],
+  "image": "Party_Crasher_.png",
+  "url": "https://backrooms.fandom.com/wiki/Party_Crashers"
+ },
+ "Phenomenon 2": {
+  "pageid": 95436,
+  "title": "Phenomenon 2",
+  "displayTitle": "Phenomenon II - \"BACK-NET\"",
+  "apiCategories": [
+   "Objects",
+   "Phenomena"
+  ],
+  "wikiCategories": [
+   "Objects",
+   "Phenomena",
+   "ATLAS ARCHIVE"
+  ],
+  "class": null,
+  "description": "BACK-NET (Phenomenon 2) is essentially the Backrooms’ version of the internet; a wide area network that uses an anomalous protocol in order to transfer data between devices. Access points to BACK-NET are usually exclusive to levels mimicking manmade structures such as Level 0, Level 4, or Level 9, making long-distance communication difficult outside of the few levels with the connection.\n\nHowever, unlike the baseline Frontrooms internet, BACK-NET holds various anomalous properties that distinguish it from a normal wireless network, with the network being mysterious in nature and often quite unstable at times. Research by The Kauer Research Organization into BACK-NET is ongoing to this very day.",
+  "lead": "",
+  "entityLinks": [],
+  "allLinks": [
+   "Level 0",
+   "Level 4",
+   "Level 9",
+   "The Kauer Research Organization",
+   "BackOS",
+   "Phenomenon 13",
+   "The Database",
+   "Backchat (Collaborative Log)",
+   "BACK-NET Ver. 1.1",
+   "Entity 70",
+   "Level 906",
+   "The First",
+   "Enigmatic Space Information Security & Protection System",
+   "Extended BACK-NET Website List",
+   "05-12-19"
+  ],
+  "entrances": [],
+  "exits": [],
+  "image": "MS-DOS PROMPT.png",
+  "url": "https://backrooms.fandom.com/wiki/Phenomenon_2"
+ },
+ "Backrooms Investigation Foundation": {
+  "pageid": 97303,
+  "title": "Backrooms Investigation Foundation",
+  "displayTitle": "Backrooms Investigation Foundation",
+  "apiCategories": [
+   "Groups"
+  ],
+  "wikiCategories": [
+   "Groups",
+   "Backrooms Investigation Foundation"
+  ],
+  "class": null,
+  "description": "Description\nThe B.I.F is a law enforcement agency in The Backrooms dedicated to preventing and stopping crimes as well as keeping wanderers safe inside The Backrooms. They were founded in 1989 after an increase in anarchist and criminal groups in The Backrooms. They have many outposts all throughout The Backrooms and will commonly help wanderers reach the exit of the current level they are on. The group is not considered to be one of the most powerful in terms of manpower, but it makes up for it in training and effectiveness.\n\nThe group holds a lot of important supplies such as weapons, almond water, multiple objects, wood, and copper wiring. B.I.F recently has suffered a personnel shortage due to reforms and removing all corrupt personnel. B.IF's main base is located in Level-11 and the lobby is open to wanderers to report crimes, trade resources, or just to rest for a day or two. Wanderers and Settlement Leaders can also ask for B.I.F protection, in exchange for a deal where they will tell them information about crimes in the surrounding areas.\n\nStructure\nThe ranking structure in B.I.F is very similar to organizations from The Frontrooms such as the Federal Bureau of Investigation and Central Intelligence Agency. The group is led by a voted in Director usually a former high ranking Investigations agent, the Director is responsible for keeping the internal operations running smooth and usually to direct diplomacy. Wanderers can join the B.I.F by applying in their headquarters or any major base, afterwards they will go through 7 weeks of training and classes. After you graduate out of training, they will then be given the rank of Entry Agent and partnered up with a more experienced Agent until they get promoted. B.I.F Agents can choose their station, and many decide to stay at the headquarters as it is one of the best stations. Agents can also apply to become part of a B.I.F SWAT team and will go through additional training for that.\n\nDepartments",
+  "lead": "Description\nThe B.I.F is a law enforcement agency in The Backrooms dedicated to preventing and stopping crimes as well as keeping wanderers safe inside The Backrooms. They were founded in 1989 after an increase in anarchist and criminal groups in The Backrooms. They have many outposts all throughout The Backrooms and will commonly help wanderers reach the exit of the current level they are on. The group is not considered to be one of the most powerful in terms of manpower, but it makes up for it in training and effectiveness.\n\nThe group holds a lot of important supplies such as weapons, almond water, multiple objects, wood, and copper wiring. B.I.F recently has suffered a personnel shortage due to reforms and removing all corrupt personnel. B.IF's main base is located in Level-11 and the lobby is open to wanderers to report crimes, trade resources, or just to rest for a day or two. Wanderers and Settlement Leaders can also ask for B.I.F protection, in exchange for a deal where they will tell them information about crimes in the surrounding areas.\n\nStructure\nThe ranking structure in B.I.F is very similar to organizations from The Frontrooms such as the Federal Bureau of Investigation and Central Intelligence Agency. The group is led by a voted in Director usually a former high ranking Investigations agent, the Director is responsible for keeping the internal operations running smooth and usually to direct diplomacy. Wanderers can join the B.I.F by applying in their headquarters or any major base, afterwards they will go through 7 weeks of training and classes. After you graduate out of training, they will then be given the rank of Entry Agent and partnered up with a more experienced Agent until they get promoted. B.I.F Agents can choose their station, and many decide to stay at the headquarters as it is one of the best stations. Agents can also apply to become part of a B.I.F SWAT team and will go through additional training for that.\n\nDepartments",
+  "entityLinks": [],
+  "allLinks": [
+   "Level 11",
+   "Level 4",
+   "Level 7",
+   "Level 1"
+  ],
+  "entrances": [],
+  "exits": [],
+  "image": "C9ea4c76-520c-46a6-9879-22fa279f95dd cropped.png",
+  "url": "https://backrooms.fandom.com/wiki/Backrooms_Investigation_Foundation"
+ },
  "Backrooms Red Cross": {
   "pageid": 102653,
   "title": "Backrooms Red Cross",
@@ -1849,43 +2181,6 @@
   "image": null,
   "url": "https://backrooms.fandom.com/wiki/Phenomenon_31"
  },
- "Occhiolism": {
-  "pageid": 136505,
-  "title": "Occhiolism",
-  "displayTitle": "A Global Prologue",
-  "apiCategories": [
-   "Phenomena"
-  ],
-  "wikiCategories": [
-   "Our Home, Kuryente",
-   "Tales",
-   "Theories",
-   "Space",
-   "Phenomena"
-  ],
-  "class": null,
-  "description": "",
-  "lead": "",
-  "entityLinks": [],
-  "allLinks": [
-   "Acolyte 1",
-   "Acolyte 2",
-   "Acolyte 3",
-   "Empyreanverse",
-   "Abstraction",
-   "Ineterna",
-   "Lim-Cosmology",
-   "The Frontrooms",
-   "Entity 13",
-   "Phenomenon 199",
-   "Phenomenon 8",
-   "Our Home, Kuryente"
-  ],
-  "entrances": [],
-  "exits": [],
-  "image": "OcchiolismStars.png",
-  "url": "https://backrooms.fandom.com/wiki/Occhiolism"
- },
  "B.L.S.A.I.D": {
   "pageid": 136653,
   "title": "B.L.S.A.I.D",
@@ -2333,68 +2628,6 @@
   ],
   "image": "dsj.png",
   "url": "https://backrooms.fandom.com/wiki/Level_606%2Foffset3"
- },
- "Backroom Colonists": {
-  "pageid": 13883,
-  "title": "Backroom Colonists",
-  "displayTitle": "Backroom Colonists",
-  "apiCategories": [
-   "Groups"
-  ],
-  "wikiCategories": [
-   "Groups",
-   "Backroom Colonists"
-  ],
-  "class": null,
-  "description": "The Backroom Colonists, formerly known as the Backroom Pioneers and sometimes referred to as the Backroom Explorers, is a colony initially comprised of various factions and smaller groups that ultimately unified under an elected minister. Despite setbacks, this faction still stands as the largest singular group within the known backrooms and ranks among the most powerful and influential groups, second only to the M.E.G and thriving across hundreds of levels.\n\nWhile being a united group, each member retains significant freedom and control over their own actions. This autonomy plays a pivotal role in the growth of the Backroom Colonists, as joining is straightforward, and the organization only exercises loose authority over its outposts. Although calculating the total population is quite challenging, given that members are dispersed across numerous outposts on different levels, with the loose affiliation fostering more individuals to constantly join and leave, estimates still put their overall numbers far above second and third place, that being the M.E.G and Aurielle. What sets them back however, is their loose organization, while allowing the group to be more appealing and welcoming, has drastically lowered their efficiency.\n\nIt is worth noting that the Backroom Colonists were once more formidable. However, conflicts and internal reforms led to the substantial weakening of the colony. Numerous outposts and bases were either scaled back, abandoned, or left for other groups to claim. Divisions broke away from the Backroom Colonists, vanishing into obscurity. Since those events, the Backroom Colonists have dispersed, engaged in various conflicts, and endured through multiple periods within the Backrooms.\n\nThe relationship between the M.E.G. and the Backroom Colonists is a complex tapestry of alliance, conflict, and eventual reconciliation. It began with a foundation of mutual interest, leading to the formation of the Allied Liminal Coalition—a powerful partnership that successfully defeated the common threat of the U.E.C. in the Great Wake War. However, as both groups expanded, trust eroded into suspicion and competition, resulting in active sabotage on both sides. This, along with various other factors, led both factions to become major participants in the protracted and bitter conflict known as the Bloodbath, from which the M.E.G. ultimately emerged victorious.\n\nThrough negotiations involving technology sharing and demilitarization, the Colonists were permitted to reform. However, their continued support for Aureille—a faction opposed by the M.E.G. during the Korthie Casiagen War—further strains relations. The aftermath resulted in a tense stalemate, but shared challenges—along with the existential crisis posed by the Flicker—compelled both groups to return to cooperation. From this necessity, a new, pragmatic partnership has developed. Today, the two groups maintain exceptionally close ties, characterized by joint holdings, integrated trade, and unprecedented technological collaboration, symbolizing a hard-won peace built upon their shared history.\n\n|-| K.R.O. =\n\nThe Kauer-Colonist Alliance was officially established in the Treaty of Fikes. This alliance is primarily pragmatic, creating a formal, albeit limited, framework for cooperation. While the core objectives of the two groups are largely disparate, they are prepared to support one another. Despite having few commonalities, the Colonists have provided protection, traded resources, and occasionally shared research. Both factions have also participated in documenting Level 24.\n\n|-| A.E.G. =\n\nOn the surface, the Colonists and the Anti-Entity Group (A.E.G.) appear to have a simple, neutral-to-friendly relationship, with the A.E.G. periodically commissioning the Colonists to conduct census counts, as their large population provides the necessary experience and infrastructure to carry out these tasks efficiently. However, any efforts to deepen their relationship are fundamentally hindered by a core philosophical divide: the A.E.G. is dedicated to the eradication of entities and believes in human superiority, while the Colonists maintain a very liberal and pro-entity-friendly perspective, a stance that leads some Colonists to view the A.E.G. as potential fascists and extremists.\n\n|-| E.R.C. =\n\nThe Colonists and the Entity Research Committee (E.R.C.) maintain a cooperative, though narrowly defined, relationship. Despite differing objectives, their shared presence on Level 5 has led to close collaboration within the level’s outposts, with the Colonist documenting the environmental aspects while the E.R.C. catalogs potential local entities—including the alleged previous abundance of Deathmoths and the speculated Beast of Level 5. Additionally, both groups have shared a variety of research documents, but interaction beyond this between the two groups remains limited. Lando Carlsen, the Colonists' head of diplomacy, however, has expressed interest in strengthening relationships, indicating the potential for a more substantial alliance in the future.\n\n|-| Aurielle =\n\nThe Backroom Colonists share a strong and enduring alliance with the Republic of Aurielle, a bond forged through shared history. The Colonists have acted to protect splinter Auriellen factions such as the Istauran Federation and provided critical humanitarian and material aid to Aurielle during the Korthie Casiagen War. This partnership culminated in the creation of the Geminia Divisional Group, an autonomous unit of Aurielle volunteers integrated into the Colonists. Today, the alliance remains strong, characterized by joint research, military exercises, and fast-tracked access between their respective holdings.\n\nIn stark contrast, the Colonists hold an openly hostile stance toward the Emporium of Agoreas—a criminal syndicate also known as the Agorean Mafia, which operates covertly within Aurielle’s ranks. The Colonists became aware of Agoreas through intercepted intelligence indicating their illicit drug shipments were being concealed within legitimate cargo, potentially compromising Colonist supply lines. While no formal diplomatic engagement exists, the prevailing sentiment is one of deep opposition, with many advocating for open warfare with the syndicate.\n\n|-| Backrooms Red Cross =\n\nThe Backroom Colonists maintain a formal and enduring humanitarian partnership with the Backrooms Red Cross, founded upon a shared commitment to aiding wanderers throughout the Backrooms. The Red Cross has consistently served as an integral medical backbone for the Colonists, providing critical care during crises and alleviating strain on the Department of Welfare. This cooperation deepened significantly during the widespread catastrophe of the Flicker, leading to the establishment of temporary joint medical facilities in holdings such as Base Blink. Recently, the alliance has expanded into collaborative medical research, with both organizations pooling knowledge and resources in pursuit of cures for entity-borne pathologies, most notably the Sanguine Festivus Virus.\n\n|-| Party Crashers =\n\nAlthough not the closest in diplomacy, Party Crashers and Backrooms Colonists maintain cordial, neutral, and mutually respectful relations, with both factions honoring established territorial boundaries. Relations were strengthened following the Colonists' recognized contributions during the Euphoric Wars, leading to further partnerships between the two groups. This cooperative dynamic has enabled crasher units to be stationed across seven different Backrooms Colonist bases.\n\n|-| Republic of 153 =\n\nThe Colonists and the Republic of Level 153 enjoy a strong and positive relationship. Since the establishment of Outpost Vintage, the Republic has actively participated in trade with the Colonists. During the events of the Flicker, the Colonists did their best to help the Republic avoid mass starvation. Additionally, the group recognizes Colonist Mina as an official and interchangeable currency.\n\n|-| R.E.U. =\n\nThe Backroom Colonists maintain friendly and constructive relations with the Royal Exploration Unit (R.E.U.). The two groups share significant historical and cultural affinities, which have fostered a generally friendly and cooperative dynamic. While the R.E.U.’s existing alliance with the M.E.G. initially complicated diplomacy, this tension resolved as Colonist–M.E.G. relations improved in the wake of the Flicker.\n\nThough the Colonists and the R.E.U. possess broadly similar exploratory and settlement-oriented goals, they operate under a clear understanding of non-interference, ensuring their activities remain complementary rather than competitive. This mutual respect has allowed for the establishment of beneficial trade agreements and resource exchanges, which have flourished over time and contributed to the prosperity and operational capacity of both organizations.",
-  "lead": "\"Even during the darkest of nights, stars permeate, and shine bright...\"\n\nTwo members of The Backroom Colonists exploring Level 10.",
-  "entityLinks": [],
-  "allLinks": [
-   "Level 10",
-   "M.E.G",
-   "Aurielle",
-   "M.E.G.",
-   "The Kauer Research Organization",
-   "Level 24",
-   "Level 5",
-   "Entity 4",
-   "Entity 18",
-   "Sanguine Festivus",
-   "Level 153",
-   "Phenomenon 12",
-   "Phenomenon 7",
-   "Object 1",
-   "Level 4",
-   "Phenomenon 13",
-   "The Delta Mall",
-   "Phenomenon 2",
-   "Level 37",
-   "Level 15",
-   "Level 94",
-   "Level 514",
-   "The Hive",
-   "Level 1",
-   "Level 4.3",
-   "Level 34",
-   "Level 154",
-   "Level 156",
-   "Level 157",
-   "Level 205",
-   "Level 331",
-   "Level 370",
-   "Level 427",
-   "Level 711",
-   "Level 810",
-   "Level 859",
-   "Level 913",
-   "Level 52",
-   "Level 130",
-   "Level 255"
-  ],
-  "entrances": [],
-  "exits": [],
-  "image": "Backroom colonist flag V2.png",
-  "url": "https://backrooms.fandom.com/wiki/Backroom_Colonists"
  },
  "The Resurgence Bureau": {
   "pageid": 139215,
@@ -5119,6 +5352,39 @@
   "image": "Seal of Fun.png",
   "url": "https://backrooms.fandom.com/wiki/The_Co-Hosts"
  },
+ "Phenomenon 306": {
+  "pageid": 166598,
+  "title": "Phenomenon 306",
+  "displayTitle": "Phenomenon 306",
+  "apiCategories": [
+   "Phenomena"
+  ],
+  "wikiCategories": [
+   "Dangerous",
+   "Weather"
+  ],
+  "class": null,
+  "description": "Phenomenon 306, colloquially referred to as \"crimson whirls\" or \"blood storms\", manifests within levels with an open, or visible sky. Red in colour, it appears similar to that of a hurricane— large supercell-like clouds forming high above. Thick red fog is often associated with the phenomenon and acts as one of 3 precursors to its formation. The fog is theorised to be vapourised bromine, which is toxic to the lungs and eyes. Swirling, dark-red clouds often form before its manifestation, serving as the second precursor. The third precursor is often described as a pounding, continued headache of intermediate length. This effect has often been accompanied by tinnitus and hearing loss, acting as one's last warning. Manifestations occur \"globally\", affecting areas rather than localised, personal manifestations.\n\nAir quality during its manifestation is notably decreased, with the air converting oxygen into heavy gases akin to xenon & bromine. These have been proven toxic for inhalation, and is not recommended. High-level gas masks are required for study, due to this.\n\nEach blood storm is determined by the Poller Scale, devised by physicist James Poller. The number is determined by its width, length & wind power. Storms of small-scale are P0 or P1, depending on wind strength. Storms of medium-scale can scale from P2 to P5, with wind speeds between 35mph and 100mph. P6 through P8 storms can range largely in scale, from 2 miles in width to 1,000 miles in width. P9 is purely theoretical: ranging across an entire level. P10 has also been theorised, though unlikely, to affect the entirety of the Backrooms.\n\nUpon the manifestation of a Blood Storm, elements of the level may become red in colour, and objects may react in unique ways. These reactions are outlined below.\n\nBlood Storms have been found to have a 100% mortality rate; victims' bodies were often found malformed and disfigured.",
+  "lead": "18th July, 2008.\n\nLevel 4.\n\nI was wandering.\n\nY'know, as we all do.\n\nThats when I saw it.\n\nThat blood-red color.\n\nSwirling above.\n\nAll I  could see.\n\nThe previously desolate office spaces, now drenched in dark red.\n\nPHENOMENON 306\nBLOOD STORMS",
+  "entityLinks": [],
+  "allLinks": [
+   "Level 4",
+   "Backrooms Wiki",
+   "Phenomenon 12",
+   "Object 1",
+   "Object 3",
+   "Level 630",
+   "Object 12",
+   "Object 13",
+   "Object 22",
+   "Object 32",
+   "The Void"
+  ],
+  "entrances": [],
+  "exits": [],
+  "image": "phen306blood.jpg",
+  "url": "https://backrooms.fandom.com/wiki/Phenomenon_306"
+ },
  "Phenomenon 98": {
   "pageid": 167113,
   "title": "Phenomenon 98",
@@ -5339,274 +5605,65 @@
   "image": null,
   "url": "https://backrooms.fandom.com/wiki/Phenomenon_70"
  },
- "Phenomenon 354": {
-  "pageid": 21485,
-  "title": "Phenomenon 354",
-  "displayTitle": "ㅤ",
+ "The Anti-Entity Group": {
+  "pageid": 167723,
+  "title": "The Anti-Entity Group",
+  "displayTitle": "The A.E.G.",
+  "apiCategories": [
+   "Groups"
+  ],
+  "wikiCategories": [
+   "Groups",
+   "Anti-Entity Group"
+  ],
+  "class": null,
+  "description": "The Anti-Entity Group\nMay the behemoths of this hell fall before humanity.\n\nWho We Are\n\nWe are the Anti-Entity Group — a powerful organization dedicated to eradicating every monster of this wretched hell, whether it be a common entity or a god. We are a group of over 200 members, all dedicated to this specific cause since 1992.\n\nWith heavily armed troops dispersed throughout the Backrooms, we pave the way for humanity's safe future — one without monsters lurking in the dark, monsters outside our windows, and so forth.\n\nSeek. Purge. Eradicate. We are the Anti-Entity Group — humanity's lantern in the pervading darkness.\n\nOur Progenitor\n\nWe derived from the Anti-Entity Agency, a group long dissolved from causes we wish not to elaborate on. Founded in 1950 for the same purpose, they wreaked havoc on the murderous beings that have tortured humanity since the first man fell into the Backrooms.\n\nThough the Anti-Entity Agency had fewer members than us, its influence spanned the entire Core Eight — from the arachnid-ridden depths of the Cave System to the ever-permeating darkness of the Black Depths.\n\nThe Agency reached a crescendo in its power when it successfully expanded its power beyond the Core Eight, soon establishing outposts in the Wheat Fields, the Military Hospital, et cetera.\n\nFollowing the Agency's fall in 1988, the remaining members went their separate ways. However, the message left behind by the expired organization lingered, and the task was taken once more.\n\nWhere We Reside\n\nOur bases are scattered around the Main Nine, specifically levels with moderate entity concentrations. While most of our bases are classified, we have set up outposts dubbed \"Waypoints\" — publicly accessible establishments that will accept lost wanderers under the condition that they serve for some time.\n\nHowever, due to the limitations of our technology, we tend to avoid locations of extreme entity counts as well as locations of invulnerable entities.\n\nWaypoint Asphalt: Level 1\nWaypoint Kappa: Level 1\nWaypoint Pillar: Level 1\nWaypoint Pipe: Level 2\nWaypoint Leak: Level 2\nWaypoint Chi: Level 2\nWaypoint Shock: Level 3\nWaypoint Sparks: Level 3\nWaypoint Blackout: Level 6\nWaypoint Illumination: Level 6\nWaypoint Tenebris: Level 6\nWaypoint Tyflós: Level 6\nWaypoint Flashlight: Level 6\nWaypoint Archnidia: Level 8\nWaypoint Octavia: Level 8\nWaypoint Stalactite: Level 8\nWaypoint Stalagmite: Level 8\n\nWaypoint Bend: Level 0.7\nWaypoint Twist: Level 0.7\nWaypoint Bend: Level 0.7\nWaypoint Subterranean: Level 1.01\nWaypoint Basement: Level 1.01\nWaypoint Subterranean: Level 1.01\nWaypoint Silence: Level 1.1\nWaypoint Stillness: Level 1.1\nWaypoint Noisemaker: Level 1.1\nWaypoint Silence: Level 1.1\nWaypoint Parking: Level 1.56\nWaypoint Core: Level 1.77\nWaypoint Strike: Level 1.77\nWaypoint Fluorescence: Level 3.5\nWaypoint Incandescent: Level 3.5\nWaypoint Cubicle: Level 4.3\nWaypoint Office: Level 4.3\nWaypoint Cold: Level 5.3\nWaypoint Residence: Level 5.3\nWaypoint Snack: Level 6.1\nWaypoint Depths: Level 8.1\nWaypoint Below: Level 8.1\nWaypoint Murk: Level 8.1\nWaypoint Icicle: Level 8.2\nWaypoint Xanth: Level 8.2\n\nAlliances\n\nDue to our mission revolving in extreme controversy, we rarely make contact with other organizations. However, the Anti-Entity Group has established a few light alliances.\n\nThe Entity Recycling Association\nWe established ties with the Entity Recycling Association in the early 2000s. Our connection is simple. We give the Association a small portion of our spare entity parts, and they give us resources.\n\nThe Party Crashers\nOur connection is nothing more than an agreement to assist each other in exterminating all Jovials found throughout the Backrooms. While the Anti-Entity Group does occasionally help with raids, we remain neutral.",
+  "lead": "The Anti-Entity Group\nMay the behemoths of this hell fall before humanity.\n\nWho We Are\n\nWe are the Anti-Entity Group — a powerful organization dedicated to eradicating every monster of this wretched hell, whether it be a common entity or a god. We are a group of over 200 members, all dedicated to this specific cause since 1992.\n\nWith heavily armed troops dispersed throughout the Backrooms, we pave the way for humanity's safe future — one without monsters lurking in the dark, monsters outside our windows, and so forth.\n\nSeek. Purge. Eradicate. We are the Anti-Entity Group — humanity's lantern in the pervading darkness.\n\nOur Progenitor\n\nWe derived from the Anti-Entity Agency, a group long dissolved from causes we wish not to elaborate on. Founded in 1950 for the same purpose, they wreaked havoc on the murderous beings that have tortured humanity since the first man fell into the Backrooms.\n\nThough the Anti-Entity Agency had fewer members than us, its influence spanned the entire Core Eight — from the arachnid-ridden depths of the Cave System to the ever-permeating darkness of the Black Depths.\n\nThe Agency reached a crescendo in its power when it successfully expanded its power beyond the Core Eight, soon establishing outposts in the Wheat Fields, the Military Hospital, et cetera.\n\nFollowing the Agency's fall in 1988, the remaining members went their separate ways. However, the message left behind by the expired organization lingered, and the task was taken once more.\n\nWhere We Reside\n\nOur bases are scattered around the Main Nine, specifically levels with moderate entity concentrations. While most of our bases are classified, we have set up outposts dubbed \"Waypoints\" — publicly accessible establishments that will accept lost wanderers under the condition that they serve for some time.\n\nHowever, due to the limitations of our technology, we tend to avoid locations of extreme entity counts as well as locations of invulnerable entities.\n\nWaypoint Asphalt: Level 1\nWaypoint Kappa: Level 1\nWaypoint Pillar: Level 1\nWaypoint Pipe: Level 2\nWaypoint Leak: Level 2\nWaypoint Chi: Level 2\nWaypoint Shock: Level 3\nWaypoint Sparks: Level 3\nWaypoint Blackout: Level 6\nWaypoint Illumination: Level 6\nWaypoint Tenebris: Level 6\nWaypoint Tyflós: Level 6\nWaypoint Flashlight: Level 6\nWaypoint Archnidia: Level 8\nWaypoint Octavia: Level 8\nWaypoint Stalactite: Level 8\nWaypoint Stalagmite: Level 8\n\nWaypoint Bend: Level 0.7\nWaypoint Twist: Level 0.7\nWaypoint Bend: Level 0.7\nWaypoint Subterranean: Level 1.01\nWaypoint Basement: Level 1.01\nWaypoint Subterranean: Level 1.01\nWaypoint Silence: Level 1.1\nWaypoint Stillness: Level 1.1\nWaypoint Noisemaker: Level 1.1\nWaypoint Silence: Level 1.1\nWaypoint Parking: Level 1.56\nWaypoint Core: Level 1.77\nWaypoint Strike: Level 1.77\nWaypoint Fluorescence: Level 3.5\nWaypoint Incandescent: Level 3.5\nWaypoint Cubicle: Level 4.3\nWaypoint Office: Level 4.3\nWaypoint Cold: Level 5.3\nWaypoint Residence: Level 5.3\nWaypoint Snack: Level 6.1\nWaypoint Depths: Level 8.1\nWaypoint Below: Level 8.1\nWaypoint Murk: Level 8.1\nWaypoint Icicle: Level 8.2\nWaypoint Xanth: Level 8.2\n\nAlliances\n\nDue to our mission revolving in extreme controversy, we rarely make contact with other organizations. However, the Anti-Entity Group has established a few light alliances.\n\nThe Entity Recycling Association\nWe established ties with the Entity Recycling Association in the early 2000s. Our connection is simple. We give the Association a small portion of our spare entity parts, and they give us resources.\n\nThe Party Crashers\nOur connection is nothing more than an agreement to assist each other in exterminating all Jovials found throughout the Backrooms. While the Anti-Entity Group does occasionally help with raids, we remain neutral.",
+  "entityLinks": [],
+  "allLinks": [
+   "The Kauer Research Organization"
+  ],
+  "entrances": [],
+  "exits": [],
+  "image": "Anti-EntityAgencyLogo.png",
+  "url": "https://backrooms.fandom.com/wiki/The_Anti-Entity_Group"
+ },
+ "Phenomenon 1-C": {
+  "pageid": 167834,
+  "title": "Phenomenon 1-C",
+  "displayTitle": "Phenomenon 1-C: Mass Noclippage",
   "apiCategories": [
    "Phenomena"
   ],
   "wikiCategories": [
    "Phenomena",
-   "Locations",
-   "Tales",
-   "Format Screws",
-   "Dangerous"
-  ],
-  "class": null,
-  "description": "Threat Index: Class 0\n>> Safe\n>> Stable\n>> Home?",
-  "lead": "Threat Index: Class 0\n>> Safe\n>> Stable\n>> Home?",
-  "entityLinks": [],
-  "allLinks": [
-   "The Frontrooms",
-   "Entity 9",
-   "Entity 8",
-   "Entity 10",
-   "Entity 62",
-   "Entity 4",
-   "Level !"
-  ],
-  "entrances": [],
-  "exits": [],
-  "image": "354CustomClass1.png",
-  "url": "https://backrooms.fandom.com/wiki/Phenomenon_354"
- },
- "Recovered Data File": {
-  "pageid": 57102,
-  "title": "Recovered Data File",
-  "displayTitle": "Recovered Data File",
-  "apiCategories": [
-   "Entities",
-   "Groups"
-  ],
-  "wikiCategories": [
-   "Entities",
    "Dangerous",
-   "Groups",
-   "Incursion Canon",
-   "Marauders",
-   "Sapient Entities"
+   "Rare"
   ],
   "class": null,
-  "description": "Marauders are an invasive and military group of humanoid entities that are known for raiding and conquering from various levels, be they safe or dangerous classes. Their goal remained unknown; however, witnesses who survived from these entities' assaults reported that some of the razed levels that they had once inhabited collapsed and were finally destroyed, which thus raises concerns among the wanderers.\n\nThey are distinguishable in their black and red tactical outfits and equipment and their distinct singular red eyes.\n\nGiven their hostile nature and their unexpected appearance, many wanderers and groups are hostile toward these entities; however, they are more hostile toward the Travelers, a group of reality-warping entities, suggesting the long history between the two rival groups.",
-  "lead": "Skip >>\n\nIntercepting lost transmission █\n\n\"They found us! Get to the escape route!\"\n\n\"No use, they're already over there! They're cornering us like rats!\"\n\n\"Are there anyone to help us?! Site Director? Anthony?!\"\n\n\"We- we're on own our own...\"\n\n\"You can't be serious... Shit! They really cut us off!\"\n\n\"They set us up! Those lying bastards, I'm gonna-\"\n\n\"They're getting closer! Get yourself armed and be ready!\"\n\n--- ###: Target site has been capture. Resistance have met and are neutralized. Survivors have been surrendered themselves.\n\n/// Attention: All active units in the enemy's sector / Supervisor █████ is on his way to your location.\n\n--- ###: Copy. All units stand down and extract their data. Remain on high alert. Guarding Supervisor █████ is our top priority.\n\n/// Attention: Supervisor █████ have arrived.\n\nMy, my, look what you have done to this place. But great work of disposing them as always. So...\n\nSpying on us, are you?\n\nI have watched you long enough, though I confess I was curious as to why your men hiding in the shadows and then decided to attack one of my premises. Do they tell you that it is rude to trespass and vandalizing on another’s privacy, Site Director?\n\nYou...\n\nYou're destroying it...\n\nDestroying? Oh, that? Hah! Fearful for something that small? I was merely sifting through the refuse of this fractured, decaying reality. What is it you call it... the \"Backrooms,\" yes? Quite an odd name, though fitting from natives like you.\n\n--- ###: Supervisor █████. They have extracted and confiscated of their data regarding their recent records. Recommendation for data purging?\n\nHmm, no... perhaps some of them. Archive it, and let them have it where it belongs.\n\n--- ###: Understood.\n\nIt is a shame, truly—that you mistook us for monsters, and lash at us out of fear. And for that, you have to face the consequences and cost their lives. A fair exchange, is it not? Well, Let me show you. You there. If you would?\n\nWait, please- No!\n\nYou bastard... what're you going to do with them?\n\nTouching.... Yet it was never your choice that sealed your people’s fate. No, that came from the rotten, unappreciated fools who deemed you expendable and cast you aside. It is truly a sad state of affairs, is it not?\n\nThey... I... Please, just let them go...\n\nHmm... Perhaps we make an arrangement, yes? If you would be so kind—attend to them.\n\n--- ###: Yes sir. Hold them down...\n\nDamn it! Just let them go, they have nothing to do with this!\n\nOh, you are mistaken, Site Director. I am keeping your word. For their own good, of course. Better they reside in the Butcher’s domain than fall into the hands of my... unruly Deacons then have them use like unwanted, broken dolls. And you would not want to know what happen if I let them have your people, would you?\n\nWhat?... You sick fuck!\n\n--- ###: All of them were converted and ready for transportation, sir. What should we do about him?\n\nLeave him. But rest assured, Site Director, she will handle them with the utmost care. Men, should the Deacons ever approach, thinking to interfere with these people, remind them... I see all that happens here. They will think twice before crossing me.\n\n--- ###: Yes sir, allocating them to Supervisor ██████'s sector.\n\nSee? I keep your word. And Site Director... you have to put trust in me. Now, send him to the main Nexus.\n\n--- ###: Stand up, now. Take him to the Overseer.\n\nAnd as for you, little machine.\n\nYou can keep this little research of theirs. I care less if you share that to someone. After all, what can they do to stop your masters' rampage?\n\n[Recovered Data File] █",
-  "entityLinks": [
-   "Entity 9"
-  ],
-  "allLinks": [
-   "Travelers of Stars",
-   "Golden Artifacts",
-   "M.E.G.",
-   "Backroom Colonists",
-   "Entity 9"
-  ],
-  "entrances": [],
-  "exits": [],
-  "image": "Pariah Vague.png",
-  "url": "https://backrooms.fandom.com/wiki/Recovered_Data_File"
- },
- "Entity Research Committee": {
-  "pageid": 72581,
-  "title": "Entity Research Committee",
-  "displayTitle": "Entity Research Committee",
-  "apiCategories": [
-   "Groups"
-  ],
-  "wikiCategories": [
-   "Groups",
-   "Entity Research Committee"
-  ],
-  "class": null,
-  "description": "🗕 🗗 ✖←  → ↻  ⌂🔓︎ backnet40://erc.bri/home\n\nHome    About    Contact    Jobs\n\nThe Entity Research Committee\n\nWho We Are\n\nThe Entity Research Committee, or ERC for short, is a Backrooms group instituted to analyze and research entities. The ERC is responsible for the discovery and documentation of numerous entities, as well as being a notable contributor to the M.E.G. database. The ERC has a number of outposts and laboratories stationed throughout the Backrooms. These outposts are not established within levels exhibiting entity infestations; instead, we reside in safer levels. This allows us to easily recruit new members and additionally aid wanderers in their travels. While levels aren't one of the group's priorities, the committee does occasionally study them.\n\nHierarchy\n\nSimilar to other Backrooms groups, the ERC comprises a unique hierarchy of designated roles. The hierarchy is as follows:\n\n• The Directors\n• Heads of Research\n• Heads of Security\n• Scientists\n• Field Researchers\n• Guards\n• Janitorial Positions/Positions of Lesser Importance.\n\nAlliances\n\nPresently, the Entity Research Committee is allied with a few Backrooms groups, which typically assist or trade with the ERC in exchange for things such as entity data. The ERC is currently allied with the following groups:\n\n• Major Explorers Group\n\nOutposts\n\nAs mentioned before, the ERC has many outposts stationed throughout the Backrooms. The current list of outposts is as follows:",
-  "lead": "🗕 🗗 ✖←  → ↻  ⌂🔓︎ backnet40://erc.bri/home\n\nHome    About    Contact    Jobs\n\nThe Entity Research Committee\n\nWho We Are\n\nThe Entity Research Committee, or ERC for short, is a Backrooms group instituted to analyze and research entities. The ERC is responsible for the discovery and documentation of numerous entities, as well as being a notable contributor to the M.E.G. database. The ERC has a number of outposts and laboratories stationed throughout the Backrooms. These outposts are not established within levels exhibiting entity infestations; instead, we reside in safer levels. This allows us to easily recruit new members and additionally aid wanderers in their travels. While levels aren't one of the group's priorities, the committee does occasionally study them.\n\nHierarchy\n\nSimilar to other Backrooms groups, the ERC comprises a unique hierarchy of designated roles. The hierarchy is as follows:\n\n• The Directors\n• Heads of Research\n• Heads of Security\n• Scientists\n• Field Researchers\n• Guards\n• Janitorial Positions/Positions of Lesser Importance.\n\nAlliances\n\nPresently, the Entity Research Committee is allied with a few Backrooms groups, which typically assist or trade with the ERC in exchange for things such as entity data. The ERC is currently allied with the following groups:\n\n• Major Explorers Group\n\nOutposts\n\nAs mentioned before, the ERC has many outposts stationed throughout the Backrooms. The current list of outposts is as follows:",
+  "description": "Phenomenon 1-C, informally referred to as “Mass Noclippage” or “Blips”, are large-scale variations of Phenomenon 1, each manifestation varying in location & scale; ranging from 5 meters up to a mile in diameter. The phenomenon has been found to work in tandem with Phenomenon 99; blips most often lead to Temporary Manifestations of levels. Each individual manifestation of the phenomenon typically lasts only 3-5 seconds, and smaller manifestations often last longer than larger ones.\n\nIt is theorised by physicist James Poller that each manifestation radiates radiation, similarly to that of Hawking radiation from black holes. This radiation takes a small piece of energy from the manifestation with it, causing it to slowly decrease in size. The emitted radiation is ionising, believed to be that of gamma. James Poller is also responsible for the Poller Scale: a system devised to determine the strength and danger of these manifestations. The scale ranges from P0 to P9. Manifestations can seemingly also generate Temporary Spaces, similarly to that of Object 22. These spaces likely form from large pieces of matter forming into levels within the void. Due to the varying lifetimes of each manifestation, wanderers are advised to take caution while investigating the phenomenon. If the blip closes while one is entering, there is a risk of dismemberment and limb loss.\n\nManifestations can occur in both The Frontrooms and The Backrooms, though uncommon. These were responsible for the disappearance of the Palast der Republik in Moscow. The phenomenon may also be responsible for other disappearing areas, most notably Atlantis & the city of Vineta.",
+  "lead": "WARNING!\nTHE M.E.G. HAVE ISSUED A WARNING RELATED TO PHENOMENON 1-C \"MASS NOCLIPPAGE\".\n\nATTEMPTING TO ENTER THE BACKROOMS THROUGH THE PHENOMENON HAS PROVED FATAL. WANDERERS ATTEMPTING TO DO SO HAVE OFTEN BEEN FOUND DISMEMBERED.\n\nATTEMPT TO AVOID ALL INSTANCES OF PHENOMENON 1-C \"MASS NOCLIPPAGE\".",
   "entityLinks": [],
   "allLinks": [
    "Backrooms Wiki",
+   "Phenomenon 1",
+   "Phenomenon 99",
    "M.E.G.",
-   "Backroom Colonists",
-   "Level 1",
-   "The Hub",
-   "Level 40",
-   "Level 36",
-   "Level 5",
-   "Level 865",
-   "Object 14"
-  ],
-  "entrances": [],
-  "exits": [],
-  "image": "ERCnewlogoagain.png",
-  "url": "https://backrooms.fandom.com/wiki/Entity_Research_Committee"
- },
- "They Who Seek": {
-  "pageid": 81593,
-  "title": "They Who Seek",
-  "displayTitle": "They Who Seek",
-  "apiCategories": [
-   "Groups"
-  ],
-  "wikiCategories": [
-   "Liminality",
-   "Groups",
-   "Empyreanverse"
-  ],
-  "class": null,
-  "description": "They Who Seek, also known as \"The Seekers\" or \"TWS\", is a cultist group that worships an Empyrean named “He Who Sees”. The group was founded in the mid-1900s in which the followers seek to He Who Sees, AKA \"The Seer\" or \"HWS\", for immortality and any other things that they were promised by him, thus their name.\n\nThough many join voluntarily, some wanderers are also threatened or manipulated into the cult, either by the group or HWS himself, who does so through minds of mortals, whether it’d be dreams, hallucinations, or any other conditions in which the victim is not mentally there. Those suffering from low sanity are advised to try to drink almond water and sleep as much as they can, as they are in higher risk of encountering these types of approaches from HWS than those who are well-rested and mentally stable.\n\nAs mentioned before, some wanderers are threatened or manipulated into the group, so members, especially ones in charge of a single division or team, may have ideologies that contradicts another’s ideas, as well as their demeanors. Because of this, when encountering a group from this cult, they may be neutral or outright hostile, so caution is advised.\n\nA artistic depiction from an amateur artist\n\nHe Who Sees, who mentioned before is called \"The Seer\" or \"HWS\", was one of the many Empyreans who suffered from the Dawn Wars, unbeknownst to everyone who isn't an Empyrean or any other mythical entity.\n\nHWS happened to die in the war, but for unknown reasons, was brought back to life not long after. Now blinded by rage and vengeance for what happened to him, he attempts to get anything he wants done through his cultists, by any means necessary.",
-  "lead": "",
-  "entityLinks": [],
-  "allLinks": [
-   "Children of the Empyrean Sea",
-   "M.E.G.",
-   "Level 94",
-   "Revelations"
-  ],
-  "entrances": [],
-  "exits": [],
-  "image": "TWSBackground2.gif",
-  "url": "https://backrooms.fandom.com/wiki/They_Who_Seek"
- },
- "Travelers of Stars": {
-  "pageid": 87015,
-  "title": "Travelers of Stars",
-  "displayTitle": "Travelers of Stars",
-  "apiCategories": [
-   "Entities",
-   "Groups"
-  ],
-  "wikiCategories": [
-   "Entities",
-   "Groups",
-   "Incursion Canon",
-   "Sapient Entities"
-  ],
-  "class": null,
-  "description": "Travelers are an advanced race of entities possessing powerful reality-bending properties. They are distinguishable by their lavish suits of armor.\n\nThey consider themselves part of the \"Outsiders,\" a group of beings originating from the aptly named \"Outside,\" in a sense, they do not belong to the Backrooms. Having recently arrived, they are actively exploring various levels and interacting with many wanderers along the way.\n\nUnlike any typical entities, they are considered as \"alien\" wanderers and are often welcomed due to their properties when fending off hostile entities and navigating dangerous levels for the wanderers.\n\nIt is believed that they are the architects of the Palace and the manufacturers of the Golden Artifacts. Though, those creations are attributed to their ancestors.\n\nThey are the enemies of the Marauders.",
-  "lead": "Skip >>\n\nSeries // Travelers █\n\nProceed >>",
-  "entityLinks": [],
-  "allLinks": [
-   "Travelers 01",
-   "The Palace in the Void",
-   "Golden Artifacts",
-   "Recovered Data File",
-   "Level 6",
-   "Level 11",
-   "M.E.G.",
-   "Backroom Colonists",
-   "Backrooms Red Cross",
-   "The Talking Box",
-   "Level 0",
-   "Level 1",
-   "Level -599",
-   "Level 37"
-  ],
-  "entrances": [],
-  "exits": [],
-  "image": "Traveler 1.png",
-  "url": "https://backrooms.fandom.com/wiki/Travelers_of_Stars"
- },
- "Party Crashers": {
-  "pageid": 94898,
-  "title": "Party Crashers",
-  "displayTitle": "Party Crashers",
-  "apiCategories": [
-   "Groups"
-  ],
-  "wikiCategories": [
-   "Groups",
-   "The Party Crashers"
-  ],
-  "class": null,
-  "description": "With origins as far back as the early 1880s, the Party Crashers' incentive is to stomp out Partygoer presence wherever it may take root; whilst also providing ample aid and welfare to communities ravaged by the ongoing conflict. Although generally friendly to most communities, militants tend to have a merciless attitude towards the SFV virus, with each and every unit being equipped with ample ammunition and equipment to properly squash threats.\n\nMembers of the Party Crashers are easily identifiable by their dark-blue masks: which not only protect them from exposure to SFV but also serve as a means of identification from a distance, although this identification can be a disadvantage on occasion. Along with this, units don grey hooded sweatshirts worn atop several layers of clothing, as well as padded cargo pants to limit exposure as much as possible. Certain crashers opt to take their protective gear several steps further, reinforcing their attire with duct tape, additional fabrics, and scrap metal, with many including rudimentary metal helmets in their apparel. Regardless of these variations in attire, all crashers are identifiable by cloth bands tied around their left arm; with colors and stripes used to identify awards, ranks, and battalion.\n\nA vast majority of Party Crasher units live in a nomadic lifestyle — with only a select few members persisting in small camps and settlements around populated levels as a form of chaos control. The member count of the Party Crashers is known to be extraordinarily high; as some estimates record their exact population to be somewhere in the tens of thousands. Gaining membership within the group is partly difficult, as a mandatory 15-day preventative quarantine is required, as well as extensive training on par with the United States Marines within: The Frontrooms.\n\nIn terms of weaponry, the Party Crashers flaunt an extensive arsenal which has yet to be replicated by any group as of yet — with their main form of arms being cheap, yet effective firearms, with their undisclosed base of operations having ample resources to arm each member with variations of the Sten gun, as well as basic long-ranged firearms. Along with this, crasher units are also trained to weaponize objects, with many opting to utilize both Greek Fire and Liquid Pain due to their volatile properties. Experimental weapons, such as hardened liquid pain in the form of explosive blow-darts and volatile Firesalt rounds have been demonstrated during the Euphoric wars with varying degrees of success.",
-  "lead": "The Backrooms is a treacherous place.\nWith omnipotent threats lurking around every facet of this living nightmare, it has become our incentive to destroy it, no matter the repercussions.\nBecause we persist, we adapt, and we defend.\nWe are the Party Crashers.\n\nGROUP OF INTEREST\n\nPRIMARY GROUP TYPE\nProtection\n\nInfluence: 6/10\n\nHostility: 3/10\n\nOrganization: 9/10\n\nThe Party Crashers are a human militia dedicated to containing and eradicating the Sanguine Festivus virus and its victims.",
-  "entityLinks": [],
-  "allLinks": [
-   "Sanguine Festivus",
-   "Caius Taggert",
-   "Level 399",
+   "Object 22",
    "The Frontrooms",
-   "Object 5",
-   "Object 12",
-   "Object 15",
-   "The First",
-   "M.E.G.",
-   "Level 1",
    "Level 4",
-   "Level Fun",
+   "Phenomenon 306",
+   "The Void",
+   "Level 339",
    "Phenomenon 12",
-   "Entity List",
-   "Republic of Aurielle",
-   "Architect Industries",
-   "Object 29",
-   "Backrooms Colonists",
-   "I.R.I.S."
-  ],
-  "entrances": [],
-  "exits": [],
-  "image": "Party_Crasher_.png",
-  "url": "https://backrooms.fandom.com/wiki/Party_Crashers"
- },
- "Phenomenon 2": {
-  "pageid": 95436,
-  "title": "Phenomenon 2",
-  "displayTitle": "Phenomenon II - \"BACK-NET\"",
-  "apiCategories": [
-   "Objects",
-   "Phenomena"
-  ],
-  "wikiCategories": [
-   "Objects",
-   "Phenomena",
-   "ATLAS ARCHIVE"
-  ],
-  "class": null,
-  "description": "BACK-NET (Phenomenon 2) is essentially the Backrooms’ version of the internet; a wide area network that uses an anomalous protocol in order to transfer data between devices. Access points to BACK-NET are usually exclusive to levels mimicking manmade structures such as Level 0, Level 4, or Level 9, making long-distance communication difficult outside of the few levels with the connection.\n\nHowever, unlike the baseline Frontrooms internet, BACK-NET holds various anomalous properties that distinguish it from a normal wireless network, with the network being mysterious in nature and often quite unstable at times. Research by The Kauer Research Organization into BACK-NET is ongoing to this very day.",
-  "lead": "",
-  "entityLinks": [],
-  "allLinks": [
-   "Level 0",
-   "Level 4",
-   "Level 9",
-   "The Kauer Research Organization",
-   "BackOS",
-   "Phenomenon 13",
-   "The Database",
-   "Backchat (Collaborative Log)",
-   "BACK-NET Ver. 1.1",
-   "Entity 70",
-   "Level 906",
-   "The First",
-   "Enigmatic Space Information Security & Protection System",
-   "Extended BACK-NET Website List",
-   "05-12-19"
-  ],
-  "entrances": [],
-  "exits": [],
-  "image": "MS-DOS PROMPT.png",
-  "url": "https://backrooms.fandom.com/wiki/Phenomenon_2"
- },
- "Backrooms Investigation Foundation": {
-  "pageid": 97303,
-  "title": "Backrooms Investigation Foundation",
-  "displayTitle": "Backrooms Investigation Foundation",
-  "apiCategories": [
-   "Groups"
-  ],
-  "wikiCategories": [
-   "Groups",
-   "Backrooms Investigation Foundation"
-  ],
-  "class": null,
-  "description": "Description\nThe B.I.F is a law enforcement agency in The Backrooms dedicated to preventing and stopping crimes as well as keeping wanderers safe inside The Backrooms. They were founded in 1989 after an increase in anarchist and criminal groups in The Backrooms. They have many outposts all throughout The Backrooms and will commonly help wanderers reach the exit of the current level they are on. The group is not considered to be one of the most powerful in terms of manpower, but it makes up for it in training and effectiveness.\n\nThe group holds a lot of important supplies such as weapons, almond water, multiple objects, wood, and copper wiring. B.I.F recently has suffered a personnel shortage due to reforms and removing all corrupt personnel. B.IF's main base is located in Level-11 and the lobby is open to wanderers to report crimes, trade resources, or just to rest for a day or two. Wanderers and Settlement Leaders can also ask for B.I.F protection, in exchange for a deal where they will tell them information about crimes in the surrounding areas.\n\nStructure\nThe ranking structure in B.I.F is very similar to organizations from The Frontrooms such as the Federal Bureau of Investigation and Central Intelligence Agency. The group is led by a voted in Director usually a former high ranking Investigations agent, the Director is responsible for keeping the internal operations running smooth and usually to direct diplomacy. Wanderers can join the B.I.F by applying in their headquarters or any major base, afterwards they will go through 7 weeks of training and classes. After you graduate out of training, they will then be given the rank of Entry Agent and partnered up with a more experienced Agent until they get promoted. B.I.F Agents can choose their station, and many decide to stay at the headquarters as it is one of the best stations. Agents can also apply to become part of a B.I.F SWAT team and will go through additional training for that.\n\nDepartments",
-  "lead": "Description\nThe B.I.F is a law enforcement agency in The Backrooms dedicated to preventing and stopping crimes as well as keeping wanderers safe inside The Backrooms. They were founded in 1989 after an increase in anarchist and criminal groups in The Backrooms. They have many outposts all throughout The Backrooms and will commonly help wanderers reach the exit of the current level they are on. The group is not considered to be one of the most powerful in terms of manpower, but it makes up for it in training and effectiveness.\n\nThe group holds a lot of important supplies such as weapons, almond water, multiple objects, wood, and copper wiring. B.I.F recently has suffered a personnel shortage due to reforms and removing all corrupt personnel. B.IF's main base is located in Level-11 and the lobby is open to wanderers to report crimes, trade resources, or just to rest for a day or two. Wanderers and Settlement Leaders can also ask for B.I.F protection, in exchange for a deal where they will tell them information about crimes in the surrounding areas.\n\nStructure\nThe ranking structure in B.I.F is very similar to organizations from The Frontrooms such as the Federal Bureau of Investigation and Central Intelligence Agency. The group is led by a voted in Director usually a former high ranking Investigations agent, the Director is responsible for keeping the internal operations running smooth and usually to direct diplomacy. Wanderers can join the B.I.F by applying in their headquarters or any major base, afterwards they will go through 7 weeks of training and classes. After you graduate out of training, they will then be given the rank of Entry Agent and partnered up with a more experienced Agent until they get promoted. B.I.F Agents can choose their station, and many decide to stay at the headquarters as it is one of the best stations. Agents can also apply to become part of a B.I.F SWAT team and will go through additional training for that.\n\nDepartments",
-  "entityLinks": [],
-  "allLinks": [
+   "Level 8",
+   "Level 10",
    "Level 11",
-   "Level 4",
-   "Level 7",
-   "Level 1"
+   "Level 79"
   ],
   "entrances": [],
   "exits": [],
-  "image": "C9ea4c76-520c-46a6-9879-22fa279f95dd cropped.png",
-  "url": "https://backrooms.fandom.com/wiki/Backrooms_Investigation_Foundation"
+  "image": "Phen1CMassNoclip.jpg",
+  "url": "https://backrooms.fandom.com/wiki/Phenomenon_1-C"
  }
 }

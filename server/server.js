@@ -29,8 +29,13 @@ try {
 
 const PUERTO = parseInt(process.argv[2], 10) || 8080;
 const RAIZ = path.join(__dirname, '..', 'game');
+const MAPA_PUBLICO = path.join(__dirname, '..', 'data', 'game', 'mapa.html');
 const NIVEL_INICIAL = 'level-0';
 const RE_SALA_PRIVADA = /^[a-z0-9_-]{3,32}$/;
+
+function destinoDisponible(def) {
+  return def?.destino && (DATA.levels[def.destino] || def.destino === '*aleatoria' || def.destino === '*visitada');
+}
 
 function codigoSalaPrivada(raw) {
   const s = String(raw || '').trim().toLowerCase();
@@ -55,6 +60,19 @@ const servidor = http.createServer((req, res) => {
     return;
   }
   const url = decodeURIComponent((req.url || '/').split('?')[0]);
+  if (url === '/mapa.html') {
+    fs.readFile(MAPA_PUBLICO, 'utf8', (err, html) => {
+      if (err) { res.writeHead(404); res.end('mapa no generado'); return; }
+      // El archivo también funciona vía file://, donde necesita ../../game/.
+      // Bajo HTTP la raíz pública ya es game/, por lo que se ajustan los assets.
+      res.writeHead(200, {
+        'content-type': 'text/html; charset=utf-8',
+        'cache-control': 'no-cache',
+      });
+      res.end(html.replaceAll('../../game/', '/'));
+    });
+    return;
+  }
   // normaliza y encierra dentro de game/ (nada de ../)
   const ruta = path.normalize(path.join(RAIZ, url === '/' ? 'index.html' : url));
   if (!ruta.startsWith(RAIZ)) { res.writeHead(403); res.end(); return; }
@@ -182,6 +200,11 @@ function esSinRetorno(def) {
   return /agujero|caes |caer |caída|desplom|abismo|pozo|trampilla|no.?clip|desmay|despiert/i.test(def.texto || '');
 }
 
+function mirarAlejandose(jug, puertaX, puertaY) {
+  const dx = jug.x - puertaX, dy = jug.y - puertaY;
+  if (dx || dy) jug.rot = Math.atan2(dx, -dy);
+}
+
 // cruce de salas: sacar de la sala vieja, meter en la del nivel destino y
 // mandar el estado nuevo (el cliente reconstruye el mapa desde la semilla)
 function cambiarDeSala(jug, salaVieja, defSalida, opts) {
@@ -191,8 +214,13 @@ function cambiarDeSala(jug, salaVieja, defSalida, opts) {
   // ---------- puerta de RETORNO (v23): la puerta que cruzaste te espera ----------
   // salvo que llegaras cayendo/por el vacío/noclip (caminata o /tp): de ahí no se vuelve
   const origen = salaVieja.nivelId;
-  const conRetorno = !(opts && opts.sinRetorno) && !(opts && opts.sinTarjeta) &&
-    !esSinRetorno(defSalida) && origen !== nueva.nivelId;
+  if (!jug.visitados) jug.visitados = new Set([origen]);
+  jug.visitados.add(nueva.nivelId);
+  const sinSalidaMaterializada = !nueva.map.exits.some((exit) => destinoDisponible(exit.def)) &&
+    !(nueva.map.caminatas || []).some(destinoDisponible);
+  const conRetorno = origen !== nueva.nivelId && (sinSalidaMaterializada || (
+    !(opts && opts.sinRetorno) && !(opts && opts.sinTarjeta) && !esSinRetorno(defSalida)
+  ));
   jug.retorno = null;
   let x, y;
   const iVuelta = conRetorno
@@ -200,17 +228,27 @@ function cambiarDeSala(jug, salaVieja, defSalida, opts) {
   if (iVuelta >= 0) {
     // el nivel ya tiene la puerta que conecta de vuelta: apareces a su lado
     const ex = nueva.map.exits[iVuelta];
-    [x, y] = nueva.buscarSpawn(ex.x, ex.y);
-    jug.ofertaEn = iVuelta; // no reabrir la oferta hasta alejarse y volver
+    [x, y] = nueva.buscarSpawnJunto(ex.x, ex.y);
+    jug.ofertaEn = null;
+    jug.x = x; jug.y = y;
+    mirarAlejandose(jug, ex.x, ex.y);
   } else {
-    [x, y] = nueva.buscarSpawn();
     if (conRetorno) {
       // puerta personal: SOLO tú la ves — es TU camino de vuelta
-      jug.retorno = { x, y, destino: origen };
-      jug.ofertaEn = 'R';
-    } else jug.ofertaEn = null;
+      const [rx, ry] = nueva.map.spawn;
+      [x, y] = nueva.buscarSpawnJunto(rx, ry);
+      jug.retorno = { x: rx, y: ry, destino: origen };
+      jug.ofertaEn = null;
+      jug.x = x; jug.y = y;
+      mirarAlejandose(jug, rx, ry);
+    } else {
+      [x, y] = nueva.buscarSpawn();
+      jug.ofertaEn = null;
+    }
   }
   jug.x = x; jug.y = y;
+  jug.oxigeno = 100;
+  jug._oxigenoEn = Date.now() + 1000;
   jug.canal = null; jug.escondido = null;
   // teleport de sala: caducan los informes de posición en vuelo (v24)
   jug.sec = (jug.sec || 0) + 1;
@@ -223,7 +261,7 @@ function cambiarDeSala(jug, salaVieja, defSalida, opts) {
     t: 'nivel', nivel: nueva.nivelId, inst: nueva.inst, semilla: nueva.semilla, privada: nueva.privada,
     x, y, rot: jug.rot, sec: jug.sec, via: defSalida.texto,
     sinTarjeta: !!(opts && opts.sinTarjeta),
-    salud: jug.salud, sed: jug.sed, cordura: jug.cordura, inv: jug.inv, manos: jug.manos, equipo: jug.equipo,
+    salud: jug.salud, sed: jug.sed, cordura: jug.cordura, oxigeno: jug.oxigeno, inv: jug.inv, manos: jug.manos, equipo: jug.equipo,
     retorno: jug.retorno,
     caminata: jug.caminataObjetivo ? { pasos: 0, objetivo: jug.caminataObjetivo } : null,
     jugadores: nueva.censo(), ...nueva.estadoDinamico(),

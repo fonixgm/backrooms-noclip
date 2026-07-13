@@ -1,67 +1,77 @@
-Páginas únicas procesadas: 1113 (multicategoría: 37)
-Niveles: 734
-Entidades: 197
-Objetos: 89
-Fenómenos/grupos/otras: 137
-Aristas de salida totales: 2529 (destinos fuera del set de niveles: 434)
-  destinos externos más citados: The Void (100) | M.E.G. (13) | Level List (12) | The Broken (12) | Level 34 (11) | The Frontrooms (10) | Level 0.8 (8) | Level 297 (8) | Level 156 (6) | Level 404 (6) | Level 54 (6) | Level 181 (5) | Level 488 (5) | Level 997 (5) | No-Clipping (5) | Level 461 (4) | Level 93 (4) | Level 988 (4) | The Basement (4) | Backrooms Wiki (3)
-Niveles sin salidas parseadas: 206
-  ej.: Level 717 | Media Nocte | Level 62 | Level 123 | Level 55 | Level 165 | Level 915 | Level 995.1 | Level 650 | Level 245 | Level 999 | The Subwaters | Level 901 | Florida (Joke) | Level 188.1
-Niveles sin clase parseada: 173
-Niveles sin descripción parseada: 36
+Páginas únicas procesadas: 1134 (multicategoría: 37)
+Niveles: 752
+Entidades: 199
+Objetos: 88
+Fenómenos/grupos/otras: 139
+Aristas de salida totales: 2577 (destinos fuera del set de niveles: 412)
+  destinos externos más citados: The Void (98) | M.E.G. (13) | Level List (12) | The Broken (12) | Level 34 (10) | The Frontrooms (10) | Level 0.8 (8) | Level 297 (8) | Level 156 (6) | Level 404 (6) | Level 54 (6) | Level 181 (5) | Level 488 (5) | Level 997 (5) | Level 988 (4) | No-Clipping (4) | The Basement (4) | Backrooms Wiki (3) | Level 177 (3) | Level 187 (3)
+Niveles sin salidas parseadas: 214
+  ej.: Level 8 | The End | The Hive | Level 27 | Level 514 | Null | Level 18 | Level 133 | Level Metalanguage (Joke) | Level 188 | Level Scotland (Joke) | Level 29 | Level 259 | EX-1 | Level 71
+Niveles sin clase parseada: 181
+Niveles sin descripción parseada: 39
 Distribución de clases: {
  "0": 40,
  "1": 36,
- "2": 32,
- "3": 31,
- "4": 24,
+ "2": 33,
+ "3": 30,
+ "4": 25,
  "5": 10,
  "6": 2,
- "Undetermined": 41,
- "desconocida": 173,
- "φ": 2,
- "1e": 6,
+ "Custom Image": 6,
+ "desconocida": 181,
  "Threat Index": 113,
- "Iota": 3,
- "2e": 6,
- "Mu": 4,
+ "Beta": 2,
+ "2e - Environmental": 6,
+ "1e": 7,
  "1e - Environmental": 21,
+ "3e": 7,
+ "5e": 4,
+ "Ψ": 27,
+ "Secure": 1,
+ "Undetermined": 43,
+ "Nuclear": 1,
+ "Deadzone": 18,
  "Habitable": 22,
+ "Sheol": 1,
+ "Variable": 25,
+ "4e": 5,
+ "2e": 6,
+ "φ": 2,
+ "Derelict": 1,
+ "Tau": 1,
+ "5e - Environmental": 6,
+ "Mu": 4,
+ "America": 1,
+ "4 - 環境問題": 1,
+ "Psi": 2,
+ "3e - Environmental": 8,
+ "4e - Environmental": 6,
+ "!": 1,
+ "Em Dash": 1,
+ "Error": 1,
+ "Iota": 4,
  "1Ψ": 2,
- "Ψ": 26,
  "ε": 1,
- "Theta": 1,
- "5e - Environmental": 7,
+ "Theta": 2,
  "Jikan": 1,
  "Silly": 1,
- "Beta": 2,
  "Ц": 1,
- "4e - Environmental": 6,
  "Ypsilon": 2,
  "3f - Floridian": 1,
  "Phi": 1,
  "Contested": 1,
  "Omega": 1,
  "1d - Dreamful": 2,
- "Deadzone": 17,
  "Xi": 5,
  "Alpha": 1,
- "Variable": 24,
  "1f - Factions": 1,
- "3e": 7,
- "4e": 5,
- "Custom Image": 6,
- "5e": 4,
- "3e - Environmental": 7,
  "Euler": 1,
- "2e - Environmental": 6,
  "Gamma": 2,
  "Grayscale": 1,
  "Sigma": 1,
  "In Progress": 1,
  "Plum": 1,
  "Fun": 2,
- "Psi": 2,
  "Synthwave": 1,
  "Deteriorating": 1,
  "3Ψ - Psychological": 1,
@@ -70,14 +80,5 @@ Distribución de clases: {
  "Skyscrapers": 1,
  "δ": 1,
  "Lambda": 1,
- "Secure": 1,
- "Nuclear": 1,
- "Sheol": 1,
- "Derelict": 1,
- "Tau": 1,
- "America": 1,
- "4 - 環境問題": 1,
- "!": 1,
- "Em Dash": 1,
- "Error": 1
+ "Kappa": 1
 }

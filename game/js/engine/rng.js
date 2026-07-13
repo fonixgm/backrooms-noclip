@@ -36,6 +36,9 @@
         },
       };
     },
+    // Valor determinista [0,1) a partir de una cadena (sin estado). Útil para
+    // decisiones por casilla estables: RNG.unit(`${runSeed}:var:${x}:${y}`).
+    unit(seedStr) { return hashStr(String(seedStr)) / 4294967296; },
     randomSeed() {
       const p = ['moqueta', 'zumbido', 'noclip', 'almendra', 'amarillo', 'vacio', 'nivel', 'pasillo', 'neon', 'niebla'];
       return p[Math.floor(Math.random() * p.length)] + '-' + Math.floor(Math.random() * 9999);

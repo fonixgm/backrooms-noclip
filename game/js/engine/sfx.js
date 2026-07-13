@@ -467,6 +467,12 @@
     pasillos: 'hum_clasico', garaje: 'hum_suave', tuneles: 'goteo_tuberias',
     hospital: 'hum_suave', oficinas: 'hum_suave', exterior: 'viento',
     bosque: 'viento', ciudad: 'ciudad_noche', torres: 'viento', invernadero: 'invernadero',
+    acuatico: 'piscina', oceano: 'piscina', desierto: 'viento', nevado: 'viento_nieve',
+    espacial: 'estatica_nave', cielo: 'viento', hotel: 'crujidos', centro_comercial: 'hum_suave',
+    residencial: 'crujidos', escuela: 'hum_suave', industrial: 'maquinas', fabrica: 'maquinas',
+    laboratorio: 'futurista', alcantarillas: 'goteo_tuberias', estacion: 'hum_suave',
+    tren: 'maquinas', carretera: 'viento', parque: 'viento', granja: 'viento',
+    pantano: 'goteo_tuberias', ruinas: 'viento', surreal: 'susurros',
   };
 
   function stopAmbient() {

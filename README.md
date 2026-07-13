@@ -16,7 +16,7 @@ fiel al lore: niveles, entidades, salidas y mecánicas salen de las páginas rea
 - **Perfiles**: crea tu usuario en el título; el Códice registra para siempre los niveles
   que transitas (con su descripción), veces visitados, mejores marcas y escapes.
   Exportable/importable como JSON.
-- Escribe una **semilla** en el título para partidas reproducibles (compártela con el chat).
+- Sin semilla manual se usa la **semilla diaria**, que cambia a medianoche de Madrid; cambia la geometría de las salas y fija las rutas variables de ese día. Una semilla escrita sigue siendo reproducible y compartible.
 - **Sprites personalizados**: cualquier PNG en `game/assets/sprites/` sustituye al pixel-art
   integrado (ver `LEEME.txt` en esa carpeta).
 
@@ -29,11 +29,16 @@ Parámetros de URL útiles: `?seed=misemilla&autostart=1`, `?render=2d` y `?nofx
 
 ```
 pipeline/       Scripts Node (descarga de la wiki, parseo, fichas, mapa, empaquetado)
-data/raw/       Snapshot local de Levels, Entities, Objects, Phenomena y Groups (1.113 páginas)
-data/parsed/    Grafo estructurado: 734 niveles, 197 entidades, 89 objetos y 137 fenómenos/grupos
-data/game/      Fichas jugables en español: 30 niveles, 16 entidades y 13 objetos + mapa-piloto.html
+data/raw/       Snapshot local de Levels, Entities, Objects, Phenomena y Groups (1.134 páginas activas)
+data/parsed/    Grafo estructurado: 752 niveles, 199 entidades, 88 objetos y 139 fenómenos/grupos
+data/game/      Catálogo jugable: 731 niveles, 16 entidades y 84 objetos + mapa.html
 game/           El juego (HTML/JS/Canvas puro, cero dependencias)
 ```
+
+El motor clasifica el catálogo en 31 biomas activos con geometría, paleta, materiales y mobiliario diferenciados.
+Las categorías ambientales explícitas de Fandom actúan como contratos: `Darkness` limita
+visión e iluminación y `Aquatic` activa agua transitable, oxígeno, ahogo y respiraderos.
+Los biomas urbanos generan fachadas, accesos e interiores transitables.
 
 ## Comandos del pipeline (Node)
 
@@ -43,21 +48,24 @@ node pipeline/parse.js       # wikitext -> data/parsed/*.json
 node pipeline/parse.test.js  # pruebas del parser (sin dependencias)
 node pipeline/level0-audit.js            # 100 semillas fijas (regresión reproducible)
 node pipeline/level0-audit.js --random   # muestra nueva; imprime cómo reproducirla
-node pipeline/select-pilot.js # elegir niveles del piloto (BFS desde Level 0)
-node pipeline/make-map.js    # regenerar data/game/mapa-piloto.html
+node pipeline/build-levels.js # catálogo parseado - Joke + overrides -> 731 fichas jugables
+node pipeline/make-map.js    # regenerar data/game/mapa.html
 node pipeline/build-data.js  # OBLIGATORIO tras editar data/game/*.json -> game/js/data.js
 ```
 
 ## El mapa para el autor
 
-`data/game/mapa-piloto.html` — diagrama con los 30 niveles del piloto y flechas
-de qué nivel conduce a cuál, coloreado por peligro, con la ruta de escape marcada (⭐).
+`data/game/mapa.html` — explorador del grafo completo con buscador, filtros, entradas,
+salidas, peligro, bioma y enlaces a Fandom. Muestra la semilla diaria y resuelve sus rutas
+variables; el grafo representa conexiones, no la geometría procedural de paredes y pasillos.
+Con el servidor en marcha también está disponible en `http://localhost:8080/mapa.html`.
 
-## Escalar más allá del piloto
+## Actualizar y personalizar niveles
 
-Las 734 páginas de niveles ya están en `data/parsed/levels.json`. Para añadir niveles:
-crear su ficha en `data/game/levels.es.json` (bioma, paleta, reglas, entidades, salidas)
-y ejecutar `build-data.js`. El motor los acepta sin tocar código.
+De las 752 páginas clasificadas como niveles, 21 marcadas como Joke se excluyen. Las 731
+restantes se convierten automáticamente en salas jugables. Las 41 fichas cuidadas a mano viven en `data/game/levels.curated.es.json` y
+sobrescriben la versión procedural. Tras actualizar la wiki o editar esos overrides,
+ejecuta `build-levels.js`, `build-data.js` y `make-map.js`.
 
 ## Contribuir
 

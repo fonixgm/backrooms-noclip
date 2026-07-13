@@ -1,9 +1,31 @@
 // Arranque: input, bucle de animación y pantalla de título.
 (function () {
   // versión visible del juego (Ajustes); súbela con cada tanda de cambios
-  window.VERSION_JUEGO = 'v27.3';
+  window.VERSION_JUEGO = 'v27.6.3';
   const world = Game.world;
   world.data = window.GAME_DATA;
+
+  window.addEventListener('textureassetload', (event) => {
+    // Una textura opcional (pared/suelo/techo/agua…) terminó de cargar: si
+    // afecta al nivel actual, reconstruimos sus tiles para cambiar el procedural
+    // por el bitmap. TextureAssets.afecta filtra los ficheros de otros niveles.
+    if (!world.level || !window.TextureAssets?.afecta(event.detail, world.level.id)) return;
+    world.tiles = Tiles.build(world.level, RNG.create(`${world.runSeed}::${world.level.id}::bitmap`));
+    if (window.Render3D) Render3D.invalidateTextures();
+    world.mapaVersion = (world.mapaVersion || 0) + 1;
+  });
+
+  // En local, una expedición con semilla diaria también rota si permanece
+  // abierta durante la medianoche. Las semillas manuales nunca se alteran.
+  let diaSemilla = window.DailySeed ? DailySeed.dayKey() : null;
+  setInterval(() => {
+    if (!window.DailySeed) return;
+    const nuevoDia = DailySeed.dayKey();
+    if (nuevoDia === diaSemilla) return;
+    diaSemilla = nuevoDia;
+    if (world.level && !world.online && world.runSeed?.startsWith('backrooms-diaria::'))
+      Game.startRun(DailySeed.seed());
+  }, 30000);
 
   const canvas = document.getElementById('game-canvas');
   Render.init(canvas);

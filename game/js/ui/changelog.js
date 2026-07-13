@@ -4,6 +4,35 @@
 // tanda de cambios (junto con VERSION_JUEGO en main.js).
 (function () {
   const CHANGELOG = [
+    { v: 'v27.6.3', cambios: [
+      'Level 1 usa el bitmap solo en paredes y recupera la franja horizontal dibujada por el motor.',
+      'Level 0 usa la nueva textura de pared personalizada sin alterar la moqueta.',
+    ] },
+    { v: 'v27.6.2', cambios: [
+      'Level 1 estrena una textura bitmap propia de hormigón para paredes y suelo.',
+    ] },
+    { v: 'v27.6.1', cambios: [
+      'Corregida la pantalla negra que impedía dibujar cualquier nivel en 3D.',
+    ] },
+    { v: 'v27.6', cambios: [
+      'Los niveles acuáticos tienen océanos navegables, oxígeno, ahogo y respiraderos de burbujas.',
+      'Las ciudades y zonas residenciales contienen edificios transitables con puertas e interiores.',
+      'Los niveles marcados como oscuros en la wiki ya no quedan sobreexpuestos.',
+    ] },
+    { v: 'v27.5', cambios: [
+      'Si una semilla genera una sala sin salidas, el camino de llegada permanece abierto para poder retroceder.',
+      'El mapa muestra la semilla actual y el destino diario real de las rutas variables.',
+    ] },
+    { v: 'v27.4', cambios: [
+      'Los niveles usan 31 biomas distintos con mapas, materiales y mobiliario propios.',
+      'La semilla global cambia cada día a medianoche y reorganiza las salas activas.',
+      'Bosques, ciudades y otros exteriores ya no aparecen encerrados bajo un techo.',
+    ] },
+    { v: 'v27.3', cambios: [
+      'El catálogo completo de niveles ya está conectado mediante entradas, salidas y relaciones de subniveles.',
+      'Las puertas de regreso aparecen detrás del jugador en vez de quedar ocultas bajo sus pies.',
+      'La iluminación ahora respeta mejor la oscuridad y la penumbra de cada nivel.',
+    ] },
     { v: 'v27.2', cambios: [
       'Nueva pestaña Changelog en la pantalla de título: qué ha cambiado en cada versión, resumido.',
     ] },
