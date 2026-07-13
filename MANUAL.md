@@ -161,7 +161,11 @@ exactamente los mismos mapas, útil para que tu chat reproduzca una partida conc
    (los dos frames en horizontal). Puedes poner más frames: 144×48 = 3, etc.
 3. Guárdalo en `game/assets/sprites/` con el nombre exacto del personaje:
    `hound.png`, `faceling.png`, `player_down.png`… (lista completa en el `LEEME.txt` de esa carpeta).
-4. Recarga el juego (F5). Si el PNG existe, se usa; si lo borras, vuelve el pixel-art integrado.
+4. Ejecuta `node pipeline/build-assets-manifest.js` (apunta el archivo nuevo en el
+   inventario de assets — desde v30.6 el juego solo carga lo inventariado, sin sondear
+   rutas a ciegas ni llenar la consola de 404).
+5. Recarga el juego (F5). Si el PNG existe, se usa; si lo borras, vuelve el pixel-art
+   integrado (recuerda re-ejecutar el paso 4 también al borrar).
 
 **¿Tienes una imagen que NO cumple el formato?** (otro tamaño, sin frames, con fondo…)
 → Déjala en cualquier carpeta del proyecto y dile a Claude *«convierte esta imagen en el sprite
@@ -184,8 +188,10 @@ no necesitas hacer nada para que suene. Para silenciar: botón del menú de ajus
   interruptor de la **animación del dado**. Todo se recuerda.
 - Al pasar de nivel (tarjeta de presentación) el ambiente se detiene y suena un pad suave.
 - **Sustituir un efecto**: pon un `.mp3`/`.ogg`/`.wav` en `game/assets/sounds/` con el nombre
-  del efecto (`golpe.mp3`, `paso.mp3`…). Lista completa en el `LEEME.txt` de esa carpeta.
+  del efecto (`golpe.mp3`, `paso.mp3`…) y ejecuta `node pipeline/build-assets-manifest.js`.
+  Lista completa en el `LEEME.txt` de esa carpeta.
 - **Ambientes por nivel**: guarda un archivo como `game/assets/sounds/niveles/level-X.mp3`
+  (+ `node pipeline/build-assets-manifest.js`)
   y el juego lo usa automáticamente, **sin ejecutar nada**. Ejemplo: para tener el zumbido
   original de las Backrooms en Level 0, guarda tu audio favorito como `niveles/level-0.mp3`.
   Los de **Level 306, 385 y 777 son los audios reales de sus páginas de la wiki** (ya incluidos).

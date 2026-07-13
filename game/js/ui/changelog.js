@@ -4,7 +4,7 @@
 // tanda de cambios (junto con VERSION_JUEGO en main.js).
 (function () {
   const CHANGELOG = [
-    { v: 'v30.5', cambios: [
+    { v: 'v30.7', cambios: [
       'Level 1 usa el bitmap solo en paredes y recupera la franja horizontal dibujada por el motor.',
       'Level 0 usa la nueva textura de pared personalizada sin alterar la moqueta.',
       'Los niveles acuáticos tienen océanos navegables, oxígeno, ahogo y respiraderos de burbujas.',
@@ -18,6 +18,13 @@
       'El catálogo completo de niveles ya está conectado mediante entradas, salidas y relaciones de subniveles.',
       'Las puertas de regreso aparecen detrás del jugador en vez de quedar ocultas bajo sus pies.',
       'La iluminación ahora respeta mejor la oscuridad y la penumbra de cada nivel.',
+    ] },
+    { v: 'v30.6', cambios: [
+      'La web carga MUCHO más rápida: la portada ya no descarga ningún asset del juego (sprites y sonidos llegan al entrar en partida) y desaparecen los cientos de peticiones fallidas que ensuciaban la consola y la red.',
+      'La pestaña del navegador estrena favicon propio (la puerta pixel-art).',
+    ] },
+    { v: 'v30.5', cambios: [
+      'Retirada la etiqueta «Teclado + Ratón / Mando» que flotaba arriba del HUD: los iconos de los avisos ya cambian solos según tu dispositivo.',
     ] },
     { v: 'v30.4', cambios: [
       'El modo SIN CONEXIÓN es ahora el mismo juego que el online: movimiento libre, cámara, entidades y todas las mecánicas, con un servidor local corriendo dentro de tu navegador. (El antiguo modo por turnos queda aparcado.)',

@@ -795,32 +795,18 @@
     return img;
   }
 
-  function rutasOverride(id) {
-    const dirs = ['assets/sprites', 'assets/objetos', 'assets'];
-    const exts = ['webp', 'png', 'jpg', 'jpeg'];
-    // cache-bust por versión (como los <script ?v=>): al subir VERSION_JUEGO el
-    // navegador/edge recarga el arte nuevo en vez de servir el override viejo.
-    // Sin window.VERSION_JUEGO (test de Node) las rutas quedan limpias.
-    const v = (typeof window !== 'undefined' && window.VERSION_JUEGO)
-      ? `?v=${encodeURIComponent(window.VERSION_JUEGO)}` : '';
-    const out = [];
-    for (const dir of dirs) for (const ext of exts) out.push(`${dir}/${id}.${ext}${v}`);
-    return out;
-  }
-
-  // intenta cargar imagenes externas (hoja horizontal de frames de 48x48).
-  // Si no existe archivo, queda activo el sprite procedural generado.
+  // Carga imágenes externas (hoja horizontal de frames de 48x48) para los ids
+  // pedidos, SOLO si aparecen en el manifiesto de assets reales
+  // (game/js/assets-manifest.js). Sin archivo, queda el sprite procedural.
+  // v30.5: SIN sondeos de red — antes se probaban 12 URLs por id (3 carpetas ×
+  // 4 extensiones) y la consola/red se llenaban de cientos de 404 al abrir la
+  // web. Tras añadir/quitar imágenes en game/assets/:
+  //   node pipeline/build-assets-manifest.js
   function tryOverrides(ids) {
+    const M = (window.ASSETS_MANIFEST || {}).sprites || {};
     for (const id of ids) {
-      if (overrides[id]) continue;
-      const urls = rutasOverride(id);
-      let i = 0, img = null;
-      const siguiente = () => {
-        if (overrides[id] || i >= urls.length) return;
-        img = cargarOverride(id, urls[i++]);
-        img.onerror = siguiente;
-      };
-      siguiente();
+      if (overrides[id] || !M[id]) continue;
+      cargarOverride(id, M[id]);
     }
   }
   // ---------- props del entorno ----------
@@ -844,26 +830,6 @@
     ctx.fillStyle = 'rgba(0,0,0,0.28)';
     ctx.beginPath(); ctx.ellipse(cx, cy + 12, 11, 4, 0, 0, 7); ctx.fill();
     switch (id) {
-      case 'portico':
-        ctx.fillStyle = '#4b4540';
-        ctx.fillRect(cx - 13, cy - 18, 4, 30);
-        ctx.fillRect(cx + 9, cy - 18, 4, 30);
-        ctx.fillRect(cx - 13, cy - 18, 26, 5);
-        ctx.fillStyle = '#18191a';
-        ctx.fillRect(cx - 8, cy - 12, 16, 24);
-        ctx.fillStyle = '#b59b68';
-        ctx.fillRect(cx + 5, cy, 2, 2);
-        break;
-      case 'burbuja_aire': {
-        ctx.shadowColor = '#8fe8ff'; ctx.shadowBlur = 12;
-        ctx.strokeStyle = '#b9f3ff'; ctx.lineWidth = 2;
-        for (let i = 0; i < 5; i++) {
-          const fase = (t / 500 + i * 0.23) % 1;
-          const bx = cx + Math.sin(i * 2.1) * 7, by = cy + 11 - fase * 32;
-          ctx.beginPath(); ctx.arc(bx, by, 2 + (i % 2), 0, Math.PI * 2); ctx.stroke();
-        }
-        break;
-      }
       case 'cono':
         ctx.fillStyle = '#d86830';
         ctx.beginPath(); ctx.moveTo(cx, cy - 12); ctx.lineTo(cx + 8, cy + 10); ctx.lineTo(cx - 8, cy + 10); ctx.closePath(); ctx.fill();
@@ -1015,6 +981,5 @@
     list: () => Object.keys(DEFS),
     CAPA_MASCARA_GAS,
     version: () => overrideVersion,
-    overridePaths: rutasOverride,
   };
 })();

@@ -21,22 +21,22 @@
   const overrides = {};
   const entityLoops = {};
 
-  const NOMBRES = ['paso', 'golpe', 'dano', 'recoger', 'dado', 'puerta', 'registrar', 'muerte', 'victoria', 'latido', 'ui', 'derrumbe', 'bisturi', 'crujido', 'smiler'];
-  const SOUND_DIRS = {
-    smiler: ['entidades', 'entities'],
-  };
-  for (const n of NOMBRES) {
-    for (const ext of ['mp3', 'ogg', 'wav']) {
-      const rutas = [
-        ...(SOUND_DIRS[n] || []).map((dir) => `assets/sounds/${dir}/${n}.${ext}`),
-        `assets/sounds/${n}.${ext}`,
-      ];
-      for (const ruta of rutas) {
-        const el = new window.Audio();
-        el.addEventListener('canplaythrough', () => { if (!overrides[n]) overrides[n] = el; }, { once: true });
-        el.src = ruta;
-        el.preload = 'auto';
-      }
+  // Overrides mp3/ogg/wav de game/assets/sounds/ — SOLO los que existen según
+  // el manifiesto de assets (v30.6: antes se sondeaban 15 nombres × 3
+  // extensiones × 2 rutas al cargar la página → lluvia de 404 en la portada).
+  // Se cargan al primer gesto (unlock) o al entrar en partida, no en el
+  // título; hasta entonces suena la síntesis WebAudio de siempre.
+  // Tras añadir/quitar sonidos: node pipeline/build-assets-manifest.js
+  let overridesCargados = false;
+  function cargarOverrides() {
+    if (overridesCargados) return;
+    overridesCargados = true;
+    const M = (window.ASSETS_MANIFEST || {}).sonidos || {};
+    for (const [n, ruta] of Object.entries(M)) {
+      const el = new window.Audio();
+      el.addEventListener('canplaythrough', () => { if (!overrides[n]) overrides[n] = el; }, { once: true });
+      el.src = ruta;
+      el.preload = 'auto';
     }
   }
 
@@ -59,6 +59,7 @@
 
   function unlock() {
     try {
+      cargarOverrides(); // primer gesto: momento perfecto para traer los mp3
       if (!ensure()) return;
       if (ctx.state === 'suspended') ctx.resume();
     } catch (e) {}
@@ -547,14 +548,14 @@
       stopAmbient();
       if (muted) return;
       const gen = ++ambientGen;
-      // 1) archivo del nivel (del usuario o de la wiki): prueba extensiones en cadena
+      // 1) archivo del nivel (del usuario o de la wiki) — SOLO rutas que
+      // existen según los manifiestos (v30.6: antes se probaban 3 extensiones
+      // a ciegas al entrar a cada nivel → 404 en consola)
       const candidatos = [];
       const wikiSrc = (window.AUDIO_MANIFEST || {})[levelDef.id];
       if (wikiSrc) candidatos.push(wikiSrc);
-      for (const ext of ['mp3', 'wav', 'ogg']) {
-        const ruta = `assets/sounds/niveles/${levelDef.id}.${ext}`;
-        if (ruta !== wikiSrc) candidatos.push(ruta);
-      }
+      const local = ((window.ASSETS_MANIFEST || {}).ambientes || {})[levelDef.id];
+      if (local && local !== wikiSrc) candidatos.push(local);
       let i = 0;
       let synthHecho = false;
       const intenta = () => {
@@ -697,7 +698,7 @@
   }
 
   window.Sfx = {
-    unlock, play, cue, cueDist, entityLoop, updateEntityLoops, ambient, stopAmbient, toggleMute, setVolume, idle,
+    unlock, cargarOverrides, play, cue, cueDist, entityLoop, updateEntityLoops, ambient, stopAmbient, toggleMute, setVolume, idle,
     level0Flicker, playMenu, stopMenu,
     get muted() { return muted; },
     get volumen() { return vol; },

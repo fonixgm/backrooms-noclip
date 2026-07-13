@@ -1,21 +1,17 @@
 // Arranque: input, bucle de animación y pantalla de título.
 (function () {
   // versión visible del juego (Ajustes); súbela con cada tanda de cambios
-  window.VERSION_JUEGO = 'v30.5';
+  window.VERSION_JUEGO = 'v30.7';
   const world = Game.world;
   world.data = window.GAME_DATA;
 
   window.addEventListener('textureassetload', (event) => {
-    // Una textura opcional terminó de cargar: reconstruye los tiles del nivel
-    // actual y sustituye el procedural por el bitmap correspondiente.
     if (!world.level || !window.TextureAssets?.afecta(event.detail, world.level.id)) return;
     world.tiles = Tiles.build(world.level, RNG.create(`${world.runSeed}::${world.level.id}::bitmap`));
     if (window.Render3D) Render3D.invalidateTextures();
     world.mapaVersion = (world.mapaVersion || 0) + 1;
   });
 
-  // Las expediciones diarias abiertas durante la medianoche rotan junto con
-  // el catálogo; una semilla manual nunca se modifica.
   let diaSemilla = window.DailySeed ? DailySeed.dayKey() : null;
   setInterval(() => {
     if (!window.DailySeed) return;
@@ -69,15 +65,31 @@
     }
   }
 
-  // sprites PNG personalizados (game/assets/sprites/) si existen
-  Sprites.tryOverrides([
-    ...Sprites.list(),
-    ...Object.values(world.data.entities).map((e) => e.glyph),
-    ...Sprites.CAPA_MASCARA_GAS,
-    ...Object.keys(world.data.objects),
-  ]);
-  // iconos PNG personalizados (game/assets/icons/) si existen
+  // assets personalizados (game/assets/): los del JUEGO se cargan al entrar
+  // en partida, NO en la portada — y solo las rutas del manifiesto de assets
+  // reales (v30.6: antes la portada disparaba cientos de peticiones 404
+  // sondeando cada sprite/sonido posible en 4 extensiones)
+  let overridesDeJuegoCargados = false;
+  function cargarOverridesDeJuego() {
+    if (overridesDeJuegoCargados) return;
+    overridesDeJuegoCargados = true;
+    Sprites.tryOverrides([
+      ...Sprites.list(),
+      ...Object.values(world.data.entities).map((e) => e.glyph),
+      ...Sprites.CAPA_MASCARA_GAS,
+      ...Object.keys(world.data.objects),
+    ]);
+    if (window.Sfx) Sfx.cargarOverrides();
+  }
+  // iconos PNG personalizados: sí al arrancar (la propia portada los usa)
   if (window.Icons) Icons.tryOverrides(Icons.list());
+  // favicon real desde los iconos pixel-art (antes /favicon.ico daba 404)
+  if (window.Icons) {
+    const fav = document.createElement('link');
+    fav.rel = 'icon';
+    fav.href = Icons.url('puerta');
+    document.head.appendChild(fav);
+  }
 
   // ---------- input ----------
   const KEYS = {
@@ -1088,21 +1100,6 @@
   // si se desconecta el mando, volvemos a teclado/ratón
   window.addEventListener('gamepaddisconnected', () => { if (window.Controllers) Controllers.clearGamepad(); });
 
-  // v28 — indicador HUD del dispositivo de entrada activo (teclado/Xbox/PS)
-  function updateDeviceIndicator() {
-    const el = document.getElementById('device-indicator');
-    if (!el || !window.Controllers) return;
-    el.innerHTML = '';
-    el.appendChild(Controllers.deviceGlyphImg(16));
-    const txt = document.createElement('span');
-    txt.textContent = ' ' + Controllers.deviceName();
-    el.appendChild(txt);
-  }
-  if (window.Controllers) {
-    Controllers.onChange(updateDeviceIndicator);
-    updateDeviceIndicator();
-  }
-
   window.gamepadDx = 0;
   window.gamepadDy = 0;
   let lastGamepadStepT = 0;
@@ -1456,6 +1453,7 @@
   // ?local=1 = MISMO juego con el servidor local de la pestaña (modo offline)
   if (params.get('online') || params.get('local')) {
     if (params.get('local')) window.MODO_LOCAL = true;
+    cargarOverridesDeJuego();
     Net.iniciar(params.get('nombre') || Game.Profiles.activeName() || 'Errante');
     // la tarjeta del nivel aparece al recibir la bienvenida; se entra sola
     const esperaCard = setInterval(() => {
@@ -1466,6 +1464,7 @@
       }
     }, 100);
   } else if (params.get('autostart')) {
+    cargarOverridesDeJuego();
     Game.startRun(params.get('seed') || undefined);
     if (params.get('nivel') && world.data.levels[params.get('nivel')]) {
       // salto directo para pruebas
@@ -1614,6 +1613,7 @@
     const errores = [];
     window.onerror = (msg, src, line) => { errores.push(`${msg} @${(src || '').split('/').pop()}:${line}`); };
     const N = parseInt(params.get('selftest'), 10) || 100;
+    cargarOverridesDeJuego();
     Game.startRun(params.get('seed') || 'selftest');
     if (params.get('arma')) {
       world.player.inv.push('fuego_griego', 'detector');
@@ -1785,6 +1785,7 @@
   }
 
   function conectarAlServidor(btnOrigen) {
+    cargarOverridesDeJuego(); // los assets del juego se piden AL entrar, no en la portada
     if (!P.activeName()) P.create($id('profile-name').value.trim() || 'Errante');
     refreshTitle();
     // DESPUÉS de refreshTitle: esta llama a playMenuMusic() al final (para

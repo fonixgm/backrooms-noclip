@@ -19,6 +19,7 @@ node pipeline/build-levels.js  # catálogo parseado + overrides artesanales → 
 node pipeline/make-map.js      # regenera data/game/mapa-piloto.html (mapa reducido del piloto)
 node pipeline/make-catalog-map.js # regenera data/game/mapa.html (grafo completo)
 node pipeline/build-data.js    # empaqueta data/game/*.es.json → game/js/data.js  ← RE-EJECUTAR tras editar cualquier ficha
+node pipeline/build-assets-manifest.js  # inventaría game/assets/ → game/js/assets-manifest.js ← RE-EJECUTAR tras añadir/quitar sprites/sonidos/iconos (el juego solo carga lo inventariado; sin sondeos ni 404)
 ```
 
 Para jugar: abrir `game/index.html` directamente en el navegador (funciona por `file://` porque los datos van embebidos en `game/js/data.js`; no usar `fetch` de JSON en el juego por esa razón).
