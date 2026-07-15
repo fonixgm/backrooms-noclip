@@ -4,6 +4,9 @@
 // tanda de cambios (junto con VERSION_JUEGO en main.js).
 (function () {
   const CHANGELOG = [
+    { v: 'v30.12', cambios: [
+      'Level 0 ya no es un secarral: hay más botellas de agua de almendras por el suelo, más taquillas que registrar, y un resultado medio del dado (12-13) en sus taquillas ahora encuentra agua. El resto de niveles no cambia. (josealmon)',
+    ] },
     { v: 'v30.11', cambios: [
       'El smog de Level 11 ahora pasa factura: respirarlo mucho tiempo sin protección desgasta la salud poco a poco. La máscara de gas, el traje AVMH y la protección química lo bloquean. (josealmon)',
       'La salida de Level 6 hacia Level 7 ya no es una puerta: como dice la wiki, se cruza vagando lo suficiente por la oscuridad. (josealmon)',
